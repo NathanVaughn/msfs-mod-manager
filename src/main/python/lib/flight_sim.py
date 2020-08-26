@@ -62,6 +62,16 @@ def find_sim_path():
     if is_sim_folder(ms_store_folder):
         return (ms_store_folder, False)
 
+    # last ditch steam detection #1
+    steam_folder = os.path.join(os.getenv("PROGRAMFILES(x86)"), "Steam", "steamapps", "common", "MicrosoftFlightSimulator")
+    if is_sim_folder(steam_folder):
+        return (steam_folder, False)
+
+    # last ditch steam detection #2
+    steam_folder = os.path.join(os.getenv("PROGRAMFILES(x86)"), "Steam", "steamapps", "common", "Chucky")
+    if is_sim_folder(steam_folder):
+        return (steam_folder, False)
+
     # fail
     return (None, False)
 
