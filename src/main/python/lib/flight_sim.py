@@ -57,7 +57,7 @@ def find_sim_path():
 
     # ms store detection
     ms_store_folder = os.path.join(
-        os.getenv("LOCALAPPDATA"), "Packages", "Microsoft.FlightSimulator_8wekyb3d8bbwe"
+        os.getenv("LOCALAPPDATA"), "Packages", "Microsoft.FlightSimulator_8wekyb3d8bbwe", "LocalCache"
     )
     if is_sim_folder(ms_store_folder):
         return (ms_store_folder, False)

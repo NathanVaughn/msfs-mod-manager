@@ -58,3 +58,22 @@ jobs:
           asset_path: ./target/MSFS Mod ManagerSetup.exe
           asset_name: MSFSModManagerSetup.exe
           asset_content_type: application/vnd.microsoft.portable-executable
+
+      - name: Clean
+        run: pipenv run fbs clean
+
+      - name: Build Debug
+        run: pipenv run fbs freeze --debug
+
+      - name: Build Debug Installer
+        run: pipenv run fbs installer
+
+      - name: Add Debug Installer Artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./target/MSFS Mod ManagerSetup.exe
+          asset_name: MSFSModManagerSetupDebug.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
