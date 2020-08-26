@@ -1,5 +1,7 @@
 # MSFS Mod Manager
 
+<img src="src/main/resources/base/icons/icon.png" alt="Bad Logo (I'm not good at graphic design)" width="200"/>
+
 This is a very early external mod manager for the new Microsoft Flight Simulator.
 
 ![Main Screen](screenshots/main-1.png)
@@ -27,6 +29,16 @@ Enable and disable mods on the fly without needing to re-download them.
 ### More To Come
 
 This is still under active development. Pull requests welcome!
+
+## Usage
+
+Just head to the
+[releases page](https://github.com/NathanVaughn/msfs-mod-manager/releases)
+to download the latest installer. Or, if you want to live life on the edge,
+run the code from source, as described below.
+
+Note: If you want extract `.rar` or `.7z` files with the program, you'll need
+to have [7zip](https://www.7-zip.org/) installed.
 
 ## Running/Building From Source
 
