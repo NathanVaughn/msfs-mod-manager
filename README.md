@@ -15,6 +15,14 @@ No rooting around inside the `AppData` folder.
 
 ![Sim Directory Detection](screenshots/auto-detect.png)
 
+If the program can't automatically find the installation folder (you put it somewhere
+non-standard), you can manually select the location that contains `FlightSimulator.CFG`.
+
+![Manual Selection](screenshots/manual-select.png)
+
+This is normally `%USER%\AppData\Roaming\Microsoft Flight Simulator` or
+`%USER%\AppData\Local\Packages\Microsoft.FlightSimulator_8wekyb3d8bbwe\LocalCache`
+
 ### Super Easy Mod Installs
 
 The program will extract an archive, find all mods inside, and install them
