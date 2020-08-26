@@ -2,5 +2,5 @@
     "app_name": "MSFS Mod Manager",
     "author": "Nathan Vaughn",
     "main_module": "src/main/python/main.py",
-    "version": "0.0.0"
+    "version": "0.1.0"
 }
