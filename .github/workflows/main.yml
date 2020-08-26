@@ -32,8 +32,8 @@ jobs:
         env:
           PIPENV_VENV_IN_PROJECT: "1"
 
-      #- name: Build
-      #  run: pipenv run fbs freeze
+      - name: Build
+        run: pipenv run fbs freeze
 
       - name: Build Installer
         run: pipenv run fbs installer
