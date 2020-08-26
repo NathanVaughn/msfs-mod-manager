@@ -42,14 +42,16 @@ to have [7zip](https://www.7-zip.org/) installed.
 
 ## Running/Building From Source
 
-To run the program from source, first install Python 3.7.
-Next, install the dependencies.
+To run the program from source, first install [Python 3.6](https://www.python.org/downloads/release/python-368/).
+Next, install the dependencies:
 
 ```bash
 python -m pip install pipenv
 pipenv install
 ```
 
+Activate the newly created virtual environment with `pipenv shell`.
+
 To run the program, use `fbs run`.
 
-To build the program, use `fbs freeze`.
+To build the program, use `fbs freeze` and optionally `fbs installer`.
