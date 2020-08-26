@@ -48,6 +48,13 @@ run the code from source, as described below.
 Note: If you want extract `.rar` or `.7z` files with the program, you'll need
 to have [7zip](https://www.7-zip.org/) installed.
 
+If Windows complains that the application is untrusted, this is because
+the executable is not signed. A code signing certificate is needed to fix this,
+but they are rather expensive, and I can't justify the cost.
+The program is open source however, so you could build
+it yourself if you wanted, and the provided pre-built binaries are all created
+[automatically on GitHub's infrastructure](https://github.com/NathanVaughn/msfs-mod-manager/actions?query=workflow%3A%22Make+Release%22).
+
 ## Running/Building From Source
 
 To run the program from source, first install [Python 3.6](https://www.python.org/downloads/release/python-368/).
