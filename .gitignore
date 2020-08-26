@@ -1,0 +1,11 @@
+modCache/*
+.tmp/*
+.vscode/*
+build/*
+target/*
+dist/*
+__pycache__/*
+
+*.pyc
+
+config.ini
