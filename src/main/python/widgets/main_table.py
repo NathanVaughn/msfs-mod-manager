@@ -39,35 +39,36 @@ class main_table(QtWidgets.QTableWidget):
         # clear all data
         self.clear()
 
-        # the row and column count based on the data size
-        self.setColumnCount(len(data[0]))
-        self.setRowCount(len(data))
+        if data:
+            # the row and column count based on the data size
+            self.setColumnCount(len(data[0]))
+            self.setRowCount(len(data))
 
-        # create each item
-        for r, row in enumerate(data):
+            # create each item
+            for r, row in enumerate(data):
 
-            # turn the dictionary into a list of elements using the lookup table
-            items = [None] * len(row)
-            for key in row:
-                items[LOOKUP[key]] = row[key]
+                # turn the dictionary into a list of elements using the lookup table
+                items = [None] * len(row)
+                for key in row:
+                    items[LOOKUP[key]] = row[key]
 
-            # put elements into the table
-            for c, col in enumerate(items):
-                item = QtWidgets.QTableWidgetItem(str(col))
-                item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+                # put elements into the table
+                for c, col in enumerate(items):
+                    item = QtWidgets.QTableWidgetItem(str(col))
+                    item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
 
-                if row["installed"]:
-                    item.setForeground(QtGui.QColor(256, 256, 256))
-                else:
-                    item.setForeground(QtGui.QColor(180, 180, 180))
+                    if row["installed"]:
+                        item.setForeground(QtGui.QColor(256, 256, 256))
+                    else:
+                        item.setForeground(QtGui.QColor(180, 180, 180))
 
-                self.setItem(r, c, item)
+                    self.setItem(r, c, item)
+
+            # sort packages alphabetically
+            self.sortItems(0)
 
         # set the horizontal headers
         self.setHorizontalHeaderLabels(self.headers)
-
-        # sort packages alphabetically
-        self.sortItems(0)
 
         # re-enable sorting
         self.setSortingEnabled(True)
