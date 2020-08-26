@@ -4,14 +4,16 @@ import os
 import patoolib
 import shutil
 
-CURRENT_FOLDER = os.getcwd()
-TEMP_FOLDER = os.path.abspath(os.path.join(CURRENT_FOLDER, ".tmp"))
-MOD_CACHE_FOLDER = os.path.abspath(os.path.join(CURRENT_FOLDER, "modCache"))
+BASE_FOLDER = os.path.abspath(os.path.join(os.getenv("APPDATA"), "MSFS Mod Manager"))
+TEMP_FOLDER = os.path.abspath(os.path.join(BASE_FOLDER, ".tmp"))
+MOD_CACHE_FOLDER = os.path.abspath(os.path.join(BASE_FOLDER, "modCache"))
 
-CONFIG_FILE = os.path.abspath(os.path.join(CURRENT_FOLDER, "config.ini"))
+CONFIG_FILE = os.path.abspath(os.path.join(BASE_FOLDER, "config.ini"))
 SECTION_KEY = "settings"
 SIM_PATH_KEY = "sim_path"
 
+if not os.path.exists(BASE_FOLDER):
+    os.makedirs(BASE_FOLDER)
 
 def create_tmp_folder():
     """Deletes existing temp folder if it exists and creates a new one"""
