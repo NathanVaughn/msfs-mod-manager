@@ -16,31 +16,41 @@ SIM_PATH_KEY = "sim_path"
 if not os.path.exists(BASE_FOLDER):
     os.makedirs(BASE_FOLDER)
 
+
 class AccessError(Exception):
     pass
+
 
 class ExtractionError(Exception):
     pass
 
+
 class NoManifestError(Exception):
     pass
+
 
 class NoModsError(Exception):
     pass
 
-def fix_permissions(folder):
+
+def fix_permissions(folder, update_func=None):
     """Recursively fixes the permissions of a folder so that it can be deleted"""
+    if update_func:
+        update_func("Fixing permissions for {}".format(folder))
+
     for root, dirs, _ in os.walk(folder):
         for d in dirs:
             os.chmod(os.path.join(root, d), stat.S_IWUSR)
 
-def delete_folder(folder, first=True):
-    """Deletes a folder if it exists"""
 
+def delete_folder(folder, first=True, update_func=None):
+    """Deletes a folder if it exists"""
     # check if it exists
     if os.path.isdir(folder):
         try:
             # try to delete it
+            if update_func:
+                update_func("Deleting directory {}".format(folder))
             shutil.rmtree(folder)
         except PermissionError:
             # if there is a permission error
@@ -49,12 +59,24 @@ def delete_folder(folder, first=True):
                 raise AccessError(folder)
             else:
                 # otherwise, try to fix permissions and try again
-                fix_permissions(folder)
-                delete_folder(folder, first=False)
+                fix_permissions(folder, update_func=update_func)
+                delete_folder(folder, first=False, update_func=update_func)
 
-def create_tmp_folder():
+def copy_folder(src, dest, update_func=None):
+    """Copies a folder if it exists"""
+    # check if it exists
+    if os.path.isdir(src):
+        delete_folder(dest, update_func=update_func)
+
+        # copy the directory
+        if update_func:
+            update_func("Copying {} to {}".format(src, dest))
+        shutil.copytree(src, dest)
+
+
+def create_tmp_folder(update_func=None):
     """Deletes existing temp folder if it exists and creates a new one"""
-    delete_folder(TEMP_FOLDER)
+    delete_folder(TEMP_FOLDER, update_func=update_func)
     os.makedirs(TEMP_FOLDER)
 
 
@@ -92,18 +114,29 @@ def find_sim_path():
 
     # ms store detection
     ms_store_folder = os.path.join(
-        os.getenv("LOCALAPPDATA"), "Packages", "Microsoft.FlightSimulator_8wekyb3d8bbwe", "LocalCache"
+        os.getenv("LOCALAPPDATA"),
+        "Packages",
+        "Microsoft.FlightSimulator_8wekyb3d8bbwe",
+        "LocalCache",
     )
     if is_sim_folder(ms_store_folder):
         return (ms_store_folder, False)
 
     # last ditch steam detection #1
-    steam_folder = os.path.join(os.getenv("PROGRAMFILES(x86)"), "Steam", "steamapps", "common", "MicrosoftFlightSimulator")
+    steam_folder = os.path.join(
+        os.getenv("PROGRAMFILES(x86)"),
+        "Steam",
+        "steamapps",
+        "common",
+        "MicrosoftFlightSimulator",
+    )
     if is_sim_folder(steam_folder):
         return (steam_folder, False)
 
     # last ditch steam detection #2
-    steam_folder = os.path.join(os.getenv("PROGRAMFILES(x86)"), "Steam", "steamapps", "common", "Chucky")
+    steam_folder = os.path.join(
+        os.getenv("PROGRAMFILES(x86)"), "Steam", "steamapps", "common", "Chucky"
+    )
     if is_sim_folder(steam_folder):
         return (steam_folder, False)
 
@@ -173,25 +206,31 @@ def get_disabled_mods():
     return disabled_mods
 
 
-def unpack_archive(mod_archive):
-    """Unpacks an archive file into a temp directory, and returns the new path"""
-
+def extract_archive(mod_archive, update_func=None):
+    """Extracts an archive file into a temp directory, and returns the new path"""
     # create a temp directory if it does not exist
-    create_tmp_folder()
+    create_tmp_folder(update_func=update_func)
     # determine the base name of the archive
     basefilename = os.path.splitext(os.path.basename(mod_archive))[0]
 
     # extract the archive
     extracted_archive = os.path.join(TEMP_FOLDER, basefilename)
     try:
+        if update_func:
+            update_func("Extracting archive {}".format(mod_archive))
+
         patoolib.extract_archive(mod_archive, outdir=extracted_archive)
         return extracted_archive
     except patoolib.util.PatoolError:
         raise ExtractionError(mod_archive)
 
-def determine_mod_folders(folder):
+
+def determine_mod_folders(folder, update_func=None):
     """Walks a directory to find the folder(s) with a manifest.json file in them"""
     mod_folders = []
+
+    if update_func:
+        update_func("Locating mods inside {}".format(folder))
 
     for root, dirs, _ in os.walk(folder):
         # go through each directory and check for the manifest
@@ -205,12 +244,13 @@ def determine_mod_folders(folder):
     return mod_folders
 
 
-def install_mod(sim_folder, mod_archive):
+def install_mod(sim_folder, mod_archive, update_func=None):
     """Extracts and installs a new mod"""
     # extract the archive
-    extracted_archive = unpack_archive(mod_archive)
+    extracted_archive = extract_archive(mod_archive, update_func=update_func)
+
     # determine the mods inside the extracted archive
-    mod_folders = determine_mod_folders(extracted_archive)
+    mod_folders = determine_mod_folders(extracted_archive, update_func=update_func)
 
     installed_mods = []
 
@@ -219,13 +259,10 @@ def install_mod(sim_folder, mod_archive):
         base_mod_folder = os.path.basename(mod_folder)
         dest_folder = os.path.join(sim_mod_folder(sim_folder), base_mod_folder)
 
-        # delete mod install if it already exists
-        delete_folder(dest_folder)
-
         # copy mod to sim
-        shutil.copytree(mod_folder, dest_folder)
+        copy_folder(mod_folder, dest_folder, update_func=update_func)
         # remove tmp extracted folder
-        delete_folder(mod_folder)
+        delete_folder(mod_folder, update_func=update_func)
 
         installed_mods.append(base_mod_folder)
 
@@ -238,11 +275,8 @@ def enable_mod(sim_folder, mod_folder):
     src_folder = os.path.join(MOD_CACHE_FOLDER, mod_folder)
     dest_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
 
-    # delete mod install if it already exists
-    delete_folder(dest_folder)
-
     # copy mod to sim
-    shutil.copytree(src_folder, dest_folder)
+    copy_folder(src_folder, dest_folder)
     # remove from mod cache
     delete_folder(src_folder)
 
@@ -254,10 +288,7 @@ def disable_mod(sim_folder, mod_folder):
     src_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
     dest_folder = os.path.join(MOD_CACHE_FOLDER, mod_folder)
 
-    # delete mod cache if it already exists
-    delete_folder(dest_folder)
-
     # copy mod to mod cache
-    shutil.copytree(src_folder, dest_folder)
+    copy_folder(src_folder, dest_folder)
     # remove from sim
     delete_folder(src_folder)

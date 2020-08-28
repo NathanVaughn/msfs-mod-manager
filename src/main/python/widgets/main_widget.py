@@ -5,6 +5,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from widgets.main_table import main_table
 from widgets.about_widget import about_widget
+from widgets.progress_widget import progress_widget
 
 from lib import flight_sim
 
@@ -75,7 +76,8 @@ class main_widget(QtWidgets.QWidget):
                 QtWidgets.QMessageBox().warning(
                     self,
                     "Error",
-                    "Invalid Microsoft Flight Simulator path. Please select the root folder manually (which contains FlightSimulator.CFG)",
+                    "Invalid Microsoft Flight Simulator path."
+                    + " Please select the root folder manually (which contains FlightSimulator.CFG)",
                 )
 
                 # send them through again
@@ -89,7 +91,8 @@ class main_widget(QtWidgets.QWidget):
             QtWidgets.QMessageBox().warning(
                 self,
                 "Error",
-                "Microsoft Flight Simulator path could not be found. Please select the root folder manually (which contains FlightSimulator.CFG)",
+                "Microsoft Flight Simulator path could not be found."
+                + " Please select the root folder manually (which contains FlightSimulator.CFG)",
             )
 
             user_selection()
@@ -124,12 +127,15 @@ class main_widget(QtWidgets.QWidget):
             filter="Archives (*.zip *.rar *.tar *.bz2 *.7z)",
         )[0]
 
+        progress = progress_widget(self, self.appctxt)
+        progress.set_infinite()
+
         succeeded = []
 
         # for each archive, try to install it
         for mod_archive in mod_archives:
             try:
-                succeeded.extend(flight_sim.install_mod(self.sim_path, mod_archive))
+                succeeded.extend(flight_sim.install_mod(self.sim_path, mod_archive, update_func=progress.set_activity))
             except flight_sim.ExtractionError as e:
                 QtWidgets.QMessageBox().warning(
                     self,
@@ -154,14 +160,28 @@ class main_widget(QtWidgets.QWidget):
                         mod_archive, e
                     ),
                 )
+            except flight_sim.NoModsError as e:
+                QtWidgets.QMessageBox().warning(
+                    self,
+                    "Error",
+                    "Unable to find any mods inside {}".format(
+                        mod_archive
+                    ),
+                )
             except Exception as e:
                 QtWidgets.QMessageBox().warning(
                     self, "Error", "Something went terribly wrong.\n{}".format(e)
                 )
 
+        progress.close()
+
         if succeeded:
             QtWidgets.QMessageBox().information(
-                self, "Success", "{} mod(s) installed!\n{}".format(len(succeeded), "- \n".join(succeeded)),
+                self,
+                "Success",
+                "{} mod(s) installed!\n{}".format(
+                    len(succeeded), "- \n".join(succeeded)
+                ),
             )
 
         # refresh the data
@@ -179,7 +199,7 @@ class main_widget(QtWidgets.QWidget):
 
             if enabled:
                 # sanity check
-                #raise Exception("Enabled mod cannot be enabled")
+                # raise Exception("Enabled mod cannot be enabled")
                 QtWidgets.QMessageBox().warning(
                     self, "Warning", "Already enabled mod cannot be enabled."
                 )
@@ -202,7 +222,7 @@ class main_widget(QtWidgets.QWidget):
 
             if not enabled:
                 # sanity check
-                #raise Exception("Disabled mod cannot be disabled")
+                # raise Exception("Disabled mod cannot be disabled")
                 QtWidgets.QMessageBox().warning(
                     self, "Warning", "Already disabled mod cannot be disabled."
                 )
