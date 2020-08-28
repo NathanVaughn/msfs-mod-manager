@@ -2,7 +2,6 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-
 LOOKUP = {
     "title": 0,
     "folder_name": 1,
@@ -85,4 +84,3 @@ class main_table(QtWidgets.QTableWidget):
             self.item(row_id, LOOKUP["folder_name"]).text(),
             self.item(row_id, LOOKUP["installed"]).text() == "True",
         )
-

@@ -58,5 +58,3 @@ class main_window(QtWidgets.QMainWindow):
         menu_action = QtWidgets.QAction("About", self)
         menu_action.triggered.connect(self.main_widget.about)
         info_menu.addAction(menu_action)
-
-

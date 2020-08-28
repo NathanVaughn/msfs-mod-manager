@@ -1,9 +1,11 @@
 import configparser
 import json
 import os
-import patoolib
 import shutil
 import stat
+
+import patoolib
+import PySide2.QtCore as QtCore
 
 BASE_FOLDER = os.path.abspath(os.path.join(os.getenv("APPDATA"), "MSFS Mod Manager"))
 TEMP_FOLDER = os.path.abspath(os.path.join(BASE_FOLDER, ".tmp"))
@@ -19,26 +21,51 @@ if not os.path.exists(BASE_FOLDER):
 
 class AccessError(Exception):
     """Raised after an uncorrectable permission error"""
+
     pass
 
 
 class ExtractionError(Exception):
     """Raised when an archive cannot be extracted.
     Usually due to a missing appropriate extractor program"""
+
     pass
+
 
 class NoLayoutError(Exception):
     """Raised when a layout.json file cannot be found for a mod"""
+
     pass
+
 
 class NoManifestError(Exception):
     """Raised when a manifest.json file cannot be found for a mod"""
+
     pass
 
 
 class NoModsError(Exception):
     """Raised when no mods are found in an archive"""
+
     pass
+
+
+class install_mod_thread(QtCore.QThread):
+    """Setup a thread to install mods with to not block the main thread"""
+
+    activity_update = QtCore.Signal(object)
+    finished = QtCore.Signal(object)
+
+    def __init__(self, sim_path, mod_archive):
+        QtCore.QThread.__init__(self)
+        self.sim_path = sim_path
+        self.mod_archive = mod_archive
+
+    def run(self):
+        output = install_mod(
+            self.sim_path, self.mod_archive, update_func=self.activity_update.emit
+        )
+        self.finished.emit(output)
 
 
 def fix_permissions(folder, update_func=None):
@@ -69,6 +96,7 @@ def delete_folder(folder, first=True, update_func=None):
                 # otherwise, try to fix permissions and try again
                 fix_permissions(folder, update_func=update_func)
                 delete_folder(folder, first=False, update_func=update_func)
+
 
 def copy_folder(src, dest, update_func=None):
     """Copies a folder if it exists"""
@@ -209,7 +237,9 @@ def get_disabled_mods():
 
     for folder in os.listdir(MOD_CACHE_FOLDER):
         # parse each mod
-        disabled_mods.append(parse_mod_manifest(os.path.join(MOD_CACHE_FOLDER, folder), False))
+        disabled_mods.append(
+            parse_mod_manifest(os.path.join(MOD_CACHE_FOLDER, folder), False)
+        )
 
     return disabled_mods
 

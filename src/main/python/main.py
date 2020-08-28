@@ -1,6 +1,7 @@
 import sys
 
 from fbs_runtime.application_context.PySide2 import ApplicationContext
+
 from widgets.main_window import main_window
 
 if __name__ == "__main__":

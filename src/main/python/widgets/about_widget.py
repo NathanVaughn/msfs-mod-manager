@@ -46,4 +46,3 @@ class about_widget(QtWidgets.QDialog):
 
         self.show()
         self.setFixedSize(self.width(), self.height())
-

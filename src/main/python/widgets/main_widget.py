@@ -3,11 +3,11 @@ import sys
 
 import PySide2.QtWidgets as QtWidgets
 
-from widgets.main_table import main_table
-from widgets.about_widget import about_widget
-from widgets.progress_widget import progress_widget
-
 from lib import flight_sim
+from widgets.about_widget import about_widget
+from widgets.main_table import main_table
+from widgets.progress_widget import progress_widget
+from lib.thread_wait import thread_wait
 
 
 class main_widget(QtWidgets.QWidget):
@@ -30,8 +30,8 @@ class main_widget(QtWidgets.QWidget):
         self.disable_button = QtWidgets.QPushButton("Disable", self)
         self.layout.addWidget(self.disable_button, 0, 2)
 
-        self.info_button = QtWidgets.QPushButton("Info", self)
-        self.layout.addWidget(self.info_button, 0, 8)
+        #self.info_button = QtWidgets.QPushButton("Info", self)
+        #self.layout.addWidget(self.info_button, 0, 8)
 
         self.refresh_button = QtWidgets.QPushButton("Refresh", self)
         self.layout.addWidget(self.refresh_button, 0, 9)
@@ -45,7 +45,7 @@ class main_widget(QtWidgets.QWidget):
         self.enable_button.clicked.connect(self.enable)
         self.disable_button.clicked.connect(self.disable)
         self.refresh_button.clicked.connect(self.refresh)
-        self.info_button.clicked.connect(self.info)
+        #self.info_button.clicked.connect(self.info)
         self.main_table.doubleClicked.connect(self.info)
 
     def about(self):
@@ -135,7 +135,19 @@ class main_widget(QtWidgets.QWidget):
         # for each archive, try to install it
         for mod_archive in mod_archives:
             try:
-                succeeded.extend(flight_sim.install_mod(self.sim_path, mod_archive, update_func=progress.set_activity))
+                def finish(result):
+                    # this function is required as the results will be a list,
+                    # which is not a hashable type
+                    succeeded.extend(result)
+
+                # setup installer thread
+                installer = flight_sim.install_mod_thread(self.sim_path, mod_archive)
+                installer.activity_update.connect(progress.set_activity)
+
+                # start the thread
+                with thread_wait(installer.finished, finsh_func=finish):
+                    installer.start()
+
             except flight_sim.ExtractionError as e:
                 QtWidgets.QMessageBox().warning(
                     self,
@@ -168,10 +180,10 @@ class main_widget(QtWidgets.QWidget):
                         mod_archive
                     ),
                 )
-            except Exception as e:
-                QtWidgets.QMessageBox().warning(
-                    self, "Error", "Something went terribly wrong.\n{}".format(e)
-                )
+            #except Exception as e:
+            #    QtWidgets.QMessageBox().warning(
+            #        self, "Error", "Something went terribly wrong.\n{}".format(e)
+            #    )
 
         progress.close()
 
@@ -267,9 +279,9 @@ class main_widget(QtWidgets.QWidget):
         disable_action.triggered.connect(self.disable)
         self.right_click_menu.addAction(disable_action)
 
-        info_action = QtWidgets.QAction("Info", self)
-        info_action.triggered.connect(self.info)
-        self.right_click_menu.addAction(info_action)
+        #info_action = QtWidgets.QAction("Info", self)
+        #info_action.triggered.connect(self.info)
+        #self.right_click_menu.addAction(info_action)
 
         # popup at cursor position
         self.right_click_menu.popup(self.mapToGlobal(event.pos()))
