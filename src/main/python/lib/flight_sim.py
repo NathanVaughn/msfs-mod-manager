@@ -18,18 +18,26 @@ if not os.path.exists(BASE_FOLDER):
 
 
 class AccessError(Exception):
+    """Raised after an uncorrectable permission error"""
     pass
 
 
 class ExtractionError(Exception):
+    """Raised when an archive cannot be extracted.
+    Usually due to a missing appropriate extractor program"""
     pass
 
+class NoLayoutError(Exception):
+    """Raised when a layout.json file cannot be found for a mod"""
+    pass
 
 class NoManifestError(Exception):
+    """Raised when a manifest.json file cannot be found for a mod"""
     pass
 
 
 class NoModsError(Exception):
+    """Raised when no mods are found in an archive"""
     pass
 
 
@@ -160,7 +168,7 @@ def sim_mod_folder(sim_folder):
     return os.path.join(sim_folder, "Packages", "Community")
 
 
-def parse_mod(mod_folder, enabled):
+def parse_mod_manifest(mod_folder, enabled):
     """Builds the mod metadata as a dictionary. Parsed from the manifest.json"""
     mod_data = {"folder_name": os.path.basename(mod_folder)}
 
@@ -186,7 +194,7 @@ def get_enabled_mods(sim_folder):
     for folder in os.listdir(sim_mod_folder(sim_folder)):
         # parse each mod
         enabled_mods.append(
-            parse_mod(os.path.join(sim_mod_folder(sim_folder), folder), True)
+            parse_mod_manifest(os.path.join(sim_mod_folder(sim_folder), folder), True)
         )
 
     return enabled_mods
@@ -201,7 +209,7 @@ def get_disabled_mods():
 
     for folder in os.listdir(MOD_CACHE_FOLDER):
         # parse each mod
-        disabled_mods.append(parse_mod(os.path.join(MOD_CACHE_FOLDER, folder), False))
+        disabled_mods.append(parse_mod_manifest(os.path.join(MOD_CACHE_FOLDER, folder), False))
 
     return disabled_mods
 
