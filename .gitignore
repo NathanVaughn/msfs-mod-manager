@@ -5,6 +5,8 @@ build/*
 target/*
 dist/*
 __pycache__/*
+.venv/*
+pythonenv*/*
 
 *.pyc
 
