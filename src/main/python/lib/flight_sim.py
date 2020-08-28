@@ -3,6 +3,7 @@ import json
 import os
 import patoolib
 import shutil
+import stat
 
 BASE_FOLDER = os.path.abspath(os.path.join(os.getenv("APPDATA"), "MSFS Mod Manager"))
 TEMP_FOLDER = os.path.abspath(os.path.join(BASE_FOLDER, ".tmp"))
@@ -15,11 +16,45 @@ SIM_PATH_KEY = "sim_path"
 if not os.path.exists(BASE_FOLDER):
     os.makedirs(BASE_FOLDER)
 
+class AccessError(Exception):
+    pass
+
+class ExtractionError(Exception):
+    pass
+
+class NoManifestError(Exception):
+    pass
+
+class NoModsError(Exception):
+    pass
+
+def fix_permissions(folder):
+    """Recursively fixes the permissions of a folder so that it can be deleted"""
+    for root, dirs, _ in os.walk(folder):
+        for d in dirs:
+            os.chmod(os.path.join(root, d), stat.S_IWUSR)
+
+def delete_folder(folder, first=True):
+    """Deletes a folder if it exists"""
+
+    # check if it exists
+    if os.path.isdir(folder):
+        try:
+            # try to delete it
+            shutil.rmtree(folder)
+        except PermissionError:
+            # if there is a permission error
+            if not first:
+                # if not the first attempt, raise error
+                raise AccessError(folder)
+            else:
+                # otherwise, try to fix permissions and try again
+                fix_permissions(folder)
+                delete_folder(folder, first=False)
+
 def create_tmp_folder():
     """Deletes existing temp folder if it exists and creates a new one"""
-    if os.path.exists(TEMP_FOLDER):
-        shutil.rmtree(TEMP_FOLDER)
-
+    delete_folder(TEMP_FOLDER)
     os.makedirs(TEMP_FOLDER)
 
 
@@ -96,6 +131,9 @@ def parse_mod(mod_folder, enabled):
     """Builds the mod metadata as a dictionary. Parsed from the manifest.json"""
     mod_data = {"folder_name": os.path.basename(mod_folder)}
 
+    if not os.path.isfile(os.path.join(mod_folder, "manifest.json")):
+        raise NoManifestError(mod_folder)
+
     with open(os.path.join(mod_folder, "manifest.json"), "r") as f:
         data = json.load(f)
 
@@ -145,10 +183,11 @@ def unpack_archive(mod_archive):
 
     # extract the archive
     extracted_archive = os.path.join(TEMP_FOLDER, basefilename)
-    patoolib.extract_archive(mod_archive, outdir=extracted_archive)
-
-    return extracted_archive
-
+    try:
+        patoolib.extract_archive(mod_archive, outdir=extracted_archive)
+        return extracted_archive
+    except patoolib.util.PatoolError:
+        raise ExtractionError(mod_archive)
 
 def determine_mod_folders(folder):
     """Walks a directory to find the folder(s) with a manifest.json file in them"""
@@ -160,6 +199,9 @@ def determine_mod_folders(folder):
             if os.path.isfile(os.path.join(root, d, "manifest.json")):
                 mod_folders.append(os.path.join(root, d))
 
+    if not mod_folders:
+        raise NoModsError(folder)
+
     return mod_folders
 
 
@@ -170,22 +212,25 @@ def install_mod(sim_folder, mod_archive):
     # determine the mods inside the extracted archive
     mod_folders = determine_mod_folders(extracted_archive)
 
+    installed_mods = []
+
     for mod_folder in mod_folders:
         # get the base folder name
         base_mod_folder = os.path.basename(mod_folder)
-        dest_folder = os.path.join(MOD_CACHE_FOLDER, base_mod_folder)
+        dest_folder = os.path.join(sim_mod_folder(sim_folder), base_mod_folder)
 
-        # delete mod cache if it already exists
-        if os.path.exists(dest_folder):
-            shutil.rmtree(dest_folder)
+        # delete mod install if it already exists
+        delete_folder(dest_folder)
 
-        # copy mod to mod cache
+        # copy mod to sim
         shutil.copytree(mod_folder, dest_folder)
         # remove tmp extracted folder
-        shutil.rmtree(mod_folder)
+        delete_folder(mod_folder)
 
-        # enable the mod
-        enable_mod(sim_folder, base_mod_folder)
+        installed_mods.append(base_mod_folder)
+
+    # return installed mods list
+    return installed_mods
 
 
 def enable_mod(sim_folder, mod_folder):
@@ -194,13 +239,12 @@ def enable_mod(sim_folder, mod_folder):
     dest_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
 
     # delete mod install if it already exists
-    if os.path.exists(dest_folder):
-        shutil.rmtree(dest_folder)
+    delete_folder(dest_folder)
 
     # copy mod to sim
     shutil.copytree(src_folder, dest_folder)
     # remove from mod cache
-    shutil.rmtree(src_folder)
+    delete_folder(src_folder)
 
 
 def disable_mod(sim_folder, mod_folder):
@@ -211,10 +255,9 @@ def disable_mod(sim_folder, mod_folder):
     dest_folder = os.path.join(MOD_CACHE_FOLDER, mod_folder)
 
     # delete mod cache if it already exists
-    if os.path.exists(dest_folder):
-        shutil.rmtree(dest_folder)
+    delete_folder(dest_folder)
 
     # copy mod to mod cache
     shutil.copytree(src_folder, dest_folder)
     # remove from sim
-    shutil.rmtree(src_folder)
+    delete_folder(src_folder)

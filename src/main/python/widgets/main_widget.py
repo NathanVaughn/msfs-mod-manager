@@ -1,6 +1,5 @@
 import os
 import sys
-import patoolib
 
 import PySide2.QtWidgets as QtWidgets
 
@@ -125,11 +124,13 @@ class main_widget(QtWidgets.QWidget):
             filter="Archives (*.zip *.rar *.tar *.bz2 *.7z)",
         )[0]
 
+        succeeded = []
+
         # for each archive, try to install it
         for mod_archive in mod_archives:
             try:
-                flight_sim.install_mod(self.sim_path, mod_archive)
-            except patoolib.util.PatoolError:
+                succeeded.extend(flight_sim.install_mod(self.sim_path, mod_archive))
+            except flight_sim.ExtractionError as e:
                 QtWidgets.QMessageBox().warning(
                     self,
                     "Error",
@@ -137,7 +138,7 @@ class main_widget(QtWidgets.QWidget):
                         mod_archive
                     ),
                 )
-            except IOError:
+            except flight_sim.NoManifestError as e:
                 QtWidgets.QMessageBox().warning(
                     self,
                     "Error",
@@ -145,14 +146,23 @@ class main_widget(QtWidgets.QWidget):
                         mod_archive
                     ),
                 )
+            except flight_sim.AccessError as e:
+                QtWidgets.QMessageBox().warning(
+                    self,
+                    "Error",
+                    "Unable to install mod {} due to a permissions issue (unable to delete file/folder {}). Relaunch the program as an administrator.".format(
+                        mod_archive, e
+                    ),
+                )
             except Exception as e:
                 QtWidgets.QMessageBox().warning(
                     self, "Error", "Something went terribly wrong.\n{}".format(e)
                 )
 
-        QtWidgets.QMessageBox().information(
-            self, "Success", "Mods installed!",
-        )
+        if succeeded:
+            QtWidgets.QMessageBox().information(
+                self, "Success", "{} mod(s) installed!\n{}".format(len(succeeded), "- \n".join(succeeded)),
+            )
 
         # refresh the data
         self.refresh()
@@ -209,10 +219,19 @@ class main_widget(QtWidgets.QWidget):
         """Refreshes all mod data"""
         self.refresh_button.setEnabled(False)
 
-        enabled_mods = flight_sim.get_enabled_mods(self.sim_path)
-        disabled_mods = flight_sim.get_disabled_mods()
+        try:
+            enabled_mods = flight_sim.get_enabled_mods(self.sim_path)
+            disabled_mods = flight_sim.get_disabled_mods()
 
-        self.main_table.set_data(enabled_mods + disabled_mods)
+            self.main_table.set_data(enabled_mods + disabled_mods)
+        except flight_sim.NoManifestError as e:
+            QtWidgets.QMessageBox().warning(
+                self,
+                "Error",
+                "Unable to parse mod {}. This is likely due to it missing a manifest.json file.".format(
+                    e
+                ),
+            )
 
         self.refresh_button.setEnabled(True)
 
