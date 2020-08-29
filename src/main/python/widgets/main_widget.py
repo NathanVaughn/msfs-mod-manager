@@ -180,10 +180,10 @@ class main_widget(QtWidgets.QWidget):
                         mod_archive
                     ),
                 )
-            #except Exception as e:
-            #    QtWidgets.QMessageBox().warning(
-            #        self, "Error", "Something went terribly wrong.\n{}".format(e)
-            #    )
+            except Exception as e:
+                QtWidgets.QMessageBox().warning(
+                    self, "Error", "Something went terribly wrong.\n{}".format(e)
+                )
 
         progress.close()
 
@@ -205,6 +205,9 @@ class main_widget(QtWidgets.QWidget):
         """Enables selected mods"""
         self.enable_button.setEnabled(False)
 
+        progress = progress_widget(self, self.appctxt)
+        progress.set_infinite()
+
         for _id in self.get_selected_rows():
             # first, get the mod name and enabled status
             (mod_folder, enabled) = self.main_table.get_basic_info(_id)
@@ -216,17 +219,26 @@ class main_widget(QtWidgets.QWidget):
                     self, "Warning", "Already enabled mod cannot be enabled."
                 )
             else:
-                # actually enable it
-                flight_sim.enable_mod(self.sim_path, mod_folder)
+                # setup enabler thread
+                enabler = flight_sim.enable_mod_thread(self.sim_path, mod_folder)
+                enabler.activity_update.connect(progress.set_activity)
+
+                # start the thread
+                with thread_wait(enabler.finished):
+                    enabler.start()
 
         # refresh the data
         self.refresh()
 
+        progress.close()
         self.enable_button.setEnabled(True)
 
     def disable(self):
         """Disables selected mods"""
         self.disable_button.setEnabled(False)
+
+        progress = progress_widget(self, self.appctxt)
+        progress.set_infinite()
 
         for _id in self.get_selected_rows():
             # first, get the mod name and disable status
@@ -239,12 +251,18 @@ class main_widget(QtWidgets.QWidget):
                     self, "Warning", "Already disabled mod cannot be disabled."
                 )
             else:
-                # actually disable it
-                flight_sim.disable_mod(self.sim_path, mod_folder)
+                # setup disabler thread
+                disabler = flight_sim.disable_mod_thread(self.sim_path, mod_folder)
+                disabler.activity_update.connect(progress.set_activity)
+
+                # start the thread
+                with thread_wait(disabler.finished):
+                    disabler.start()
 
         # refresh the data
         self.refresh()
 
+        progress.close()
         self.disable_button.setEnabled(True)
 
     def refresh(self):

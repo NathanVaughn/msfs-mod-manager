@@ -68,6 +68,42 @@ class install_mod_thread(QtCore.QThread):
         self.finished.emit(output)
 
 
+class enable_mod_thread(QtCore.QThread):
+    """Setup a thread to enable mods with to not block the main thread"""
+
+    activity_update = QtCore.Signal(object)
+    finished = QtCore.Signal(object)
+
+    def __init__(self, sim_path, mod_folder):
+        QtCore.QThread.__init__(self)
+        self.sim_path = sim_path
+        self.mod_archive = mod_folder
+
+    def run(self):
+        output = enable_mod(
+            self.sim_path, self.mod_archive, update_func=self.activity_update.emit
+        )
+        self.finished.emit(output)
+
+
+class disable_mod_thread(QtCore.QThread):
+    """Setup a thread to disable mods with to not block the main thread"""
+
+    activity_update = QtCore.Signal(object)
+    finished = QtCore.Signal(object)
+
+    def __init__(self, sim_path, mod_folder):
+        QtCore.QThread.__init__(self)
+        self.sim_path = sim_path
+        self.mod_archive = mod_folder
+
+    def run(self):
+        output = disable_mod(
+            self.sim_path, self.mod_archive, update_func=self.activity_update.emit
+        )
+        self.finished.emit(output)
+
+
 def fix_permissions(folder, update_func=None):
     """Recursively fixes the permissions of a folder so that it can be deleted"""
     if update_func:
@@ -108,6 +144,13 @@ def copy_folder(src, dest, update_func=None):
         if update_func:
             update_func("Copying {} to {}".format(src, dest))
         shutil.copytree(src, dest)
+
+
+def move_folder(src, dest, update_func=None):
+    """Copies a folder and deletes the original"""
+    # check if it exists
+    copy_folder(src, dest, update_func=update_func)
+    delete_folder(src, update_func=update_func)
 
 
 def create_tmp_folder(update_func=None):
@@ -257,7 +300,12 @@ def extract_archive(mod_archive, update_func=None):
         if update_func:
             update_func("Extracting archive {}".format(mod_archive))
 
-        patoolib.extract_archive(mod_archive, outdir=extracted_archive)
+        patoolib.extract_archive(
+            mod_archive,
+            outdir=extracted_archive,
+            verbosity=-1,
+        )
+
         return extracted_archive
     except patoolib.util.PatoolError:
         raise ExtractionError(mod_archive)
@@ -297,10 +345,8 @@ def install_mod(sim_folder, mod_archive, update_func=None):
         base_mod_folder = os.path.basename(mod_folder)
         dest_folder = os.path.join(sim_mod_folder(sim_folder), base_mod_folder)
 
-        # copy mod to sim
-        copy_folder(mod_folder, dest_folder, update_func=update_func)
-        # remove tmp extracted folder
-        delete_folder(mod_folder, update_func=update_func)
+        # move mod to sim
+        move_folder(mod_folder, dest_folder, update_func=update_func)
 
         installed_mods.append(base_mod_folder)
 
@@ -308,25 +354,21 @@ def install_mod(sim_folder, mod_archive, update_func=None):
     return installed_mods
 
 
-def enable_mod(sim_folder, mod_folder):
+def enable_mod(sim_folder, mod_folder, update_func=None):
     """Copies mod folder into flight sim install"""
     src_folder = os.path.join(MOD_CACHE_FOLDER, mod_folder)
     dest_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
 
-    # copy mod to sim
-    copy_folder(src_folder, dest_folder)
-    # remove from mod cache
-    delete_folder(src_folder)
+    # move mod to sim
+    move_folder(src_folder, dest_folder, update_func=update_func)
 
 
-def disable_mod(sim_folder, mod_folder):
+def disable_mod(sim_folder, mod_folder, update_func=None):
     """Copies mod folder into mod cache"""
     create_mod_cache_folder()
 
     src_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
     dest_folder = os.path.join(MOD_CACHE_FOLDER, mod_folder)
 
-    # copy mod to mod cache
-    copy_folder(src_folder, dest_folder)
-    # remove from sim
-    delete_folder(src_folder)
+    # move mod to mod cache
+    move_folder(src_folder, dest_folder, update_func=update_func)
