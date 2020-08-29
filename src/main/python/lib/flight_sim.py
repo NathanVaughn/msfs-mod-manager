@@ -109,9 +109,11 @@ def fix_permissions(folder, update_func=None):
     if update_func:
         update_func("Fixing permissions for {}".format(folder))
 
-    for root, dirs, _ in os.walk(folder):
+    for root, dirs, files in os.walk(folder):
         for d in dirs:
             os.chmod(os.path.join(root, d), stat.S_IWUSR)
+        for f in files:
+            os.chmod(os.path.join(root, f), stat.S_IWUSR)
 
 
 def delete_folder(folder, first=True, update_func=None):
