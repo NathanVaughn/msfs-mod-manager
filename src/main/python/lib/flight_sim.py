@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import stat
+import pathlib
 
 import patoolib
 import PySide2.QtCore as QtCore
@@ -237,8 +238,20 @@ def save_sim_path(sim_folder):
 
 
 def sim_mod_folder(sim_folder):
-    """Returns the path to the community packages folder inside Flight Simulator"""
-    return os.path.join(sim_folder, "Packages", "Community")
+    """Returns the path to the community packages folder inside Flight Simulator.
+    Tries to resolve symlinks in every step of the path"""
+    if os.path.islink(sim_folder):
+        sim_folder = os.readlink(sim_folder)
+
+    step_2 = os.path.join(sim_folder, "Packages")
+    if os.path.islink(step_2):
+        step_2 = os.readlink(step_2)
+
+    step_3 = os.path.join(step_2, "Community")
+    if os.path.islink(step_3):
+        step_3 = os.readlink(step_3)
+
+    return step_3
 
 
 def parse_mod_manifest(mod_folder, enabled):
