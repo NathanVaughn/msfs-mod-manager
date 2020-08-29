@@ -116,6 +116,15 @@ def fix_permissions(folder, update_func=None):
             os.chmod(os.path.join(root, f), stat.S_IWUSR)
 
 
+def listdir_dirs(folder):
+    """Returns a list of directories inside of a directory"""
+    dirs = []
+    for item in os.listdir(folder):
+        if os.path.isdir(os.path.join(folder, item)):
+            dirs.append(item)
+
+    return dirs
+
 def delete_folder(folder, first=True, update_func=None):
     """Deletes a folder if it exists"""
     # check if it exists
@@ -326,7 +335,7 @@ def get_enabled_mods(sim_folder):
     """Returns data for the enabled mods"""
     enabled_mods = []
 
-    for folder in os.listdir(sim_mod_folder(sim_folder)):
+    for folder in listdir_dirs(sim_mod_folder(sim_folder)):
         # parse each mod
         enabled_mods.append(
             parse_mod_manifest(os.path.join(sim_mod_folder(sim_folder), folder), True)
@@ -342,7 +351,7 @@ def get_disabled_mods():
 
     disabled_mods = []
 
-    for folder in os.listdir(MOD_CACHE_FOLDER):
+    for folder in listdir_dirs(MOD_CACHE_FOLDER):
         # parse each mod
         disabled_mods.append(
             parse_mod_manifest(os.path.join(MOD_CACHE_FOLDER, folder), False)
