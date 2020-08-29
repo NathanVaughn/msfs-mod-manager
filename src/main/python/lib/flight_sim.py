@@ -3,7 +3,6 @@ import json
 import os
 import shutil
 import stat
-import pathlib
 
 import patoolib
 import PySide2.QtCore as QtCore
