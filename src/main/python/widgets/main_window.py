@@ -4,6 +4,7 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from widgets.main_widget import main_widget
+from lib.get_version import get_version
 
 
 class main_window(QtWidgets.QMainWindow):
@@ -14,7 +15,7 @@ class main_window(QtWidgets.QMainWindow):
 
     def build(self):
         """Build widget"""
-        self.setWindowTitle("MSFS Mod Manager")
+        self.setWindowTitle("MSFS Mod Manager - {}".format(get_version(self.appctxt)))
         self.setWindowIcon(QtGui.QIcon(self.appctxt.get_resource(os.path.join("icons", "icon.png"))))
 
         self.main_widget = main_widget(self, self.appctxt)

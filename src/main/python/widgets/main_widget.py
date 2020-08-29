@@ -30,8 +30,8 @@ class main_widget(QtWidgets.QWidget):
         self.disable_button = QtWidgets.QPushButton("Disable", self)
         self.layout.addWidget(self.disable_button, 0, 2)
 
-        #self.info_button = QtWidgets.QPushButton("Info", self)
-        #self.layout.addWidget(self.info_button, 0, 8)
+        # self.info_button = QtWidgets.QPushButton("Info", self)
+        # self.layout.addWidget(self.info_button, 0, 8)
 
         self.refresh_button = QtWidgets.QPushButton("Refresh", self)
         self.layout.addWidget(self.refresh_button, 0, 9)
@@ -45,7 +45,7 @@ class main_widget(QtWidgets.QWidget):
         self.enable_button.clicked.connect(self.enable)
         self.disable_button.clicked.connect(self.disable)
         self.refresh_button.clicked.connect(self.refresh)
-        #self.info_button.clicked.connect(self.info)
+        # self.info_button.clicked.connect(self.info)
         self.main_table.doubleClicked.connect(self.info)
 
     def about(self):
@@ -71,13 +71,14 @@ class main_widget(QtWidgets.QWidget):
             if not self.sim_path.strip():
                 sys.exit()
 
-            elif not flight_sim.is_sim_folder(self.sim_path):
+            elif not flight_sim.is_sim_packages_folder(self.sim_path):
                 # show error
                 QtWidgets.QMessageBox().warning(
                     self,
                     "Error",
                     "Invalid Microsoft Flight Simulator path."
-                    + " Please select the root folder manually (which contains FlightSimulator.CFG)",
+                    + " Please select the Packages folder manually"
+                    + " (which contains the Official and Community folders).",
                 )
 
                 # send them through again
@@ -92,7 +93,8 @@ class main_widget(QtWidgets.QWidget):
                 self,
                 "Error",
                 "Microsoft Flight Simulator path could not be found."
-                + " Please select the root folder manually (which contains FlightSimulator.CFG)",
+                + " Please select the Packages folder manually"
+                + " (which contains the Official and Community folders).",
             )
 
             user_selection()
@@ -135,6 +137,7 @@ class main_widget(QtWidgets.QWidget):
         # for each archive, try to install it
         for mod_archive in mod_archives:
             try:
+
                 def finish(result):
                     # this function is required as the results will be a list,
                     # which is not a hashable type
@@ -176,9 +179,7 @@ class main_widget(QtWidgets.QWidget):
                 QtWidgets.QMessageBox().warning(
                     self,
                     "Error",
-                    "Unable to find any mods inside {}".format(
-                        mod_archive
-                    ),
+                    "Unable to find any mods inside {}".format(mod_archive),
                 )
             except Exception as e:
                 QtWidgets.QMessageBox().warning(
@@ -297,9 +298,9 @@ class main_widget(QtWidgets.QWidget):
         disable_action.triggered.connect(self.disable)
         self.right_click_menu.addAction(disable_action)
 
-        #info_action = QtWidgets.QAction("Info", self)
-        #info_action.triggered.connect(self.info)
-        #self.right_click_menu.addAction(info_action)
+        # info_action = QtWidgets.QAction("Info", self)
+        # info_action.triggered.connect(self.info)
+        # self.right_click_menu.addAction(info_action)
 
         # popup at cursor position
         self.right_click_menu.popup(self.mapToGlobal(event.pos()))

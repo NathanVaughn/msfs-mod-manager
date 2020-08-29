@@ -16,12 +16,14 @@ No rooting around inside the `AppData` folder.
 ![Sim Directory Detection](screenshots/auto-detect.png)
 
 If the program can't automatically find the installation folder (you put it somewhere
-non-standard), you can manually select the location that contains `FlightSimulator.CFG`.
+non-standard), you can manually select the location that contains The `Community` and
+`Official` folders.
 
 ![Manual Selection](screenshots/manual-select.png)
 
-This is normally `%USER%\AppData\Roaming\Microsoft Flight Simulator` or
-`%USER%\AppData\Local\Packages\Microsoft.FlightSimulator_8wekyb3d8bbwe\LocalCache`
+This is normally `%USER%\AppData\Roaming\Microsoft Flight Simulator\Packages` or
+`%USER%\AppData\Local\Packages\Microsoft.FlightSimulator_8wekyb3d8bbwe\LocalCache\Packages`
+unless you manually selected a different location.
 
 ### Super Easy Mod Installs
 
@@ -33,6 +35,8 @@ inside the correct folder automatically.
 ### Enable and Disable Mods
 
 Enable and disable mods on the fly without needing to re-download them.
+
+![Enable Demo](screenshots/enable.gif)
 
 ### More To Come
 

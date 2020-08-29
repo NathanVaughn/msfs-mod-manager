@@ -167,14 +167,53 @@ def create_mod_cache_folder():
         os.makedirs(MOD_CACHE_FOLDER)
 
 
+def parse_user_cfg(sim_folder=None, filename=None):
+    """Parses the given UserCfg.opt file to find the installed packages path
+    Returns the path as a string"""
+
+    if sim_folder:
+        filename = os.path.join(sim_folder, "UserCfg.opt")
+
+    installed_packages_path = ""
+
+    with open(filename, "r") as fp:
+        for line in fp:
+            if line.startswith("InstalledPackagesPath"):
+                installed_packages_path = line
+
+    # splits the line once, and takes the second instance
+    installed_packages_path = installed_packages_path.split(" ", 1)[1].strip()
+    # normalize the string
+    installed_packages_path = installed_packages_path.strip('"').strip("'")
+    # evaluate the path
+    installed_packages_path = os.path.realpath(installed_packages_path)
+
+    return installed_packages_path
+
+
 def is_sim_folder(folder):
     """Returns True/False, whether FlightSimulator.CFG exists inside the
     given directory. Not a perfect tests, but a solid guess."""
-    return os.path.isfile(os.path.join(folder, "FlightSimulator.CFG"))
+    try:
+        return os.path.isfile(os.path.join(folder, "FlightSimulator.CFG"))
+    except Exception as e:
+        return False
+
+
+def is_sim_packages_folder(folder):
+    """Returns whether the given folder is the FS2020 packages folder.
+    Not a perfect test, but a decent guess."""
+    # test if the folder above it contains both 'Community' and 'Official'
+    try:
+        packages_folders = os.listdir(folder)
+        return "Official" in packages_folders and "Community" in packages_folders
+    except Exception as e:
+        return False
 
 
 def find_sim_path():
-    """Attempts to automatically locate the install location of Flight Simulator.
+    """Attempts to automatically locate the install
+    location of Flight Simulator Packages.
     Returns None if it fails. Otherwise, returns absolute sim folder path.
     Also returns if reading from config file was successful."""
 
@@ -185,13 +224,15 @@ def find_sim_path():
     # this is tiered as such, so that one missing piece doesn't cause an error
     if SECTION_KEY in config:
         if "sim_path" in config[SECTION_KEY]:
-            if is_sim_folder(config[SECTION_KEY][SIM_PATH_KEY]):
+            if is_sim_packages_folder(config[SECTION_KEY][SIM_PATH_KEY]):
                 return (config[SECTION_KEY][SIM_PATH_KEY], True)
 
     # steam detection
     steam_folder = os.path.join(os.getenv("APPDATA"), "Microsoft Flight Simulator")
     if is_sim_folder(steam_folder):
-        return (steam_folder, False)
+        steam_packages_folder = os.path.join(parse_user_cfg(sim_folder=steam_folder))
+        if is_sim_packages_folder(steam_packages_folder):
+            return (steam_packages_folder, False)
 
     # ms store detection
     ms_store_folder = os.path.join(
@@ -199,9 +240,12 @@ def find_sim_path():
         "Packages",
         "Microsoft.FlightSimulator_8wekyb3d8bbwe",
         "LocalCache",
+        "Packages",
     )
     if is_sim_folder(ms_store_folder):
-        return (ms_store_folder, False)
+        ms_store_packages_folder = os.path.join(parse_user_cfg(sim_folder=ms_store_folder))
+        if is_sim_packages_folder(ms_store_packages_folder):
+            return (ms_store_folder, False)
 
     # last ditch steam detection #1
     steam_folder = os.path.join(
@@ -210,16 +254,26 @@ def find_sim_path():
         "steamapps",
         "common",
         "MicrosoftFlightSimulator",
+        "Packages",
     )
     if is_sim_folder(steam_folder):
-        return (steam_folder, False)
+        steam_packages_folder = os.path.join(parse_user_cfg(sim_folder=steam_folder))
+        if is_sim_packages_folder(steam_packages_folder):
+            return (steam_packages_folder, False)
 
     # last ditch steam detection #2
     steam_folder = os.path.join(
-        os.getenv("PROGRAMFILES(x86)"), "Steam", "steamapps", "common", "Chucky"
+        os.getenv("PROGRAMFILES(x86)"),
+        "Steam",
+        "steamapps",
+        "common",
+        "Chucky",
+        "Packages",
     )
     if is_sim_folder(steam_folder):
-        return (steam_folder, False)
+        steam_packages_folder = os.path.join(parse_user_cfg(sim_folder=steam_folder))
+        if is_sim_packages_folder(steam_packages_folder):
+            return (steam_packages_folder, False)
 
     # fail
     return (None, False)
@@ -242,15 +296,11 @@ def sim_mod_folder(sim_folder):
     if os.path.islink(sim_folder):
         sim_folder = os.readlink(sim_folder)
 
-    step_2 = os.path.join(sim_folder, "Packages")
+    step_2 = os.path.join(sim_folder, "Community")
     if os.path.islink(step_2):
         step_2 = os.readlink(step_2)
 
-    step_3 = os.path.join(step_2, "Community")
-    if os.path.islink(step_3):
-        step_3 = os.readlink(step_3)
-
-    return step_3
+    return step_2
 
 
 def parse_mod_manifest(mod_folder, enabled):
