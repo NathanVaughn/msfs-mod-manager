@@ -28,12 +28,16 @@ def check_version(appctxt):
     # this is tiered as such, so that one missing piece doesn't cause an error
     if SECTION_KEY in config:
         if LAST_VER_CHECK_KEY in config[SECTION_KEY]:
-            # check if last successful version check was less than a day ago.
-            # If so, skip
-            if datetime.datetime.strptime(
-                config[SECTION_KEY][LAST_VER_CHECK_KEY], time_format
-            ) > (datetime.datetime.now() - datetime.timedelta(days=1)):
-                return False
+            try:
+                # check if last successful version check was less than a day ago.
+                # If so, skip
+                last_check = datetime.datetime.strptime(
+                    config[SECTION_KEY][LAST_VER_CHECK_KEY], time_format
+                )
+                if last_check > (datetime.datetime.now() - datetime.timedelta(days=1)):
+                    return False
+            except ValueError:
+                pass
 
     # open the remote url
     url = "https://api.github.com/repos/NathanVaughn/msfs-mod-manager/releases/latest"
