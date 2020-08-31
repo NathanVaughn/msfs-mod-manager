@@ -68,6 +68,28 @@ class install_mod_thread(QtCore.QThread):
         self.finished.emit(output)
 
 
+class uninstall_mod_thread(QtCore.QThread):
+    """Setup a thread to uninstall mods with to not block the main thread"""
+
+    activity_update = QtCore.Signal(object)
+    finished = QtCore.Signal(object)
+
+    def __init__(self, sim_path, mod_folder, enabled):
+        QtCore.QThread.__init__(self)
+        self.sim_path = sim_path
+        self.mod_folder = mod_folder
+        self.enabled = enabled
+
+    def run(self):
+        output = uninstall_mod(
+            self.sim_path,
+            self.mod_folder,
+            self.enabled,
+            update_func=self.activity_update.emit,
+        )
+        self.finished.emit(output)
+
+
 class enable_mod_thread(QtCore.QThread):
     """Setup a thread to enable mods with to not block the main thread"""
 
@@ -124,6 +146,7 @@ def listdir_dirs(folder):
             dirs.append(item)
 
     return dirs
+
 
 def delete_folder(folder, first=True, update_func=None):
     """Deletes a folder if it exists"""
@@ -252,7 +275,9 @@ def find_sim_path():
         "Packages",
     )
     if is_sim_folder(ms_store_folder):
-        ms_store_packages_folder = os.path.join(parse_user_cfg(sim_folder=ms_store_folder))
+        ms_store_packages_folder = os.path.join(
+            parse_user_cfg(sim_folder=ms_store_folder)
+        )
         if is_sim_packages_folder(ms_store_packages_folder):
             return (ms_store_folder, False)
 
@@ -425,6 +450,17 @@ def install_mod(sim_folder, mod_archive, update_func=None):
 
     # return installed mods list
     return installed_mods
+
+
+def uninstall_mod(sim_folder, mod_folder, enabled, update_func=None):
+    """Uninstalls a mod"""
+    if enabled:
+        src_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
+    else:
+        src_folder = os.path.join(MOD_CACHE_FOLDER, mod_folder)
+
+    # delete folder
+    delete_folder(src_folder, update_func=update_func)
 
 
 def enable_mod(sim_folder, mod_folder, update_func=None):

@@ -24,11 +24,14 @@ class main_widget(QtWidgets.QWidget):
         self.install_button = QtWidgets.QPushButton("Install", self)
         self.layout.addWidget(self.install_button, 0, 0)
 
+        self.uninstall_button = QtWidgets.QPushButton("Uninstall", self)
+        self.layout.addWidget(self.uninstall_button, 0, 1)
+
         self.enable_button = QtWidgets.QPushButton("Enable", self)
-        self.layout.addWidget(self.enable_button, 0, 1)
+        self.layout.addWidget(self.enable_button, 0, 4)
 
         self.disable_button = QtWidgets.QPushButton("Disable", self)
-        self.layout.addWidget(self.disable_button, 0, 2)
+        self.layout.addWidget(self.disable_button, 0, 5)
 
         # self.info_button = QtWidgets.QPushButton("Info", self)
         # self.layout.addWidget(self.info_button, 0, 8)
@@ -42,6 +45,7 @@ class main_widget(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
         self.install_button.clicked.connect(self.install)
+        self.uninstall_button.clicked.connect(self.uninstall)
         self.enable_button.clicked.connect(self.enable)
         self.disable_button.clicked.connect(self.disable)
         self.refresh_button.clicked.connect(self.refresh)
@@ -196,6 +200,49 @@ class main_widget(QtWidgets.QWidget):
                     len(succeeded), "- \n".join(succeeded)
                 ),
             )
+
+        # refresh the data
+        self.refresh()
+
+        self.install_button.setEnabled(True)
+
+    def uninstall(self):
+        """Uninstalls selected mods"""
+        self.uninstall_button.setEnabled(False)
+
+        selected = self.get_selected_rows()
+
+        if selected:
+            # sanity check
+            result = QtWidgets.QMessageBox().information(
+                self,
+                "Confirmation",
+                "This will permamentaly delete {} mod(s). Are you sure you want to continue?".format(
+                    len(selected)
+                ),
+                QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel,
+                QtWidgets.QMessageBox.Cancel,
+            )
+            if result == QtWidgets.QMessageBox.Cancel:
+                self.uninstall_button.setEnabled(True)
+                return
+
+        progress = progress_widget(self, self.appctxt)
+        progress.set_infinite()
+
+        for _id in self.get_selected_rows():
+            # first, get the mod name and enabled status
+            (mod_folder, enabled) = self.main_table.get_basic_info(_id)
+
+            # setup uninstaller thread
+            uninstaller = flight_sim.uninstall_mod_thread(
+                self.sim_path, mod_folder, enabled
+            )
+            uninstaller.activity_update.connect(progress.set_activity)
+
+            # start the thread
+            with thread_wait(uninstaller.finished):
+                uninstaller.start()
 
         # refresh the data
         self.refresh()
