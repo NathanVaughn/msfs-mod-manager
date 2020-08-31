@@ -36,6 +36,10 @@ class main_window(QtWidgets.QMainWindow):
         menu_action.triggered.connect(self.main_widget.install)
         edit_menu.addAction(menu_action)
 
+        menu_action = QtWidgets.QAction("Uninstall Mods", self)
+        menu_action.triggered.connect(self.main_widget.uninstall)
+        edit_menu.addAction(menu_action)
+
         menu_action = QtWidgets.QAction("Enable Selected Mods", self)
         menu_action.triggered.connect(self.main_widget.enable)
         edit_menu.addAction(menu_action)

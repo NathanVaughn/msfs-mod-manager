@@ -51,8 +51,7 @@ class main_widget(QtWidgets.QWidget):
         self.disable_button.clicked.connect(self.disable)
         self.refresh_button.clicked.connect(self.refresh)
         # self.info_button.clicked.connect(self.info)
-        self.main_table.doubleClicked.connect(self.info)
-
+        # self.main_table.doubleClicked.connect(self.info)
 
 
     def get_selected_rows(self):
@@ -354,6 +353,10 @@ class main_widget(QtWidgets.QWidget):
     def contextMenuEvent(self, event):
         """Override default context menu event to provide right-click menu"""
         self.right_click_menu = QtWidgets.QMenu(self)
+
+        uninstall_action = QtWidgets.QAction("Uninstall", self)
+        uninstall_action.triggered.connect(self.uninstall)
+        self.right_click_menu.addAction(uninstall_action)
 
         enable_action = QtWidgets.QAction("Enable", self)
         enable_action.triggered.connect(self.enable)

@@ -30,6 +30,7 @@ class main_table(QtWidgets.QTableWidget):
         self.setAlternatingRowColors(True)
         # set the correct size adjust policy to get the proper size hint
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 
     def set_data(self, data):
         """Puts mod data into table"""
