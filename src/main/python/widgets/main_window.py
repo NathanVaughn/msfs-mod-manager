@@ -4,7 +4,7 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from widgets.main_widget import main_widget
-from lib.get_version import get_version
+from lib.version import get_version
 
 
 class main_window(QtWidgets.QMainWindow):

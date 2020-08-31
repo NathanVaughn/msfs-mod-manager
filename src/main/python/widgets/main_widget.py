@@ -1,13 +1,14 @@
 import os
 import sys
+import webbrowser
 
 import PySide2.QtWidgets as QtWidgets
 
-from lib import flight_sim
+from lib import flight_sim, version
+from lib.thread_wait import thread_wait
 from widgets.about_widget import about_widget
 from widgets.main_table import main_table
 from widgets.progress_widget import progress_widget
-from lib.thread_wait import thread_wait
 
 
 class main_widget(QtWidgets.QWidget):
@@ -52,9 +53,7 @@ class main_widget(QtWidgets.QWidget):
         # self.info_button.clicked.connect(self.info)
         self.main_table.doubleClicked.connect(self.info)
 
-    def about(self):
-        """Launch the about widget"""
-        about_widget(self, self.appctxt).exec_()
+
 
     def get_selected_rows(self):
         """Returns a list of row indexes that are currently selected"""
@@ -114,6 +113,25 @@ class main_widget(QtWidgets.QWidget):
                     self.sim_path
                 ),
             )
+
+    def check_version(self):
+        return_url = version.check_version(self.appctxt)
+
+        if return_url:
+            result = QtWidgets.QMessageBox().information(
+                self,
+                "Confirmation",
+                "A new version is available. Would you like to go to GitHub to download it?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.Yes,
+            )
+            if result == QtWidgets.QMessageBox.Yes:
+                webbrowser.open(return_url)
+
+
+    def about(self):
+        """Launch the about widget"""
+        about_widget(self, self.appctxt).exec_()
 
     def info(self):
         """Open dialog to view mod info"""
@@ -220,10 +238,10 @@ class main_widget(QtWidgets.QWidget):
                 "This will permamentaly delete {} mod(s). Are you sure you want to continue?".format(
                     len(selected)
                 ),
-                QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel,
-                QtWidgets.QMessageBox.Cancel,
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.No,
             )
-            if result == QtWidgets.QMessageBox.Cancel:
+            if result == QtWidgets.QMessageBox.No:
                 self.uninstall_button.setEnabled(True)
                 return
 

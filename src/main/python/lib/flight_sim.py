@@ -14,6 +14,7 @@ MOD_CACHE_FOLDER = os.path.abspath(os.path.join(BASE_FOLDER, "modCache"))
 CONFIG_FILE = os.path.abspath(os.path.join(BASE_FOLDER, "config.ini"))
 SECTION_KEY = "settings"
 SIM_PATH_KEY = "sim_path"
+LAST_VER_CHECK_KEY = "last_version_check"
 
 if not os.path.exists(BASE_FOLDER):
     os.makedirs(BASE_FOLDER)
@@ -255,7 +256,7 @@ def find_sim_path():
 
     # this is tiered as such, so that one missing piece doesn't cause an error
     if SECTION_KEY in config:
-        if "sim_path" in config[SECTION_KEY]:
+        if SIM_PATH_KEY in config[SECTION_KEY]:
             if is_sim_packages_folder(config[SECTION_KEY][SIM_PATH_KEY]):
                 return (config[SECTION_KEY][SIM_PATH_KEY], True)
 

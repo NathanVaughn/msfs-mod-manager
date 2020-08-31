@@ -17,6 +17,7 @@ if __name__ == "__main__":
 
     # load data
     main_window.main_widget.find_sim()
+    main_window.main_widget.check_version()
     main_window.main_widget.refresh()
 
     # resize and show
