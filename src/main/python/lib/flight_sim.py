@@ -317,9 +317,31 @@ def sim_mod_folder(sim_folder):
 
     return step_2
 
+def get_mod_folder(sim_folder, folder, enabled):
+    """Returns path to mod folder given folder name and enabled status"""
+    if enabled:
+        mod_folder= os.path.join(sim_mod_folder(sim_folder), folder)
+    else:
+        mod_folder = os.path.join(MOD_CACHE_FOLDER, folder)
 
-def parse_mod_manifest(mod_folder, enabled):
+    return mod_folder
+
+def parse_mod_layout(sim_folder, folder, enabled):
+    """Builds the mod files info as a dictionary. Parsed from the layout.json"""
+    mod_folder = get_mod_folder(sim_folder, folder, enabled)
+
+    if not os.path.isfile(os.path.join(mod_folder, "layout.json")):
+        raise NoLayoutError(mod_folder)
+
+    with open(os.path.join(mod_folder, "layout.json"), "r") as f:
+        data = json.load(f)
+
+    return data["content"]
+
+def parse_mod_manifest(sim_folder, folder, enabled):
     """Builds the mod metadata as a dictionary. Parsed from the manifest.json"""
+    mod_folder = get_mod_folder(sim_folder, folder, enabled)
+
     mod_data = {"folder_name": os.path.basename(mod_folder)}
 
     if not os.path.isfile(os.path.join(mod_folder, "manifest.json")):
@@ -328,11 +350,13 @@ def parse_mod_manifest(mod_folder, enabled):
     with open(os.path.join(mod_folder, "manifest.json"), "r") as f:
         data = json.load(f)
 
-    mod_data["title"] = data["title"]
-    mod_data["content_type"] = data["content_type"]
-    mod_data["creator"] = data["creator"]
-    mod_data["version"] = data["package_version"]
-    mod_data["installed"] = enabled
+    mod_data["content_type"] = data.get("content_type", "")
+    mod_data["title"] = data.get("title", "")
+    mod_data["manufacturer"] = data.get("manufacturer", "")
+    mod_data["creator"] = data.get("creator", "")
+    mod_data["version"] = data.get("package_version", "")
+    mod_data["minimum_game_version"] = data.get("minimum_game_version", "")
+    mod_data["enabled"] = enabled
 
     return mod_data
 
@@ -344,13 +368,13 @@ def get_enabled_mods(sim_folder):
     for folder in listdir_dirs(sim_mod_folder(sim_folder)):
         # parse each mod
         enabled_mods.append(
-            parse_mod_manifest(os.path.join(sim_mod_folder(sim_folder), folder), True)
+            parse_mod_manifest(sim_folder, folder, True)
         )
 
     return enabled_mods
 
 
-def get_disabled_mods():
+def get_disabled_mods(sim_folder):
     """Returns data for the disabled mods"""
     # ensure cache folder already exists
     create_mod_cache_folder()
@@ -360,7 +384,7 @@ def get_disabled_mods():
     for folder in listdir_dirs(MOD_CACHE_FOLDER):
         # parse each mod
         disabled_mods.append(
-            parse_mod_manifest(os.path.join(MOD_CACHE_FOLDER, folder), False)
+            parse_mod_manifest(sim_folder, folder, False)
         )
 
     return disabled_mods

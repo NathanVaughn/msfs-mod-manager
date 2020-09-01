@@ -8,6 +8,7 @@ import lib.config as config
 from lib import flight_sim, version
 from lib.thread_wait import thread_wait
 from widgets.about_widget import about_widget
+from widgets.info_widget import info_widget
 from widgets.main_table import main_table
 from widgets.progress_widget import progress_widget
 
@@ -35,8 +36,8 @@ class main_widget(QtWidgets.QWidget):
         self.disable_button = QtWidgets.QPushButton("Disable", self)
         self.layout.addWidget(self.disable_button, 0, 5)
 
-        # self.info_button = QtWidgets.QPushButton("Info", self)
-        # self.layout.addWidget(self.info_button, 0, 8)
+        self.info_button = QtWidgets.QPushButton("Info", self)
+        self.layout.addWidget(self.info_button, 0, 8)
 
         self.refresh_button = QtWidgets.QPushButton("Refresh", self)
         self.layout.addWidget(self.refresh_button, 0, 9)
@@ -51,9 +52,8 @@ class main_widget(QtWidgets.QWidget):
         self.enable_button.clicked.connect(self.enable)
         self.disable_button.clicked.connect(self.disable)
         self.refresh_button.clicked.connect(self.refresh)
-        # self.info_button.clicked.connect(self.info)
-        # self.main_table.doubleClicked.connect(self.info)
-
+        self.info_button.clicked.connect(self.info)
+        self.main_table.doubleClicked.connect(self.info)
 
     def get_selected_rows(self):
         """Returns a list of row indexes that are currently selected"""
@@ -88,7 +88,10 @@ class main_widget(QtWidgets.QWidget):
                 user_selection()
 
         # try to automatically find the sim
-        success, self.sim_path, = flight_sim.find_sim_path()
+        (
+            success,
+            self.sim_path,
+        ) = flight_sim.find_sim_path()
 
         if not self.sim_path:
             # show error
@@ -128,16 +131,24 @@ class main_widget(QtWidgets.QWidget):
             if result == QtWidgets.QMessageBox.Yes:
                 webbrowser.open(return_url)
 
-
     def about(self):
         """Launch the about widget"""
         about_widget(self, self.appctxt).exec_()
 
     def info(self):
         """Open dialog to view mod info"""
-        self.info_button.setEnabled(False)
+        #self.info_button.setEnabled(False)
 
-        self.info_button.setEnabled(True)
+        selected = self.get_selected_rows()
+
+        if selected:
+            (mod_folder, enabled) = self.main_table.get_basic_info(selected[0])
+
+            wid = info_widget(self, self.appctxt)
+            wid.set_data(flight_sim.parse_mod_manifest(self.sim_path, mod_folder, enabled), flight_sim.parse_mod_layout(self.sim_path, mod_folder, enabled))
+            wid.exec_()
+
+        #self.info_button.setEnabled(True)
 
     def install(self):
         """Installs selected mods"""
@@ -337,7 +348,7 @@ class main_widget(QtWidgets.QWidget):
 
         try:
             enabled_mods = flight_sim.get_enabled_mods(self.sim_path)
-            disabled_mods = flight_sim.get_disabled_mods()
+            disabled_mods = flight_sim.get_disabled_mods(self.sim_path)
 
             self.main_table.set_data(enabled_mods + disabled_mods)
             self.main_table.set_colors(self.parent.theme_menu_action.isChecked())
@@ -351,26 +362,3 @@ class main_widget(QtWidgets.QWidget):
             )
 
         self.refresh_button.setEnabled(True)
-
-    def contextMenuEvent(self, event):
-        """Override default context menu event to provide right-click menu"""
-        self.right_click_menu = QtWidgets.QMenu(self)
-
-        uninstall_action = QtWidgets.QAction("Uninstall", self)
-        uninstall_action.triggered.connect(self.uninstall)
-        self.right_click_menu.addAction(uninstall_action)
-
-        enable_action = QtWidgets.QAction("Enable", self)
-        enable_action.triggered.connect(self.enable)
-        self.right_click_menu.addAction(enable_action)
-
-        disable_action = QtWidgets.QAction("Disable", self)
-        disable_action.triggered.connect(self.disable)
-        self.right_click_menu.addAction(disable_action)
-
-        # info_action = QtWidgets.QAction("Info", self)
-        # info_action.triggered.connect(self.info)
-        # self.right_click_menu.addAction(info_action)
-
-        # popup at cursor position
-        self.right_click_menu.popup(self.mapToGlobal(event.pos()))

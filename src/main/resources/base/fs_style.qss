@@ -114,6 +114,10 @@ QTableWidget::item {
     border: 1px solid #626463;
 }
 
+QTableWidget[accessibleName="info_files"]::item {
+    color: #FFFFFF;
+}
+
 QTableWidget::item:hover {
     color: #000000;
     background-color: #FFFFFF;
@@ -151,4 +155,16 @@ QMessageBox QLabel {
 
 QDialog QLabel {
     color: #FFFFFF;
+}
+
+/* QLineEdit */
+QLineEdit {
+    background-color: #191A1B;
+    color: #FFFFFF;
+    border: 1px solid #626463;
+}
+
+/* QGroupBox */
+QGroupBox {
+    border: 1px solid #626463;
 }
