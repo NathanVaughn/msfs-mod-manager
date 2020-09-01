@@ -145,7 +145,7 @@ class main_widget(QtWidgets.QWidget):
             (mod_folder, enabled) = self.main_table.get_basic_info(selected[0])
 
             wid = info_widget(self, self.appctxt)
-            wid.set_data(flight_sim.parse_mod_manifest(self.sim_path, mod_folder, enabled), flight_sim.parse_mod_layout(self.sim_path, mod_folder, enabled))
+            wid.set_data(flight_sim.parse_mod_manifest(self.sim_path, mod_folder, enabled), flight_sim.parse_mod_files(self.sim_path, mod_folder, enabled))
             wid.exec_()
 
         #self.info_button.setEnabled(True)

@@ -145,6 +145,28 @@ def listdir_dirs(folder):
     return dirs
 
 
+def human_readable_size(size, decimal_places=2):
+    """Converst number of bytes into human readable value"""
+    # https://stackoverflow.com/a/43690506/9944427
+    for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
+        if size < 1024.0 or unit == "PB":
+            break
+        size /= 1024.0
+    return f"{size:.{decimal_places}f} {unit}"
+
+
+def get_folder_size(folder):
+    """Return the size in bytes of a folder, recursively"""
+    if os.path.isdir(folder):
+        return sum(
+            os.path.getsize(os.path.join(dirpath, filename))
+            for dirpath, _, filenames in os.walk(folder)
+            for filename in filenames
+        )
+    else:
+        return 0
+
+
 def delete_folder(folder, first=True, update_func=None):
     """Deletes a folder if it exists"""
     # check if it exists
@@ -179,7 +201,6 @@ def copy_folder(src, dest, update_func=None):
 
 def move_folder(src, dest, update_func=None):
     """Copies a folder and deletes the original"""
-    # check if it exists
     copy_folder(src, dest, update_func=update_func)
     delete_folder(src, update_func=update_func)
 
@@ -317,14 +338,16 @@ def sim_mod_folder(sim_folder):
 
     return step_2
 
+
 def get_mod_folder(sim_folder, folder, enabled):
     """Returns path to mod folder given folder name and enabled status"""
     if enabled:
-        mod_folder= os.path.join(sim_mod_folder(sim_folder), folder)
+        mod_folder = os.path.join(sim_mod_folder(sim_folder), folder)
     else:
         mod_folder = os.path.join(MOD_CACHE_FOLDER, folder)
 
     return mod_folder
+
 
 def parse_mod_layout(sim_folder, folder, enabled):
     """Builds the mod files info as a dictionary. Parsed from the layout.json"""
@@ -337,6 +360,24 @@ def parse_mod_layout(sim_folder, folder, enabled):
         data = json.load(f)
 
     return data["content"]
+
+
+def parse_mod_files(sim_folder, folder, enabled):
+    """Builds the mod files info as a dictionary. Parsed from the layout.json"""
+    mod_folder = get_mod_folder(sim_folder, folder, enabled)
+
+    data = []
+    for root, _, files in os.walk(mod_folder):
+        for file in files:
+            data.append(
+                {
+                    "path": os.path.join(os.path.relpath(root, mod_folder), file),
+                    "size": os.path.getsize(os.path.join(root, file)),
+                }
+            )
+
+    return data
+
 
 def parse_mod_manifest(sim_folder, folder, enabled):
     """Builds the mod metadata as a dictionary. Parsed from the manifest.json"""
@@ -367,9 +408,7 @@ def get_enabled_mods(sim_folder):
 
     for folder in listdir_dirs(sim_mod_folder(sim_folder)):
         # parse each mod
-        enabled_mods.append(
-            parse_mod_manifest(sim_folder, folder, True)
-        )
+        enabled_mods.append(parse_mod_manifest(sim_folder, folder, True))
 
     return enabled_mods
 
@@ -383,9 +422,7 @@ def get_disabled_mods(sim_folder):
 
     for folder in listdir_dirs(MOD_CACHE_FOLDER):
         # parse each mod
-        disabled_mods.append(
-            parse_mod_manifest(sim_folder, folder, False)
-        )
+        disabled_mods.append(parse_mod_manifest(sim_folder, folder, False))
 
     return disabled_mods
 

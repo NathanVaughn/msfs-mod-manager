@@ -49,7 +49,8 @@ class files_table(QtWidgets.QTableWidget):
 
                 # put elements into the table
                 for c, col in enumerate(items):
-                    item = QtWidgets.QTableWidgetItem(str(col))
+                    item = QtWidgets.QTableWidgetItem()
+                    item.setData(QtCore.Qt.EditRole, col)
                     item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
                     self.setItem(r, c, item)
 

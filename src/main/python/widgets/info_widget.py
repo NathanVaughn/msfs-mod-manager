@@ -95,6 +95,16 @@ class info_widget(QtWidgets.QDialog):
         self.mod_folder = mod_data["folder_name"]
         self.enabled = mod_data["enabled"]
 
+        self.total_size_field.setText(
+            flight_sim.human_readable_size(
+                flight_sim.get_folder_size(
+                    flight_sim.get_mod_folder(
+                        self.parent.sim_path, self.mod_folder, self.enabled
+                    )
+                )
+            )
+        )
+
     def open_folder(self):
         """Opens the folder for the mod"""
         os.startfile(
