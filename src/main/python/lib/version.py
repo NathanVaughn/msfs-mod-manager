@@ -1,9 +1,9 @@
-import configparser
 import datetime
 import json
 import urllib.request
+import datetime
 
-from lib.flight_sim import CONFIG_FILE, LAST_VER_CHECK_KEY, SECTION_KEY
+import lib.config as config
 
 
 def get_version(appctxt):
@@ -19,25 +19,19 @@ def get_version(appctxt):
 def check_version(appctxt):
     """Returns the release URL if a new version is installed. Otherwise,
     returns False"""
-    # first try to read from the config file
-    config = configparser.ConfigParser()
-    config.read(CONFIG_FILE)
-
     time_format = "%Y-%m-%d %H:%M:%S"
 
-    # this is tiered as such, so that one missing piece doesn't cause an error
-    if SECTION_KEY in config:
-        if LAST_VER_CHECK_KEY in config[SECTION_KEY]:
-            try:
-                # check if last successful version check was less than a day ago.
-                # If so, skip
-                last_check = datetime.datetime.strptime(
-                    config[SECTION_KEY][LAST_VER_CHECK_KEY], time_format
-                )
-                if last_check > (datetime.datetime.now() - datetime.timedelta(days=1)):
-                    return False
-            except ValueError:
-                pass
+    # first try to read from the config file
+    succeed, value = config.get_key_value(config.LAST_VER_CHECK_KEY)
+    if succeed:
+        try:
+            # check if last successful version check was less than a day ago.
+            # If so, skip
+            last_check = datetime.datetime.strptime(value, time_format)
+            if last_check > (datetime.datetime.now() - datetime.timedelta(days=1)):
+                return False
+        except ValueError:
+            pass
 
     # open the remote url
     url = "https://api.github.com/repos/NathanVaughn/msfs-mod-manager/releases/latest"
@@ -58,11 +52,10 @@ def check_version(appctxt):
         return False
 
     # write the config file back out
-    config[SECTION_KEY][LAST_VER_CHECK_KEY] = datetime.datetime.strftime(
-        datetime.datetime.now(), time_format
+    config.set_key_value(
+        config.LAST_VER_CHECK_KEY,
+        datetime.datetime.strftime(datetime.datetime.now(), time_format),
     )
-    with open(CONFIG_FILE, "w") as f:
-        config.write(f)
 
     # check if remote version is newer than local version
     if remote_version > get_version(appctxt):

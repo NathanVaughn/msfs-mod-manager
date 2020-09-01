@@ -7,6 +7,7 @@ from widgets.main_window import main_window
 if __name__ == "__main__":
     args = sys.argv
 
+    # start app
     appctxt = ApplicationContext()
     app = appctxt.app
 
@@ -14,6 +15,7 @@ if __name__ == "__main__":
     main_window = main_window(app, appctxt)
     # build the main window
     main_window.build()
+    main_window.set_theme()
 
     # load data
     main_window.main_widget.find_sim()

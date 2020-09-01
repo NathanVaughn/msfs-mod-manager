@@ -7,17 +7,13 @@ import stat
 import patoolib
 import PySide2.QtCore as QtCore
 
-BASE_FOLDER = os.path.abspath(os.path.join(os.getenv("APPDATA"), "MSFS Mod Manager"))
-TEMP_FOLDER = os.path.abspath(os.path.join(BASE_FOLDER, ".tmp"))
-MOD_CACHE_FOLDER = os.path.abspath(os.path.join(BASE_FOLDER, "modCache"))
+import lib.config as config
 
-CONFIG_FILE = os.path.abspath(os.path.join(BASE_FOLDER, "config.ini"))
-SECTION_KEY = "settings"
-SIM_PATH_KEY = "sim_path"
-LAST_VER_CHECK_KEY = "last_version_check"
+TEMP_FOLDER = os.path.abspath(os.path.join(config.BASE_FOLDER, ".tmp"))
+MOD_CACHE_FOLDER = os.path.abspath(os.path.join(config.BASE_FOLDER, "modCache"))
 
-if not os.path.exists(BASE_FOLDER):
-    os.makedirs(BASE_FOLDER)
+if not os.path.exists(config.BASE_FOLDER):
+    os.makedirs(config.BASE_FOLDER)
 
 
 class AccessError(Exception):
@@ -247,25 +243,20 @@ def is_sim_packages_folder(folder):
 def find_sim_path():
     """Attempts to automatically locate the install
     location of Flight Simulator Packages.
-    Returns None if it fails. Otherwise, returns absolute sim folder path.
-    Also returns if reading from config file was successful."""
+    Returns if reading from config file was successful, and
+    returns absolute sim folder path. Otherwise, returns None if it fails"""
 
     # first try to read from the config file
-    config = configparser.ConfigParser()
-    config.read(CONFIG_FILE)
-
-    # this is tiered as such, so that one missing piece doesn't cause an error
-    if SECTION_KEY in config:
-        if SIM_PATH_KEY in config[SECTION_KEY]:
-            if is_sim_packages_folder(config[SECTION_KEY][SIM_PATH_KEY]):
-                return (config[SECTION_KEY][SIM_PATH_KEY], True)
+    succeed, value = config.get_key_value(config.SIM_PATH_KEY)
+    if succeed and is_sim_packages_folder(value):
+        return (True, value)
 
     # steam detection
     steam_folder = os.path.join(os.getenv("APPDATA"), "Microsoft Flight Simulator")
     if is_sim_folder(steam_folder):
         steam_packages_folder = os.path.join(parse_user_cfg(sim_folder=steam_folder))
         if is_sim_packages_folder(steam_packages_folder):
-            return (steam_packages_folder, False)
+            return (False, steam_packages_folder)
 
     # ms store detection
     ms_store_folder = os.path.join(
@@ -280,7 +271,7 @@ def find_sim_path():
             parse_user_cfg(sim_folder=ms_store_folder)
         )
         if is_sim_packages_folder(ms_store_packages_folder):
-            return (ms_store_folder, False)
+            return (False, ms_store_folder)
 
     # last ditch steam detection #1
     steam_folder = os.path.join(
@@ -294,7 +285,7 @@ def find_sim_path():
     if is_sim_folder(steam_folder):
         steam_packages_folder = os.path.join(parse_user_cfg(sim_folder=steam_folder))
         if is_sim_packages_folder(steam_packages_folder):
-            return (steam_packages_folder, False)
+            return (False, steam_packages_folder)
 
     # last ditch steam detection #2
     steam_folder = os.path.join(
@@ -308,21 +299,10 @@ def find_sim_path():
     if is_sim_folder(steam_folder):
         steam_packages_folder = os.path.join(parse_user_cfg(sim_folder=steam_folder))
         if is_sim_packages_folder(steam_packages_folder):
-            return (steam_packages_folder, False)
+            return (False, steam_packages_folder)
 
     # fail
-    return (None, False)
-
-
-def save_sim_path(sim_folder):
-    """Writes sim path to config file"""
-    config = configparser.ConfigParser()
-
-    config.add_section(SECTION_KEY)
-    config[SECTION_KEY][SIM_PATH_KEY] = sim_folder
-
-    with open(CONFIG_FILE, "w") as f:
-        config.write(f)
+    return (False, None)
 
 
 def sim_mod_folder(sim_folder):

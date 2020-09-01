@@ -5,6 +5,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from widgets.main_widget import main_widget
 from lib.version import get_version
+from lib.theme import set_theme, get_theme
 
 
 class main_window(QtWidgets.QMainWindow):
@@ -25,6 +26,11 @@ class main_window(QtWidgets.QMainWindow):
 
         main_menu = self.menuBar()
         file_menu = main_menu.addMenu("File")
+
+        self.theme_menu_action = QtWidgets.QAction("FS Theme", self, checkable=True)
+        self.theme_menu_action.setChecked(get_theme())
+        self.theme_menu_action.triggered.connect(self.set_theme)
+        file_menu.addAction(self.theme_menu_action)
 
         menu_action = QtWidgets.QAction("Exit", self)
         menu_action.triggered.connect(self.parent.quit)
@@ -63,3 +69,10 @@ class main_window(QtWidgets.QMainWindow):
         menu_action = QtWidgets.QAction("About", self)
         menu_action.triggered.connect(self.main_widget.about)
         info_menu.addAction(menu_action)
+
+    def set_theme(self):
+        # apply theme
+        set_theme(self.appctxt, self.theme_menu_action.isChecked())
+        # reformat table
+        self.main_widget.main_table.set_colors(self.theme_menu_action.isChecked())
+        self.main_widget.main_table.resize()

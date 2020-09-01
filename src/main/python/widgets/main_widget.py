@@ -4,6 +4,7 @@ import webbrowser
 
 import PySide2.QtWidgets as QtWidgets
 
+import lib.config as config
 from lib import flight_sim, version
 from lib.thread_wait import thread_wait
 from widgets.about_widget import about_widget
@@ -87,7 +88,7 @@ class main_widget(QtWidgets.QWidget):
                 user_selection()
 
         # try to automatically find the sim
-        self.sim_path, success = flight_sim.find_sim_path()
+        success, self.sim_path, = flight_sim.find_sim_path()
 
         if not self.sim_path:
             # show error
@@ -103,7 +104,7 @@ class main_widget(QtWidgets.QWidget):
 
         elif not success:
             # save the config file
-            flight_sim.save_sim_path(self.sim_path)
+            config.set_key_value(config.SIM_PATH_KEY, self.sim_path)
             # notify user
             QtWidgets.QMessageBox().information(
                 self,
@@ -339,6 +340,7 @@ class main_widget(QtWidgets.QWidget):
             disabled_mods = flight_sim.get_disabled_mods()
 
             self.main_table.set_data(enabled_mods + disabled_mods)
+            self.main_table.set_colors(self.parent.theme_menu_action.isChecked())
         except flight_sim.NoManifestError as e:
             QtWidgets.QMessageBox().warning(
                 self,

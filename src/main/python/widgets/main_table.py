@@ -31,6 +31,7 @@ class main_table(QtWidgets.QTableWidget):
         # set the correct size adjust policy to get the proper size hint
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.horizontalHeader().setStretchLastSection(True)
 
     def set_data(self, data):
         """Puts mod data into table"""
@@ -38,6 +39,7 @@ class main_table(QtWidgets.QTableWidget):
         self.setSortingEnabled(False)
         # clear all data
         self.clear()
+        self.horizontalHeader().reset()
 
         if data:
             # the row and column count based on the data size
@@ -56,12 +58,6 @@ class main_table(QtWidgets.QTableWidget):
                 for c, col in enumerate(items):
                     item = QtWidgets.QTableWidgetItem(str(col))
                     item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-
-                    if row["installed"]:
-                        item.setForeground(QtGui.QColor(256, 256, 256))
-                    else:
-                        item.setForeground(QtGui.QColor(180, 180, 180))
-
                     self.setItem(r, c, item)
 
             # sort packages alphabetically
@@ -73,11 +69,27 @@ class main_table(QtWidgets.QTableWidget):
         # re-enable sorting
         self.setSortingEnabled(True)
 
+        self.resize()
+
+    def resize(self):
+        """Resize the rows and columns"""
         # resize rows and columns
         self.resizeColumnsToContents()
         # this HAS to come second for some reason
         self.resizeRowsToContents()
 
+    def set_colors(self, dark):
+        """Set the colors for the rows, based on being a dark theme or not"""
+        for r in range(self.rowCount()):
+            if self.item(r, LOOKUP["installed"]).text() == "False":
+                color = QtGui.QColor(150, 150, 150)
+            elif dark:
+                color = QtGui.QColor(255, 255, 255)
+            else:
+                color = QtGui.QColor(0, 0, 0)
+
+            for c in range(self.columnCount()):
+                self.item(r, c).setForeground(color)
 
     def get_basic_info(self, row_id):
         """Returns folder name and installed status of a given row index"""
