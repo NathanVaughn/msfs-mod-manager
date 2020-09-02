@@ -2,7 +2,7 @@ from contextlib import contextmanager
 import PySide2.QtCore as QtCore
 
 @contextmanager
-def thread_wait(signal, timeout=120000, finsh_func=None):
+def thread_wait(signal, timeout=600000, finsh_func=None):
     """Prevent the primary event loop from progressing without blocking GUI events,
     until the given signal is emitted or the timeout reached"""
     loop = QtCore.QEventLoop()
