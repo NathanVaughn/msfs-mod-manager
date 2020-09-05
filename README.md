@@ -38,6 +38,19 @@ Enable and disable mods on the fly without needing to re-download them.
 
 ![Enable Demo](screenshots/enable.gif)
 
+### Matching Theme
+
+A custom-designed theme to roughly match the MSFS UI is optionally available.
+
+![Main Screen with Theme](screenshots/main-theme.png)
+
+### Mod Info
+
+View info about a mod and quickly open the directory it is located in.
+
+![Mod Info Demo](screenshots/mod-info.gif)
+
+
 ### More To Come
 
 This is still under active development. Pull requests welcome!
