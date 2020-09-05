@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from loguru import logger
 import PySide2.QtCore as QtCore
 
 @contextmanager
@@ -13,7 +14,11 @@ def thread_wait(signal, timeout=600000, finsh_func=None):
 
     yield
 
+    def loop_quit():
+        loop.quit()
+        logger.error("Timeout reached")
+
     if timeout is not None:
-        QtCore.QTimer.singleShot(timeout, loop.quit)
+        QtCore.QTimer.singleShot(timeout, loop_quit)
 
     loop.exec_()

@@ -12,6 +12,7 @@ pyside2 = "*"
 pyinstaller = "*"
 fbs = "*"
 pypiwin32 = "*"
+loguru = "*"
 
 [requires]
 python_version = "3.6"

@@ -7,9 +7,9 @@ import lib.flight_sim as flight_sim
 from widgets.files_table import files_table
 
 
-class info_widget(QtWidgets.QDialog):
+class info_widget(QtWidgets.QWidget):
     def __init__(self, parent=None, appctxt=None):
-        QtWidgets.QDialog.__init__(self)
+        QtWidgets.QWidget.__init__(self)
         self.parent = parent
         self.appctxt = appctxt
 
@@ -89,7 +89,8 @@ class info_widget(QtWidgets.QDialog):
 
         # resize
         self.setMaximumHeight(700)
-        self.resize(self.sizeHint())
+        # weird magic number to account for too small size hint
+        self.resize(self.sizeHint().width() + 32, self.sizeHint().height())
 
         # misc data to hold onto
         self.mod_folder = mod_data["folder_name"]

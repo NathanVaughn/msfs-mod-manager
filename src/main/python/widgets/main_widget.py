@@ -137,7 +137,7 @@ class main_widget(QtWidgets.QWidget):
 
     def info(self):
         """Open dialog to view mod info"""
-        #self.info_button.setEnabled(False)
+        # self.info_button.setEnabled(False)
 
         selected = self.get_selected_rows()
 
@@ -145,10 +145,13 @@ class main_widget(QtWidgets.QWidget):
             (mod_folder, enabled) = self.main_table.get_basic_info(selected[0])
 
             wid = info_widget(self, self.appctxt)
-            wid.set_data(flight_sim.parse_mod_manifest(self.sim_path, mod_folder, enabled), flight_sim.parse_mod_files(self.sim_path, mod_folder, enabled))
-            wid.exec_()
+            wid.set_data(
+                flight_sim.parse_mod_manifest(self.sim_path, mod_folder, enabled),
+                flight_sim.parse_mod_files(self.sim_path, mod_folder, enabled),
+            )
+            wid.show()
 
-        #self.info_button.setEnabled(True)
+        # self.info_button.setEnabled(True)
 
     def install(self):
         """Installs selected mods"""
@@ -289,13 +292,7 @@ class main_widget(QtWidgets.QWidget):
             # first, get the mod name and enabled status
             (mod_folder, enabled) = self.main_table.get_basic_info(_id)
 
-            if enabled:
-                # sanity check
-                # raise Exception("Enabled mod cannot be enabled")
-                QtWidgets.QMessageBox().warning(
-                    self, "Warning", "Already enabled mod cannot be enabled."
-                )
-            else:
+            if not enabled:
                 # setup enabler thread
                 enabler = flight_sim.enable_mod_thread(self.sim_path, mod_folder)
                 enabler.activity_update.connect(progress.set_activity)
@@ -321,13 +318,7 @@ class main_widget(QtWidgets.QWidget):
             # first, get the mod name and disable status
             (mod_folder, enabled) = self.main_table.get_basic_info(_id)
 
-            if not enabled:
-                # sanity check
-                # raise Exception("Disabled mod cannot be disabled")
-                QtWidgets.QMessageBox().warning(
-                    self, "Warning", "Already disabled mod cannot be disabled."
-                )
-            else:
+            if enabled:
                 # setup disabler thread
                 disabler = flight_sim.disable_mod_thread(self.sim_path, mod_folder)
                 disabler.activity_update.connect(progress.set_activity)
