@@ -47,7 +47,7 @@ A custom-designed theme to roughly match the MSFS UI is optionally available.
 ### No Need to Reinstall Anything
 
 The program parses the native game files, so you do not need to reinstall all of your
-mods to take advantages of the features of this mod manager.
+mods to take advantage of the features of this mod manager.
 
 ### Mod Info
 
