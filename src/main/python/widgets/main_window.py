@@ -36,6 +36,20 @@ class main_window(QtWidgets.QMainWindow):
 
         file_menu.addSeparator()
 
+        menu_action = QtWidgets.QAction("Install Mod(s) from Archive", self)
+        menu_action.triggered.connect(self.main_widget.install_archive)
+        file_menu.addAction(menu_action)
+
+        menu_action = QtWidgets.QAction("Install Mod from Folder", self)
+        menu_action.triggered.connect(self.main_widget.install_folder)
+        file_menu.addAction(menu_action)
+
+        menu_action = QtWidgets.QAction("Uninstall Mods", self)
+        menu_action.triggered.connect(self.main_widget.uninstall)
+        file_menu.addAction(menu_action)
+
+        file_menu.addSeparator()
+
         menu_action = QtWidgets.QAction("Create Backup", self)
         menu_action.triggered.connect(self.main_widget.create_backup)
         file_menu.addAction(menu_action)
@@ -48,16 +62,6 @@ class main_window(QtWidgets.QMainWindow):
 
         edit_menu = main_menu.addMenu("Edit")
 
-        menu_action = QtWidgets.QAction("Install Mods", self)
-        menu_action.triggered.connect(self.main_widget.install)
-        edit_menu.addAction(menu_action)
-
-        menu_action = QtWidgets.QAction("Uninstall Mods", self)
-        menu_action.triggered.connect(self.main_widget.uninstall)
-        edit_menu.addAction(menu_action)
-
-        edit_menu.addSeparator()
-
         menu_action = QtWidgets.QAction("Enable Selected Mods", self)
         menu_action.triggered.connect(self.main_widget.enable)
         edit_menu.addAction(menu_action)
@@ -66,17 +70,17 @@ class main_window(QtWidgets.QMainWindow):
         menu_action.triggered.connect(self.main_widget.disable)
         edit_menu.addAction(menu_action)
 
-        edit_menu.addSeparator()
+        info_menu = main_menu.addMenu("Info")
 
         menu_action = QtWidgets.QAction("Refresh Mods", self)
         menu_action.triggered.connect(self.main_widget.refresh)
-        edit_menu.addAction(menu_action)
+        info_menu.addAction(menu_action)
 
         menu_action = QtWidgets.QAction("Mod Info", self)
         menu_action.triggered.connect(self.main_widget.info)
-        edit_menu.addAction(menu_action)
+        info_menu.addAction(menu_action)
 
-        info_menu = main_menu.addMenu("Info")
+        info_menu.addSeparator()
 
         menu_action = QtWidgets.QAction("About", self)
         menu_action.triggered.connect(self.main_widget.about)

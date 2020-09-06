@@ -83,8 +83,8 @@ it yourself if you wanted, and the provided pre-built binaries are all created
 
 ## Running/Building From Source
 
-To run the program from source, first install [Python 3.6](https://www.python.org/downloads/release/python-368/).
-Next, install the dependencies:
+To run the program from source, first install [Python 3.6](https://www.python.org/downloads/release/python-368/). Python 3.7 and Python 3.8 are not fully supported yet.
+Next, install the dependencies with `pipenv`:
 
 ```bash
 python -m pip install pipenv
@@ -95,4 +95,6 @@ Activate the newly created virtual environment with `pipenv shell`.
 
 To run the program, use `fbs run`.
 
-To build the program, use `fbs freeze` and optionally `fbs installer`.
+To build the program, use `fbs freeze` and optionally `fbs installer` to create an
+NSIS installer
+(will need to install [NSIS](https://nsis.sourceforge.io/Main_Page) seperately).

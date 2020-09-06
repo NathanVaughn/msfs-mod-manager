@@ -3,5 +3,5 @@
     "author": "Nathan Vaughn",
     "main_module": "src/main/python/main.py",
     "hidden_imports": ["patoolib.programs", "patoolib.programs.p7zip", "patoolib.programs.unrar", "patoolib.programs.unzip", "patoolib.programs.tar"],
-    "version": "0.3.2"
+    "version": "0.3.3"
 }

@@ -15,7 +15,14 @@ if __name__ == "__main__":
     app = appctxt.app
 
     # prepare the logger
-    logger.add(os.path.join(BASE_FOLDER, "debug.log"), rotation="1 MB", backtrace=True, diagnose=True, enqueue=True)
+    logger.add(
+        os.path.join(BASE_FOLDER, "debug.log"),
+        rotation="1 MB",
+        retention="1 week",
+        backtrace=True,
+        diagnose=True,
+        enqueue=True,
+    )
     logger.info("-----------------------")
     logger.info("Launching application")
 

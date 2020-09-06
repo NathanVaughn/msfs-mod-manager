@@ -62,32 +62,64 @@ class NoModsError(Exception):
     pass
 
 
-class install_mod_thread(QtCore.QThread):
-    """Setup a thread to install mods with to not block the main thread"""
+class install_mods_thread(QtCore.QThread):
+    """Setup a thread to install mods with and not block the main thread"""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
+    failed = QtCore.Signal(Exception)
+
+    def __init__(self, sim_folder, extracted_archive):
+        logger.debug("Initialzing mod installer thread")
+        QtCore.QThread.__init__(self)
+        self.sim_folder = sim_folder
+        self.extracted_archive = extracted_archive
+
+    def run(self):
+        logger.debug("Running mod installer thread")
+        try:
+            output = install_mods(
+                self.sim_folder,
+                self.extracted_archive,
+                update_func=self.activity_update.emit,
+            )
+            self.finished.emit(output)
+        except Exception as e:
+            self.failed.emit(e)
+        logger.debug("Mod installer thread completed")
+
+
+class install_mod_archive_thread(QtCore.QThread):
+    """Setup a thread to install mod archive with and not block the main thread"""
+
+    activity_update = QtCore.Signal(object)
+    finished = QtCore.Signal(object)
+    failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_archive):
-        logger.debug("Initialzing mod installer thread")
+        logger.debug("Initialzing mod archive installer thread")
         QtCore.QThread.__init__(self)
         self.sim_folder = sim_folder
         self.mod_archive = mod_archive
 
     def run(self):
-        logger.debug("Running mod installer thread")
-        output = install_mod(
-            self.sim_folder, self.mod_archive, update_func=self.activity_update.emit
-        )
-        self.finished.emit(output)
-        logger.debug("Mod installer thread completed")
+        logger.debug("Running mod archive installer thread")
+        try:
+            output = install_mod_archive(
+                self.sim_folder, self.mod_archive, update_func=self.activity_update.emit
+            )
+            self.finished.emit(output)
+        except Exception as e:
+            self.failed.emit(e)
+        logger.debug("Mod archive installer thread completed")
 
 
 class uninstall_mod_thread(QtCore.QThread):
-    """Setup a thread to uninstall mods with to not block the main thread"""
+    """Setup a thread to uninstall mods with and not block the main thread"""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
+    failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_folder, enabled):
         logger.debug("Initialzing mod uninstaller thread")
@@ -98,21 +130,25 @@ class uninstall_mod_thread(QtCore.QThread):
 
     def run(self):
         logger.debug("Running mod uninstaller thread")
-        output = uninstall_mod(
-            self.sim_folder,
-            self.mod_folder,
-            self.enabled,
-            update_func=self.activity_update.emit,
-        )
-        self.finished.emit(output)
+        try:
+            output = uninstall_mod(
+                self.sim_folder,
+                self.mod_folder,
+                self.enabled,
+                update_func=self.activity_update.emit,
+            )
+            self.finished.emit(output)
+        except Exception as e:
+            self.failed.emit(e)
         logger.debug("Mod uninstaller thread completed")
 
 
 class enable_mod_thread(QtCore.QThread):
-    """Setup a thread to enable mods with to not block the main thread"""
+    """Setup a thread to enable mods with and not block the main thread"""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
+    failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_folder):
         logger.debug("Initialzing mod enabler thread")
@@ -122,18 +158,22 @@ class enable_mod_thread(QtCore.QThread):
 
     def run(self):
         logger.debug("Running mod enabler thread")
-        output = enable_mod(
-            self.sim_folder, self.mod_folder, update_func=self.activity_update.emit
-        )
-        self.finished.emit(output)
+        try:
+            output = enable_mod(
+                self.sim_folder, self.mod_folder, update_func=self.activity_update.emit
+            )
+            self.finished.emit(output)
+        except Exception as e:
+            self.failed.emit(e)
         logger.debug("Mod enabler thread completed")
 
 
 class disable_mod_thread(QtCore.QThread):
-    """Setup a thread to disable mods with to not block the main thread"""
+    """Setup a thread to disable mods with and not block the main thread"""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
+    failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, archive):
         logger.debug("Initialzing mod disabler thread")
@@ -143,18 +183,22 @@ class disable_mod_thread(QtCore.QThread):
 
     def run(self):
         logger.debug("Running mod disabler thread")
-        output = disable_mod(
-            self.sim_folder, self.archive, update_func=self.activity_update.emit
-        )
-        self.finished.emit(output)
+        try:
+            output = disable_mod(
+                self.sim_folder, self.archive, update_func=self.activity_update.emit
+            )
+            self.finished.emit(output)
+        except Exception as e:
+            self.failed.emit(e)
         logger.debug("Mod disabler thread completed")
 
 
 class create_backup_thread(QtCore.QThread):
-    """Setup a thread to create backup with to not block the main thread"""
+    """Setup a thread to create backup with and not block the main thread"""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
+    failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_folder):
         logger.debug("Initialzing backup creator thread")
@@ -164,10 +208,13 @@ class create_backup_thread(QtCore.QThread):
 
     def run(self):
         logger.debug("Running backup creator thread")
-        output = create_backup(
-            self.sim_folder, self.archive, update_func=self.activity_update.emit
-        )
-        self.finished.emit(output)
+        try:
+            output = create_backup(
+                self.sim_folder, self.archive, update_func=self.activity_update.emit
+            )
+            self.finished.emit(output)
+        except Exception as e:
+            self.failed.emit(e)
         logger.debug("Mod backup creator completed")
 
 
@@ -209,7 +256,7 @@ def listdir_dirs(folder):
 def human_readable_size(size, decimal_places=2):
     """Convert number of bytes into human readable value"""
     # https://stackoverflow.com/a/43690506/9944427
-    logger.debug("Converting {} bytes to human readable format".format(size))
+    # logger.debug("Converting {} bytes to human readable format".format(size))
     for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
         if size < 1024.0 or unit == "PB":
             break
@@ -567,7 +614,7 @@ def parse_mod_manifest(sim_folder, folder, enabled):
 
 def get_enabled_mods(sim_folder):
     """Returns data for the enabled mods"""
-    logger.debug("Retriving list of enabled mods")
+    logger.debug("Retrieving list of enabled mods")
     enabled_mods = []
 
     for folder in listdir_dirs(sim_mod_folder(sim_folder)):
@@ -579,7 +626,7 @@ def get_enabled_mods(sim_folder):
 
 def get_disabled_mods(sim_folder):
     """Returns data for the disabled mods"""
-    logger.debug("Retriving list of disabled mods")
+    logger.debug("Retrieving list of disabled mods")
     # ensure cache folder already exists
     create_mod_cache_folder()
 
@@ -653,6 +700,11 @@ def determine_mod_folders(folder, update_func=None):
     if update_func:
         update_func("Locating mods inside {}".format(folder))
 
+    # check the root folder for a manifest
+    if os.path.isfile(os.path.join(folder, "manifest.json")):
+        logger.debug("Mod found {}".format(os.path.join(folder)))
+        mod_folders.append(os.path.join(folder))
+
     for root, dirs, _ in os.walk(folder):
         # go through each directory and check for the manifest
         for d in dirs:
@@ -667,11 +719,9 @@ def determine_mod_folders(folder, update_func=None):
     return mod_folders
 
 
-def install_mod(sim_folder, mod_archive, update_func=None):
+def install_mods(sim_folder, extracted_archive, update_func=None):
     """Extracts and installs a new mod"""
-    logger.debug("Installing mod {}".format(mod_archive))
-    # extract the archive
-    extracted_archive = extract_archive(mod_archive, update_func=update_func)
+    logger.debug("Installing mod {}".format(extracted_archive))
 
     # determine the mods inside the extracted archive
     mod_folders = determine_mod_folders(extracted_archive, update_func=update_func)
@@ -690,6 +740,15 @@ def install_mod(sim_folder, mod_archive, update_func=None):
 
     # return installed mods list
     return installed_mods
+
+
+def install_mod_archive(sim_folder, mod_archive, update_func=None):
+    """Extracts and installs a new mod"""
+    logger.debug("Installing mod {}".format(mod_archive))
+    # extract the archive
+    extracted_archive = extract_archive(mod_archive, update_func=update_func)
+
+    return install_mods(sim_folder, extracted_archive, update_func=update_func)
 
 
 def uninstall_mod(sim_folder, mod_folder, enabled, update_func=None):
