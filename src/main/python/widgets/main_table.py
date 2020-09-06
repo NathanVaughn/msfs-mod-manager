@@ -1,3 +1,4 @@
+from turtle import right
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
@@ -9,6 +10,7 @@ LOOKUP = {
     "creator": 3,
     "version": 4,
     "enabled": 5,
+    "time_mod": 6,
 }
 
 
@@ -24,6 +26,7 @@ class main_table(QtWidgets.QTableWidget):
             "Creator",
             "Version",
             "Enabled",
+            "Last Modified"
         ]
 
         self.setSortingEnabled(True)
@@ -102,23 +105,27 @@ class main_table(QtWidgets.QTableWidget):
 
     def contextMenuEvent(self, event):
         """Override default context menu event to provide right-click menu"""
-        self.right_click_menu = QtWidgets.QMenu(self)
+        right_click_menu = QtWidgets.QMenu(self)
 
         info_action = QtWidgets.QAction("Info", self)
         info_action.triggered.connect(self.parent.info)
-        self.right_click_menu.addAction(info_action)
+        right_click_menu.addAction(info_action)
 
-        uninstall_action = QtWidgets.QAction("Uninstall", self)
-        uninstall_action.triggered.connect(self.parent.uninstall)
-        self.right_click_menu.addAction(uninstall_action)
+        right_click_menu.addSeparator()
 
         enable_action = QtWidgets.QAction("Enable", self)
         enable_action.triggered.connect(self.parent.enable)
-        self.right_click_menu.addAction(enable_action)
+        right_click_menu.addAction(enable_action)
 
         disable_action = QtWidgets.QAction("Disable", self)
         disable_action.triggered.connect(self.parent.disable)
-        self.right_click_menu.addAction(disable_action)
+        right_click_menu.addAction(disable_action)
+
+        right_click_menu.addSeparator()
+
+        uninstall_action = QtWidgets.QAction("Uninstall", self)
+        uninstall_action.triggered.connect(self.parent.uninstall)
+        right_click_menu.addAction(uninstall_action)
 
         # popup at cursor position
-        self.right_click_menu.popup(QtGui.QCursor.pos())
+        right_click_menu.popup(QtGui.QCursor.pos())

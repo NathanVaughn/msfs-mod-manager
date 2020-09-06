@@ -17,7 +17,9 @@ class main_window(QtWidgets.QMainWindow):
     def build(self):
         """Build widget"""
         self.setWindowTitle("MSFS Mod Manager - {}".format(get_version(self.appctxt)))
-        self.setWindowIcon(QtGui.QIcon(self.appctxt.get_resource(os.path.join("icons", "icon.png"))))
+        self.setWindowIcon(
+            QtGui.QIcon(self.appctxt.get_resource(os.path.join("icons", "icon.png")))
+        )
 
         self.main_widget = main_widget(self, self.appctxt)
         self.main_widget.build()
@@ -32,6 +34,14 @@ class main_window(QtWidgets.QMainWindow):
         self.theme_menu_action.triggered.connect(self.set_theme)
         file_menu.addAction(self.theme_menu_action)
 
+        file_menu.addSeparator()
+
+        menu_action = QtWidgets.QAction("Create Backup", self)
+        menu_action.triggered.connect(self.main_widget.create_backup)
+        file_menu.addAction(menu_action)
+
+        file_menu.addSeparator()
+
         menu_action = QtWidgets.QAction("Exit", self)
         menu_action.triggered.connect(self.parent.quit)
         file_menu.addAction(menu_action)
@@ -45,6 +55,8 @@ class main_window(QtWidgets.QMainWindow):
         menu_action = QtWidgets.QAction("Uninstall Mods", self)
         menu_action.triggered.connect(self.main_widget.uninstall)
         edit_menu.addAction(menu_action)
+
+        edit_menu.addSeparator()
 
         menu_action = QtWidgets.QAction("Enable Selected Mods", self)
         menu_action.triggered.connect(self.main_widget.enable)

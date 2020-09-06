@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 import webbrowser
@@ -12,13 +13,15 @@ from widgets.info_widget import info_widget
 from widgets.main_table import main_table
 from widgets.progress_widget import progress_widget
 
+ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
+
 
 class main_widget(QtWidgets.QWidget):
     def __init__(self, parent=None, appctxt=None):
         QtWidgets.QWidget.__init__(self)
         self.parent = parent
         self.appctxt = appctxt
-        self.sim_path = ""
+        self.sim_folder = ""
 
     def build(self):
         """Build layout"""
@@ -65,16 +68,16 @@ class main_widget(QtWidgets.QWidget):
         def user_selection():
             """Function to keep user in a loop until they select correct folder"""
             # prompt user to select
-            self.sim_path = QtWidgets.QFileDialog.getExistingDirectory(
+            self.sim_folder = QtWidgets.QFileDialog.getExistingDirectory(
                 parent=self,
                 caption="Select the root Microsoft Flight Simulator directory",
                 dir=os.getenv("APPDATA"),
             )
 
-            if not self.sim_path.strip():
+            if not self.sim_folder.strip():
                 sys.exit()
 
-            elif not flight_sim.is_sim_packages_folder(self.sim_path):
+            elif not flight_sim.is_sim_packages_folder(self.sim_folder):
                 # show error
                 QtWidgets.QMessageBox().warning(
                     self,
@@ -90,10 +93,10 @@ class main_widget(QtWidgets.QWidget):
         # try to automatically find the sim
         (
             success,
-            self.sim_path,
-        ) = flight_sim.find_sim_path()
+            self.sim_folder,
+        ) = flight_sim.find_sim_folder()
 
-        if not self.sim_path:
+        if not self.sim_folder:
             # show error
             QtWidgets.QMessageBox().warning(
                 self,
@@ -107,13 +110,13 @@ class main_widget(QtWidgets.QWidget):
 
         elif not success:
             # save the config file
-            config.set_key_value(config.SIM_PATH_KEY, self.sim_path)
+            config.set_key_value(config.SIM_FOLDER_KEY, self.sim_folder)
             # notify user
             QtWidgets.QMessageBox().information(
                 self,
                 "Info",
                 "Your Microsoft Flight Simulator folder path was automatically detected to {}".format(
-                    self.sim_path
+                    self.sim_folder
                 ),
             )
 
@@ -146,8 +149,8 @@ class main_widget(QtWidgets.QWidget):
 
             wid = info_widget(self, self.appctxt)
             wid.set_data(
-                flight_sim.parse_mod_manifest(self.sim_path, mod_folder, enabled),
-                flight_sim.parse_mod_files(self.sim_path, mod_folder, enabled),
+                flight_sim.parse_mod_manifest(self.sim_folder, mod_folder, enabled),
+                flight_sim.parse_mod_files(self.sim_folder, mod_folder, enabled),
             )
             wid.show()
 
@@ -162,8 +165,13 @@ class main_widget(QtWidgets.QWidget):
             parent=self,
             caption="Select mod archive",
             dir=os.path.join(os.path.expanduser("~"), "Downloads"),
-            filter="Archives (*.zip *.rar *.tar *.bz2 *.7z)",
+            filter=ARCHIVE_FILTER,
         )[0]
+
+        # cancel if result was empty
+        if not mod_archives:
+            self.install_button.setEnabled(True)
+            return
 
         progress = progress_widget(self, self.appctxt)
         progress.set_infinite()
@@ -180,7 +188,7 @@ class main_widget(QtWidgets.QWidget):
                     succeeded.extend(result)
 
                 # setup installer thread
-                installer = flight_sim.install_mod_thread(self.sim_path, mod_archive)
+                installer = flight_sim.install_mod_thread(self.sim_folder, mod_archive)
                 installer.activity_update.connect(progress.set_activity)
 
                 # start the thread
@@ -268,7 +276,7 @@ class main_widget(QtWidgets.QWidget):
 
             # setup uninstaller thread
             uninstaller = flight_sim.uninstall_mod_thread(
-                self.sim_path, mod_folder, enabled
+                self.sim_folder, mod_folder, enabled
             )
             uninstaller.activity_update.connect(progress.set_activity)
 
@@ -294,7 +302,7 @@ class main_widget(QtWidgets.QWidget):
 
             if not enabled:
                 # setup enabler thread
-                enabler = flight_sim.enable_mod_thread(self.sim_path, mod_folder)
+                enabler = flight_sim.enable_mod_thread(self.sim_folder, mod_folder)
                 enabler.activity_update.connect(progress.set_activity)
 
                 # start the thread
@@ -320,7 +328,7 @@ class main_widget(QtWidgets.QWidget):
 
             if enabled:
                 # setup disabler thread
-                disabler = flight_sim.disable_mod_thread(self.sim_path, mod_folder)
+                disabler = flight_sim.disable_mod_thread(self.sim_folder, mod_folder)
                 disabler.activity_update.connect(progress.set_activity)
 
                 # start the thread
@@ -338,8 +346,8 @@ class main_widget(QtWidgets.QWidget):
         self.refresh_button.setEnabled(False)
 
         try:
-            enabled_mods = flight_sim.get_enabled_mods(self.sim_path)
-            disabled_mods = flight_sim.get_disabled_mods(self.sim_path)
+            enabled_mods = flight_sim.get_enabled_mods(self.sim_folder)
+            disabled_mods = flight_sim.get_disabled_mods(self.sim_folder)
 
             self.main_table.set_data(enabled_mods + disabled_mods)
             self.main_table.set_colors(self.parent.theme_menu_action.isChecked())
@@ -353,3 +361,56 @@ class main_widget(QtWidgets.QWidget):
             )
 
         self.refresh_button.setEnabled(True)
+
+    def create_backup(self):
+        """Creates a backup of all enabled mods"""
+
+        archive, _ = QtWidgets.QFileDialog.getSaveFileName(
+            parent=self,
+            caption="Save Backup As",
+            dir=os.path.join(
+                config.BASE_FOLDER,
+                "msfs-mod-backup-{}.zip".format(
+                    datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                ),
+            ),
+            filter=ARCHIVE_FILTER,
+        )
+
+        # no selection will be blank
+        if not archive:
+            return
+
+        progress = progress_widget(self, self.appctxt)
+        progress.set_infinite()
+
+        try:
+            # setup backuper thread
+            backuper = flight_sim.create_backup_thread(self.sim_folder, archive)
+            backuper.activity_update.connect(progress.set_activity)
+
+            # start the thread, with extra 20 min timeout
+            with thread_wait(backuper.finished, timeout=1200000):
+                backuper.start()
+
+            result = QtWidgets.QMessageBox().information(
+                self,
+                "Success",
+                "Backup successfully saved to {}. Would you like to open this directory?".format(
+                    archive
+                ),
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.Yes,
+            )
+            # open resulting directory
+            if result == QtWidgets.QMessageBox.Yes:
+                os.startfile(os.path.dirname(archive))
+
+        except flight_sim.ExtractionError as e:
+            QtWidgets.QMessageBox().warning(
+                self,
+                "Error",
+                "Unable to create archive {}. You need to install a program which can create this, such as 7zip or WinRar.".format(
+                    archive
+                ),
+            )

@@ -7,7 +7,7 @@ BASE_FOLDER = os.path.abspath(os.path.join(os.getenv("APPDATA"), "MSFS Mod Manag
 
 CONFIG_FILE = os.path.abspath(os.path.join(BASE_FOLDER, "config.ini"))
 SECTION_KEY = "settings"
-SIM_PATH_KEY = "sim_path"
+SIM_FOLDER_KEY = "sim_folder"
 LAST_VER_CHECK_KEY = "last_version_check"
 THEME_KEY = "theme"
 

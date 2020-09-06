@@ -78,11 +78,11 @@ class files_table(QtWidgets.QTableWidget):
 
     def contextMenuEvent(self, event):
         """Override default context menu event to provide right-click menu"""
-        self.right_click_menu = QtWidgets.QMenu(self)
+        right_click_menu = QtWidgets.QMenu(self)
 
         open_folder_action = QtWidgets.QAction("Open In Folder", self)
         open_folder_action.triggered.connect(self.parent.open_file_folder)
-        self.right_click_menu.addAction(open_folder_action)
+        right_click_menu.addAction(open_folder_action)
 
         # popup at cursor position
-        self.right_click_menu.popup(QtGui.QCursor.pos())
+        right_click_menu.popup(QtGui.QCursor.pos())

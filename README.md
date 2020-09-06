@@ -2,7 +2,7 @@
 
 <img src="src/main/resources/base/icons/icon.png" alt="Bad Logo (I'm not good at graphic design)" width="200"/>
 
-This is a very early external mod manager for the new Microsoft Flight Simulator.
+This is an external mod manager for the new Microsoft Flight Simulator.
 
 ![Main Screen](screenshots/main-1.png)
 
@@ -16,7 +16,7 @@ No rooting around inside the `AppData` folder.
 ![Sim Directory Detection](screenshots/auto-detect.png)
 
 If the program can't automatically find the installation folder (you put it somewhere
-non-standard), you can manually select the location that contains The `Community` and
+non-standard), you can manually select the location that contains the `Community` and
 `Official` folders.
 
 ![Manual Selection](screenshots/manual-select.png)
@@ -44,12 +44,21 @@ A custom-designed theme to roughly match the MSFS UI is optionally available.
 
 ![Main Screen with Theme](screenshots/main-theme.png)
 
+### No Need to Reinstall Anything
+
+The program parses the native game files, so you do not need to reinstall all of your
+mods to take advantages of the features of this mod manager.
+
 ### Mod Info
 
 View info about a mod and quickly open the directory it is located in.
 
 ![Mod Info Demo](screenshots/mod-info.gif)
 
+### Backups
+
+Easily create backups of all of your enabled mods, in case you need to reinstall
+your game.
 
 ### More To Come
 

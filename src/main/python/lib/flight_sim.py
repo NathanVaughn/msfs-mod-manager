@@ -1,4 +1,4 @@
-import configparser
+import datetime
 import json
 import os
 import shutil
@@ -68,16 +68,16 @@ class install_mod_thread(QtCore.QThread):
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
 
-    def __init__(self, sim_path, mod_archive):
+    def __init__(self, sim_folder, mod_archive):
         logger.debug("Initialzing mod installer thread")
         QtCore.QThread.__init__(self)
-        self.sim_path = sim_path
+        self.sim_folder = sim_folder
         self.mod_archive = mod_archive
 
     def run(self):
         logger.debug("Running mod installer thread")
         output = install_mod(
-            self.sim_path, self.mod_archive, update_func=self.activity_update.emit
+            self.sim_folder, self.mod_archive, update_func=self.activity_update.emit
         )
         self.finished.emit(output)
         logger.debug("Mod installer thread completed")
@@ -89,17 +89,17 @@ class uninstall_mod_thread(QtCore.QThread):
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
 
-    def __init__(self, sim_path, mod_folder, enabled):
+    def __init__(self, sim_folder, mod_folder, enabled):
         logger.debug("Initialzing mod uninstaller thread")
         QtCore.QThread.__init__(self)
-        self.sim_path = sim_path
+        self.sim_folder = sim_folder
         self.mod_folder = mod_folder
         self.enabled = enabled
 
     def run(self):
         logger.debug("Running mod uninstaller thread")
         output = uninstall_mod(
-            self.sim_path,
+            self.sim_folder,
             self.mod_folder,
             self.enabled,
             update_func=self.activity_update.emit,
@@ -114,16 +114,16 @@ class enable_mod_thread(QtCore.QThread):
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
 
-    def __init__(self, sim_path, mod_folder):
+    def __init__(self, sim_folder, mod_folder):
         logger.debug("Initialzing mod enabler thread")
         QtCore.QThread.__init__(self)
-        self.sim_path = sim_path
-        self.mod_archive = mod_folder
+        self.sim_folder = sim_folder
+        self.mod_folder = mod_folder
 
     def run(self):
         logger.debug("Running mod enabler thread")
         output = enable_mod(
-            self.sim_path, self.mod_archive, update_func=self.activity_update.emit
+            self.sim_folder, self.mod_folder, update_func=self.activity_update.emit
         )
         self.finished.emit(output)
         logger.debug("Mod enabler thread completed")
@@ -135,19 +135,40 @@ class disable_mod_thread(QtCore.QThread):
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
 
-    def __init__(self, sim_path, mod_folder):
+    def __init__(self, sim_folder, archive):
         logger.debug("Initialzing mod disabler thread")
         QtCore.QThread.__init__(self)
-        self.sim_path = sim_path
-        self.mod_archive = mod_folder
+        self.sim_folder = sim_folder
+        self.archive = archive
 
     def run(self):
         logger.debug("Running mod disabler thread")
         output = disable_mod(
-            self.sim_path, self.mod_archive, update_func=self.activity_update.emit
+            self.sim_folder, self.archive, update_func=self.activity_update.emit
         )
         self.finished.emit(output)
         logger.debug("Mod disabler thread completed")
+
+
+class create_backup_thread(QtCore.QThread):
+    """Setup a thread to create backup with to not block the main thread"""
+
+    activity_update = QtCore.Signal(object)
+    finished = QtCore.Signal(object)
+
+    def __init__(self, sim_folder, mod_folder):
+        logger.debug("Initialzing backup creator thread")
+        QtCore.QThread.__init__(self)
+        self.sim_folder = sim_folder
+        self.archive = mod_folder
+
+    def run(self):
+        logger.debug("Running backup creator thread")
+        output = create_backup(
+            self.sim_folder, self.archive, update_func=self.activity_update.emit
+        )
+        self.finished.emit(output)
+        logger.debug("Mod backup creator completed")
 
 
 def fix_permissions(folder, update_func=None):
@@ -210,6 +231,32 @@ def get_folder_size(folder):
         return 0
 
 
+def delete_file(file, first=True, update_func=None):
+    """Deletes a file if it exists"""
+    # check if it exists
+    if os.path.isfile(file):
+        try:
+            logger.debug("Attempting to delete file {}".format(file))
+            # try to delete it
+            if update_func:
+                update_func("Deleting file {}".format(file))
+            os.remove(file)
+        except PermissionError:
+            logger.debug("File deletion failed")
+            # if there is a permission error
+            if not first:
+                logger.error("Not first attempt, raising exception")
+                # if not the first attempt, raise error
+                raise AccessError(file)
+            else:
+                logger.debug("Attempting to fix permissions")
+                # otherwise, try to fix permissions and try again
+                fix_permissions(os.path.dirname(file), update_func=update_func)
+                delete_file(file, first=False, update_func=update_func)
+    else:
+        logger.debug("File {} does not exist".format(file))
+
+
 def delete_folder(folder, first=True, update_func=None):
     """Deletes a folder if it exists"""
     # check if it exists
@@ -245,7 +292,11 @@ def copy_folder(src, dest, update_func=None):
 
         # copy the directory
         if update_func:
-            update_func("Copying {} to {}".format(src, dest))
+            update_func(
+                "Copying {} to {} ({})".format(
+                    src, dest, human_readable_size(get_folder_size(src))
+                )
+            )
         shutil.copytree(src, dest)
     else:
         logger.warning("Source folder {} does not exist".format(src))
@@ -329,7 +380,7 @@ def is_sim_packages_folder(folder):
         return False
 
 
-def find_sim_path():
+def find_sim_folder():
     """Attempts to automatically locate the install
     location of Flight Simulator Packages.
     Returns if reading from config file was successful, and
@@ -339,7 +390,7 @@ def find_sim_path():
 
     # first try to read from the config file
     logger.debug("Trying to find simulator path from config file")
-    succeed, value = config.get_key_value(config.SIM_PATH_KEY)
+    succeed, value = config.get_key_value(config.SIM_FOLDER_KEY)
     if succeed and is_sim_packages_folder(value):
         logger.debug("Config file sim path found and valid")
         return (True, value)
@@ -482,24 +533,33 @@ def parse_mod_manifest(sim_folder, folder, enabled):
     logger.debug("Parsing manifest for {}".format(mod_folder))
 
     mod_data = {"folder_name": os.path.basename(mod_folder)}
+    manifest_path = os.path.join(mod_folder, "manifest.json")
 
-    if not os.path.isfile(os.path.join(mod_folder, "manifest.json")):
+    if not os.path.isfile(manifest_path):
         logger.error("No manifest.json found")
         raise NoManifestError(mod_folder)
 
-    with open(os.path.join(mod_folder, "manifest.json"), "r") as f:
+    with open(manifest_path, "r") as f:
         try:
             data = json.load(f)
         except Exception as e:
             logger.exception("manifest.json could not be parsed")
             raise ManifestError(e)
 
+    # manifest data
     mod_data["content_type"] = data.get("content_type", "")
     mod_data["title"] = data.get("title", "")
     mod_data["manufacturer"] = data.get("manufacturer", "")
     mod_data["creator"] = data.get("creator", "")
     mod_data["version"] = data.get("package_version", "")
     mod_data["minimum_game_version"] = data.get("minimum_game_version", "")
+
+    # manifest metadata
+    # Windows considering moving/copying a file 'creating' it again, and not modifying
+    # contents
+    mod_data["time_mod"] = datetime.datetime.fromtimestamp(
+        os.path.getctime(manifest_path)
+    ).strftime("%Y-%m-%d %H:%M:%S")
     mod_data["enabled"] = enabled
 
     return mod_data
@@ -532,8 +592,35 @@ def get_disabled_mods(sim_folder):
     return disabled_mods
 
 
+def create_archive(folder, archive, update_func=None):
+    """Creates an archive file and returns the new path"""
+    uncomp_size = human_readable_size(get_folder_size(folder))
+
+    if update_func:
+        update_func(
+            "Creating archive {}, {} uncompressed.\n This will almost certainly take a while.".format(
+                archive, uncomp_size
+            )
+        )
+
+    # delete the archive if it already exists,
+    # as patoolib will refuse to overwrite an existing archive
+    delete_file(archive, update_func=update_func)
+
+    logger.debug("Creating archive {}".format(archive))
+    # create the archive
+    try:
+        # this expects files/folders in a list
+        patoolib.create_archive(archive, (folder,), verbosity=-1, interactive=False)
+    except patoolib.util.PatoolError:
+        logger.exception("Unable to create archive")
+        raise ExtractionError(archive)
+
+    return archive
+
+
 def extract_archive(archive, update_func=None):
-    """Extracts an archive file into a temp directory, and returns the new path"""
+    """Extracts an archive file into a temp directory and returns the new path"""
     logger.debug("Extracting archive {}".format(archive))
     # create a temp directory if it does not exist
     create_tmp_folder(update_func=update_func)
@@ -549,9 +636,7 @@ def extract_archive(archive, update_func=None):
         logger.debug("Extracting archive {} to {}".format(archive, extract_archive))
 
         patoolib.extract_archive(
-            archive,
-            outdir=extracted_archive,
-            verbosity=-1,
+            archive, outdir=extracted_archive, verbosity=-1, interactive=False
         )
 
         return extracted_archive
@@ -636,3 +721,8 @@ def disable_mod(sim_folder, mod_folder, update_func=None):
 
     # move mod to mod cache
     move_folder(src_folder, dest_folder, update_func=update_func)
+
+
+def create_backup(sim_folder, archive, update_func=None):
+    """Creates a backup of all enabled mods"""
+    return create_archive(sim_mod_folder(sim_folder), archive, update_func=update_func)

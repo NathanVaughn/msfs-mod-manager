@@ -100,7 +100,7 @@ class info_widget(QtWidgets.QWidget):
             flight_sim.human_readable_size(
                 flight_sim.get_folder_size(
                     flight_sim.get_mod_folder(
-                        self.parent.sim_path, self.mod_folder, self.enabled
+                        self.parent.sim_folder, self.mod_folder, self.enabled
                     )
                 )
             )
@@ -110,7 +110,7 @@ class info_widget(QtWidgets.QWidget):
         """Opens the folder for the mod"""
         os.startfile(
             flight_sim.get_mod_folder(
-                self.parent.sim_path, self.mod_folder, self.enabled
+                self.parent.sim_folder, self.mod_folder, self.enabled
             )
         )
 
@@ -122,7 +122,7 @@ class info_widget(QtWidgets.QWidget):
             file_path = self.files_table.get_basic_info(selected[0])
             full_path = os.path.join(
                 flight_sim.get_mod_folder(
-                    self.parent.sim_path, self.mod_folder, self.enabled
+                    self.parent.sim_folder, self.mod_folder, self.enabled
                 ),
                 file_path,
             )
