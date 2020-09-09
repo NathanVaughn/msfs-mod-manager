@@ -78,7 +78,11 @@ class main_widget(QtWidgets.QWidget):
             if not self.sim_folder.strip():
                 sys.exit()
 
-            elif not flight_sim.is_sim_packages_folder(self.sim_folder):
+            elif flight_sim.is_sim_packages_folder(self.sim_folder):
+                # save the config file
+                config.set_key_value(config.SIM_FOLDER_KEY, self.sim_folder)
+
+            else:
                 # show error
                 QtWidgets.QMessageBox().warning(
                     self,
