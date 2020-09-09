@@ -11,8 +11,8 @@ patool = "*"
 pyside2 = "*"
 pyinstaller = "*"
 fbs = "*"
-pypiwin32 = "*"
 loguru = "*"
+pywin32 = "*"
 
 [requires]
 python_version = "3.6"
