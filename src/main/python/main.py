@@ -1,10 +1,11 @@
-import sys
 import os
-from loguru import logger
+import sys
 
 from fbs_runtime.application_context.PySide2 import ApplicationContext
+from loguru import logger
 
 from lib.config import BASE_FOLDER
+from lib.version import get_version
 from widgets.main_window import main_window
 
 if __name__ == "__main__":
@@ -24,7 +25,7 @@ if __name__ == "__main__":
         enqueue=True,
     )
     logger.info("-----------------------")
-    logger.info("Launching application")
+    logger.info("Launching application - {}".format(get_version(appctxt)))
 
     # create instance of main window
     main_window = main_window(app, appctxt)

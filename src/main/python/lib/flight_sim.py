@@ -458,7 +458,6 @@ def find_sim_folder():
         "Packages",
         "Microsoft.FlightSimulator_8wekyb3d8bbwe",
         "LocalCache",
-        "Packages",
     )
     if is_sim_folder(ms_store_folder):
         ms_store_packages_folder = os.path.join(
@@ -466,7 +465,14 @@ def find_sim_folder():
         )
         if is_sim_packages_folder(ms_store_packages_folder):
             logger.debug("MS Store sim path found and valid")
-            return (False, ms_store_folder)
+            return (False, ms_store_packages_folder)
+
+    # boxed edition detection
+    logger.debug("Trying to find simulator path from default boxed edition install")
+    boxed_packages_folder = os.path.join(os.getenv("LOCALAPPDATA"), "MSFSPackages")
+    if is_sim_packages_folder(boxed_packages_folder):
+        logger.debug("Boxed edition sim path found and valid")
+        return (False, boxed_packages_folder)
 
     # last ditch steam detection #1
     logger.debug("Trying to find simulator path from last-ditch Steam install #1")
@@ -476,7 +482,6 @@ def find_sim_folder():
         "steamapps",
         "common",
         "MicrosoftFlightSimulator",
-        "Packages",
     )
     if is_sim_folder(steam_folder):
         steam_packages_folder = os.path.join(parse_user_cfg(sim_folder=steam_folder))
@@ -492,7 +497,6 @@ def find_sim_folder():
         "steamapps",
         "common",
         "Chucky",
-        "Packages",
     )
     if is_sim_folder(steam_folder):
         steam_packages_folder = os.path.join(parse_user_cfg(sim_folder=steam_folder))
