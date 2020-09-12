@@ -561,7 +561,7 @@ class main_widget(QtWidgets.QWidget):
         if result == QtWidgets.QMessageBox.Yes:
             os.startfile(os.path.dirname(archive))
 
-    def refresh(self):
+    def refresh(self, first=False):
         """Refreshes all mod data"""
         self.refresh_button.setEnabled(False)
 
@@ -569,7 +569,7 @@ class main_widget(QtWidgets.QWidget):
             enabled_mods = flight_sim.get_enabled_mods(self.sim_folder)
             disabled_mods = flight_sim.get_disabled_mods(self.sim_folder)
 
-            self.main_table.set_data(enabled_mods + disabled_mods)
+            self.main_table.set_data(enabled_mods + disabled_mods, first=first)
             self.main_table.set_colors(self.parent.theme_menu_action.isChecked())
         except flight_sim.NoManifestError as e:
             QtWidgets.QMessageBox().warning(

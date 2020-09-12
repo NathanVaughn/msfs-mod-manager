@@ -26,7 +26,7 @@ class main_table(QtWidgets.QTableWidget):
             "Creator",
             "Version",
             "Enabled",
-            "Last Modified"
+            "Last Modified",
         ]
 
         self.setSortingEnabled(True)
@@ -36,7 +36,7 @@ class main_table(QtWidgets.QTableWidget):
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.horizontalHeader().setStretchLastSection(True)
 
-    def set_data(self, data):
+    def set_data(self, data, first=False):
         """Puts mod data into table"""
         # workaround for data disappearing
         self.setSortingEnabled(False)
@@ -65,7 +65,8 @@ class main_table(QtWidgets.QTableWidget):
                     self.setItem(r, c, item)
 
             # sort packages alphabetically
-            self.sortItems(0)
+            if first:
+                self.sortItems(0)
 
         # set the horizontal headers
         self.setHorizontalHeaderLabels(self.headers)
