@@ -620,12 +620,16 @@ def get_enabled_mods(sim_folder):
     """Returns data for the enabled mods"""
     logger.debug("Retrieving list of enabled mods")
     enabled_mods = []
+    errors = []
 
     for folder in listdir_dirs(sim_mod_folder(sim_folder)):
         # parse each mod
-        enabled_mods.append(parse_mod_manifest(sim_folder, folder, True))
+        try:
+            enabled_mods.append(parse_mod_manifest(sim_folder, folder, True))
+        except NoManifestError:
+            errors.append(folder)
 
-    return enabled_mods
+    return enabled_mods, errors
 
 
 def get_disabled_mods(sim_folder):
@@ -635,12 +639,16 @@ def get_disabled_mods(sim_folder):
     create_mod_cache_folder()
 
     disabled_mods = []
+    errors = []
 
     for folder in listdir_dirs(MOD_CACHE_FOLDER):
         # parse each mod
-        disabled_mods.append(parse_mod_manifest(sim_folder, folder, False))
+        try:
+            disabled_mods.append(parse_mod_manifest(sim_folder, folder, False))
+        except NoManifestError:
+            errors.append(folder)
 
-    return disabled_mods
+    return disabled_mods, errors
 
 
 def create_archive(folder, archive, update_func=None):

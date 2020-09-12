@@ -565,18 +565,20 @@ class main_widget(QtWidgets.QWidget):
         """Refreshes all mod data"""
         self.refresh_button.setEnabled(False)
 
-        try:
-            enabled_mods = flight_sim.get_enabled_mods(self.sim_folder)
-            disabled_mods = flight_sim.get_disabled_mods(self.sim_folder)
+        enabled_mods, enabled_errors = flight_sim.get_enabled_mods(self.sim_folder)
+        disabled_mods, disabled_errors = flight_sim.get_disabled_mods(self.sim_folder)
 
-            self.main_table.set_data(enabled_mods + disabled_mods, first=first)
-            self.main_table.set_colors(self.parent.theme_menu_action.isChecked())
-        except flight_sim.NoManifestError as e:
+        total_errors = enabled_errors + disabled_errors
+
+        self.main_table.set_data(enabled_mods + disabled_mods, first=first)
+        self.main_table.set_colors(self.parent.theme_menu_action.isChecked())
+
+        if total_errors:
             QtWidgets.QMessageBox().warning(
                 self,
                 "Error",
-                "Unable to parse mod {}. This is likely due to it missing a manifest.json file.".format(
-                    e
+                "Unable to parse mod(s):\n{} \nThis is likely due to it missing a manifest.json file.".format(
+                    "- \n".join(total_errors)
                 ),
             )
 
