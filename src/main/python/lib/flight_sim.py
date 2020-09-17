@@ -70,6 +70,7 @@ class install_mods_thread(QtCore.QThread):
     failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, extracted_archive):
+        """Initialize the mod installer thread."""
         logger.debug("Initialzing mod installer thread")
         QtCore.QThread.__init__(self)
         self.sim_folder = sim_folder
@@ -117,7 +118,6 @@ class install_mod_archive_thread(QtCore.QThread):
 
 class uninstall_mod_thread(QtCore.QThread):
     """Setup a thread to uninstall mods with and not block the main thread."""
-
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
@@ -147,7 +147,6 @@ class uninstall_mod_thread(QtCore.QThread):
 
 class enable_mod_thread(QtCore.QThread):
     """Setup a thread to enable mods with and not block the main thread."""
-
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
@@ -173,7 +172,6 @@ class enable_mod_thread(QtCore.QThread):
 
 class disable_mod_thread(QtCore.QThread):
     """Setup a thread to disable mods with and not block the main thread."""
-
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
@@ -199,7 +197,6 @@ class disable_mod_thread(QtCore.QThread):
 
 class create_backup_thread(QtCore.QThread):
     """Setup a thread to create backup with and not block the main thread."""
-
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
@@ -436,7 +433,6 @@ def find_sim_folder():
     """Attempts to automatically locate the install location of FS Packages.
     Returns if reading from config file was successful, and
     returns absolute sim folder path. Otherwise, returns None if it fails."""
-
     logger.debug("Attempting to automatically locate simulator path")
 
     # first try to read from the config file

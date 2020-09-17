@@ -16,7 +16,6 @@ LOOKUP = {
 class main_table(QtWidgets.QTableWidget):
     def __init__(self, parent=None):
         """Primary application table widget for mod summary."""
-
         super(main_table, self).__init__(parent)
         self.parent = parent
 

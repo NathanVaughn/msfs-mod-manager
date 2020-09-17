@@ -17,7 +17,7 @@ def get_version(appctxt):
         version = "v{}".format(data["version"])
         logger.debug("Version found: {}".format(version))
         return version
-    except Exception as e:
+    except Exception:
         logger.exception("Determining application version failed")
         return "v??"
 

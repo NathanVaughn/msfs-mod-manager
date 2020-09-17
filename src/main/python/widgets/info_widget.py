@@ -10,7 +10,6 @@ from widgets.files_table import files_table
 class info_widget(QtWidgets.QWidget):
     def __init__(self, parent=None, appctxt=None):
         """Info widget/dialog for displaying mod info."""
-
         QtWidgets.QWidget.__init__(self)
         self.parent = parent
         self.appctxt = appctxt

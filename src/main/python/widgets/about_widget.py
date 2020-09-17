@@ -8,7 +8,6 @@ import PySide2.QtWidgets as QtWidgets
 class about_widget(QtWidgets.QDialog):
     def __init__(self, parent=None, appctxt=None):
         """Application about widget."""
-        
         QtWidgets.QDialog.__init__(self)
         self.parent = parent
         self.appctxt = appctxt
@@ -22,10 +21,12 @@ class about_widget(QtWidgets.QDialog):
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
         self.layout = QtWidgets.QVBoxLayout()
-        self.font = QtGui.QFont('Arial', 16)
+        self.font = QtGui.QFont("Arial", 16)
 
         self.icon = QtWidgets.QLabel()
-        self.icon.setPixmap(QtGui.QPixmap(self.appctxt.get_resource(os.path.join("icons", "icon.png"))))
+        self.icon.setPixmap(
+            QtGui.QPixmap(self.appctxt.get_resource(os.path.join("icons", "icon.png")))
+        )
         self.layout.addWidget(self.icon)
 
         self.name = QtWidgets.QLabel("Microsoft Flight Simulator Mod Manager")

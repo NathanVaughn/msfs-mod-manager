@@ -20,7 +20,6 @@ ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
 class main_widget(QtWidgets.QWidget):
     def __init__(self, parent=None, appctxt=None):
         """Main application widget."""
-
         QtWidgets.QWidget.__init__(self)
         self.parent = parent
         self.appctxt = appctxt
@@ -68,7 +67,7 @@ class main_widget(QtWidgets.QWidget):
     def find_sim(self):
         """Sets the path to the simulator root folder."""
         def user_selection():
-            """Function to keep user in a loop until they select correct folder"""
+            """Function to keep user in a loop until they select correct folder."""
             # prompt user to select
             self.sim_folder = QtWidgets.QFileDialog.getExistingDirectory(
                 parent=self,

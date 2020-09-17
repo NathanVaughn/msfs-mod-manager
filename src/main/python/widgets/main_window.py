@@ -11,7 +11,6 @@ from lib.theme import set_theme, get_theme
 class main_window(QtWidgets.QMainWindow):
     def __init__(self, parent=None, appctxt=None):
         """Main application window."""
-
         QtWidgets.QMainWindow.__init__(self)
         self.parent = parent
         self.appctxt = appctxt

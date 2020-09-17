@@ -5,7 +5,6 @@ import PySide2.QtWidgets as QtWidgets
 class progress_widget(QtWidgets.QDialog):
     def __init__(self, parent=None, appctxt=None):
         """Progress bar dialog."""
-
         QtWidgets.QDialog.__init__(self)
         self.parent = parent
         self.appctxt = appctxt

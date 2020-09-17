@@ -11,7 +11,6 @@ LOOKUP = {
 class files_table(QtWidgets.QTableWidget):
     def __init__(self, parent=None):
         """Table widget for displaying mod files."""
-
         super(files_table, self).__init__(parent)
         self.parent = parent
 
