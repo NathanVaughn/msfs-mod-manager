@@ -19,13 +19,15 @@ ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
 
 class main_widget(QtWidgets.QWidget):
     def __init__(self, parent=None, appctxt=None):
+        """Main application widget."""
+
         QtWidgets.QWidget.__init__(self)
         self.parent = parent
         self.appctxt = appctxt
         self.sim_folder = ""
 
     def build(self):
-        """Build layout"""
+        """Build layout."""
         self.layout = QtWidgets.QGridLayout()
 
         self.install_button = QtWidgets.QPushButton("Install", self)
@@ -60,12 +62,11 @@ class main_widget(QtWidgets.QWidget):
         self.main_table.doubleClicked.connect(self.info)
 
     def get_selected_rows(self):
-        """Returns a list of row indexes that are currently selected"""
+        """Returns a list of row indexes that are currently selected."""
         return list({index.row() for index in self.main_table.selectedIndexes()})
 
     def find_sim(self):
-        """Sets the path to the simulator root folder"""
-
+        """Sets the path to the simulator root folder."""
         def user_selection():
             """Function to keep user in a loop until they select correct folder"""
             # prompt user to select
@@ -126,6 +127,7 @@ class main_widget(QtWidgets.QWidget):
             )
 
     def check_version(self):
+        """Checks the application version and allows user to open browser to update."""
         return_url = version.check_version(self.appctxt)
 
         if return_url:
@@ -140,11 +142,11 @@ class main_widget(QtWidgets.QWidget):
                 webbrowser.open(return_url)
 
     def about(self):
-        """Launch the about widget"""
+        """Launch the about widget."""
         about_widget(self, self.appctxt).exec_()
 
     def info(self):
-        """Open dialog to view mod info"""
+        """Open dialog to view mod info."""
         # self.info_button.setEnabled(False)
 
         selected = self.get_selected_rows()
@@ -162,7 +164,7 @@ class main_widget(QtWidgets.QWidget):
         # self.info_button.setEnabled(True)
 
     def install_archive(self):
-        """Installs selected mod archives"""
+        """Installs selected mod archives."""
         self.install_button.setEnabled(False)
 
         # first, let user select multiple archives
@@ -267,7 +269,7 @@ class main_widget(QtWidgets.QWidget):
         self.install_button.setEnabled(True)
 
     def install_folder(self):
-        """Installs selected mod folders"""
+        """Installs selected mod folders."""
         # self.install_button.setEnabled(False)
 
         # first, let user select multiple folders
@@ -356,7 +358,7 @@ class main_widget(QtWidgets.QWidget):
         # self.install_button.setEnabled(True)
 
     def uninstall(self):
-        """Uninstalls selected mods"""
+        """Uninstalls selected mods."""
         self.uninstall_button.setEnabled(False)
 
         selected = self.get_selected_rows()
@@ -415,7 +417,7 @@ class main_widget(QtWidgets.QWidget):
         self.uninstall_button.setEnabled(True)
 
     def enable(self):
-        """Enables selected mods"""
+        """Enables selected mods."""
         self.enable_button.setEnabled(False)
 
         progress = progress_widget(self, self.appctxt)
@@ -459,7 +461,7 @@ class main_widget(QtWidgets.QWidget):
         self.enable_button.setEnabled(True)
 
     def disable(self):
-        """Disables selected mods"""
+        """Disables selected mods."""
         self.disable_button.setEnabled(False)
 
         progress = progress_widget(self, self.appctxt)
@@ -503,7 +505,7 @@ class main_widget(QtWidgets.QWidget):
         self.disable_button.setEnabled(True)
 
     def create_backup(self):
-        """Creates a backup of all enabled mods"""
+        """Creates a backup of all enabled mods."""
 
         archive = QtWidgets.QFileDialog.getSaveFileName(
             parent=self,
@@ -569,10 +571,11 @@ class main_widget(QtWidgets.QWidget):
         )
         # open resulting directory
         if result == QtWidgets.QMessageBox.Yes:
-            os.startfile(os.path.dirname(archive))
+            # this will always be opening a folder and therefore is safe
+            os.startfile(os.path.dirname(archive)) # nosec
 
     def refresh(self, first=False):
-        """Refreshes all mod data"""
+        """Refreshes all mod data."""
         self.refresh_button.setEnabled(False)
 
         enabled_mods, enabled_errors = flight_sim.get_enabled_mods(self.sim_folder)

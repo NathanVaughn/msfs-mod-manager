@@ -7,6 +7,8 @@ import PySide2.QtWidgets as QtWidgets
 
 class about_widget(QtWidgets.QDialog):
     def __init__(self, parent=None, appctxt=None):
+        """Application about widget."""
+        
         QtWidgets.QDialog.__init__(self)
         self.parent = parent
         self.appctxt = appctxt

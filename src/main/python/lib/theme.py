@@ -5,7 +5,7 @@ FS_THEME = "fs"
 
 
 def get_theme():
-    """Returns True if FS theme is selected, otherwise returns False"""
+    """Returns True if FS theme is selected, otherwise returns False."""
     logger.debug("Getting application theme from config file")
     succeed, value = config.get_key_value(config.THEME_KEY)
     status = succeed and value == FS_THEME
@@ -14,7 +14,7 @@ def get_theme():
 
 
 def set_theme(appctxt, fs_theme):
-    """Writes theme selection to config file and sets the app stylesheet"""
+    """Writes theme selection to config file and sets the app stylesheet."""
     logger.debug("Writing theme selection to config file")
     if fs_theme:
         config.set_key_value(config.THEME_KEY, FS_THEME)

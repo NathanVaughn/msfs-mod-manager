@@ -1,4 +1,3 @@
-from turtle import right
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
@@ -16,6 +15,8 @@ LOOKUP = {
 
 class main_table(QtWidgets.QTableWidget):
     def __init__(self, parent=None):
+        """Primary application table widget for mod summary."""
+
         super(main_table, self).__init__(parent)
         self.parent = parent
 
@@ -37,7 +38,7 @@ class main_table(QtWidgets.QTableWidget):
         self.horizontalHeader().setStretchLastSection(True)
 
     def set_data(self, data, first=False):
-        """Puts mod data into table"""
+        """Puts mod data into table."""
         # workaround for data disappearing
         self.setSortingEnabled(False)
         # clear all data
@@ -77,14 +78,14 @@ class main_table(QtWidgets.QTableWidget):
         self.resize()
 
     def resize(self):
-        """Resize the rows and columns"""
+        """Resize the rows and columns."""
         # resize rows and columns
         self.resizeColumnsToContents()
         # this HAS to come second for some reason
         self.resizeRowsToContents()
 
     def set_colors(self, dark):
-        """Set the colors for the rows, based on being a dark theme or not"""
+        """Set the colors for the rows, based on being a dark theme or not."""
         for r in range(self.rowCount()):
             _, enabled = self.get_basic_info(r)
             if not enabled:
@@ -98,14 +99,14 @@ class main_table(QtWidgets.QTableWidget):
                 self.item(r, c).setForeground(color)
 
     def get_basic_info(self, row_id):
-        """Returns folder name and enabled status of a given row index"""
+        """Returns folder name and enabled status of a given row index."""
         return (
             self.item(row_id, LOOKUP["folder_name"]).text(),
             self.item(row_id, LOOKUP["enabled"]).text() == "True",
         )
 
     def contextMenuEvent(self, event):
-        """Override default context menu event to provide right-click menu"""
+        """Override default context menu event to provide right-click menu."""
         right_click_menu = QtWidgets.QMenu(self)
 
         info_action = QtWidgets.QAction("Info", self)

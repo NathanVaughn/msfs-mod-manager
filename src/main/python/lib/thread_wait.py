@@ -12,8 +12,8 @@ def thread_wait(
     failed_func=None,
     update_signal=None,
 ):
-    """Prevent the primary event loop from progressing without blocking GUI events,
-    until the given signal is emitted or the timeout reached"""
+    """Prevent the primary event loop from progressing without blocking GUI events.
+    This progresses until the given signal is emitted or the timeout reached."""
     # https://www.jdreaver.com/posts/2014-07-03-waiting-for-signals-pyside-pyqt.html
     # create a new event loop
     loop = QtCore.QEventLoop()

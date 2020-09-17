@@ -9,6 +9,8 @@ from widgets.files_table import files_table
 
 class info_widget(QtWidgets.QWidget):
     def __init__(self, parent=None, appctxt=None):
+        """Info widget/dialog for displaying mod info."""
+
         QtWidgets.QWidget.__init__(self)
         self.parent = parent
         self.appctxt = appctxt
@@ -69,11 +71,11 @@ class info_widget(QtWidgets.QWidget):
         self.open_folder_button.clicked.connect(self.open_folder)
 
     def get_selected_rows(self):
-        """Returns a list of row indexes that are currently selected"""
+        """Returns a list of row indexes that are currently selected."""
         return list({index.row() for index in self.files_table.selectedIndexes()})
 
     def set_data(self, mod_data, files_data):
-        """Loads all the data for the widget"""
+        """Loads all the data for the widget."""
         self.setWindowTitle("{} - Info".format(mod_data["folder_name"]))
 
         # form data
@@ -107,15 +109,16 @@ class info_widget(QtWidgets.QWidget):
         )
 
     def open_folder(self):
-        """Opens the folder for the mod"""
-        os.startfile(
+        """Opens the folder for the mod."""
+        # this will always be opening a folder and therefore is safe
+        os.startfile( # nosec
             flight_sim.get_mod_folder(
                 self.parent.sim_folder, self.mod_folder, self.enabled
-            )
+            ),
         )
 
     def open_file_folder(self):
-        """Opens the folder for a selected file"""
+        """Opens the folder for a selected file."""
         selected = self.get_selected_rows()
 
         if selected:
@@ -127,4 +130,5 @@ class info_widget(QtWidgets.QWidget):
                 file_path,
             )
             # this takes off the filename
-            os.startfile(os.path.dirname(full_path))
+            # this will always be opening a folder and therefore is safe
+            os.startfile(os.path.dirname(full_path))  # nosec

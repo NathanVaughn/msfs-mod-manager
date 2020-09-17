@@ -10,6 +10,8 @@ LOOKUP = {
 
 class files_table(QtWidgets.QTableWidget):
     def __init__(self, parent=None):
+        """Table widget for displaying mod files."""
+
         super(files_table, self).__init__(parent)
         self.parent = parent
 
@@ -26,7 +28,7 @@ class files_table(QtWidgets.QTableWidget):
         self.horizontalHeader().setStretchLastSection(True)
 
     def set_data(self, data):
-        """Puts mod data into table"""
+        """Puts mod data into table."""
         # workaround for data disappearing
         self.setSortingEnabled(False)
         # clear all data
@@ -66,18 +68,18 @@ class files_table(QtWidgets.QTableWidget):
         self.resize()
 
     def resize(self):
-        """Resize the rows and columns"""
+        """Resize the rows and columns."""
         # resize rows and columns
         self.resizeColumnsToContents()
         # this HAS to come second for some reason
         self.resizeRowsToContents()
 
     def get_basic_info(self, row_id):
-        """Returns path of a given row index"""
+        """Returns path of a given row index."""
         return self.item(row_id, LOOKUP["path"]).text()
 
     def contextMenuEvent(self, event):
-        """Override default context menu event to provide right-click menu"""
+        """Override default context menu event to provide right-click menu."""
         right_click_menu = QtWidgets.QMenu(self)
 
         open_folder_action = QtWidgets.QAction("Open In Folder", self)

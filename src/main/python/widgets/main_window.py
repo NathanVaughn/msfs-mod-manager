@@ -10,12 +10,14 @@ from lib.theme import set_theme, get_theme
 
 class main_window(QtWidgets.QMainWindow):
     def __init__(self, parent=None, appctxt=None):
+        """Main application window."""
+
         QtWidgets.QMainWindow.__init__(self)
         self.parent = parent
         self.appctxt = appctxt
 
     def build(self):
-        """Build widget"""
+        """Build window."""
         self.setWindowTitle("MSFS Mod Manager - {}".format(get_version(self.appctxt)))
         self.setWindowIcon(
             QtGui.QIcon(self.appctxt.get_resource(os.path.join("icons", "icon.png")))
@@ -87,6 +89,7 @@ class main_window(QtWidgets.QMainWindow):
         info_menu.addAction(menu_action)
 
     def set_theme(self):
+        """Apply theme to the window"""
         # apply theme
         set_theme(self.appctxt, self.theme_menu_action.isChecked())
         # reformat table

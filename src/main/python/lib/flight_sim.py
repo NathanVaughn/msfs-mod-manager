@@ -20,50 +20,50 @@ if not os.path.exists(config.BASE_FOLDER):
 
 
 class AccessError(Exception):
-    """Raised after an uncorrectable permission error"""
+    """Raised after an uncorrectable permission error."""
 
     pass
 
 
 class ExtractionError(Exception):
     """Raised when an archive cannot be extracted.
-    Usually due to a missing appropriate extractor program"""
+    Usually due to a missing appropriate extractor program."""
 
     pass
 
 
 class LayoutError(Exception):
-    """Raised when a layout.json file cannot be parsed for a mod """
+    """Raised when a layout.json file cannot be parsed for a mod."""
 
     pass
 
 
 class NoLayoutError(Exception):
-    """Raised when a layout.json file cannot be found for a mod"""
+    """Raised when a layout.json file cannot be found for a mod."""
 
     pass
 
 
 class ManifestError(Exception):
-    """Raised when a manifest.json file cannot be parsed for a mod"""
+    """Raised when a manifest.json file cannot be parsed for a mod."""
 
     pass
 
 
 class NoManifestError(Exception):
-    """Raised when a manifest.json file cannot be found for a mod"""
+    """Raised when a manifest.json file cannot be found for a mod."""
 
     pass
 
 
 class NoModsError(Exception):
-    """Raised when no mods are found in an archive"""
+    """Raised when no mods are found in an archive."""
 
     pass
 
 
 class install_mods_thread(QtCore.QThread):
-    """Setup a thread to install mods with and not block the main thread"""
+    """Setup a thread to install mods with and not block the main thread."""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
@@ -90,13 +90,14 @@ class install_mods_thread(QtCore.QThread):
 
 
 class install_mod_archive_thread(QtCore.QThread):
-    """Setup a thread to install mod archive with and not block the main thread"""
+    """Setup a thread to install mod archive with and not block the main thread."""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_archive):
+        """Initialize the mod archive installer thread."""
         logger.debug("Initialzing mod archive installer thread")
         QtCore.QThread.__init__(self)
         self.sim_folder = sim_folder
@@ -115,13 +116,14 @@ class install_mod_archive_thread(QtCore.QThread):
 
 
 class uninstall_mod_thread(QtCore.QThread):
-    """Setup a thread to uninstall mods with and not block the main thread"""
+    """Setup a thread to uninstall mods with and not block the main thread."""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_folder, enabled):
+        """Initialize the mod uninstaller thread."""
         logger.debug("Initialzing mod uninstaller thread")
         QtCore.QThread.__init__(self)
         self.sim_folder = sim_folder
@@ -144,13 +146,14 @@ class uninstall_mod_thread(QtCore.QThread):
 
 
 class enable_mod_thread(QtCore.QThread):
-    """Setup a thread to enable mods with and not block the main thread"""
+    """Setup a thread to enable mods with and not block the main thread."""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_folder):
+        """Initialize the mod enabler thread."""
         logger.debug("Initialzing mod enabler thread")
         QtCore.QThread.__init__(self)
         self.sim_folder = sim_folder
@@ -169,13 +172,14 @@ class enable_mod_thread(QtCore.QThread):
 
 
 class disable_mod_thread(QtCore.QThread):
-    """Setup a thread to disable mods with and not block the main thread"""
+    """Setup a thread to disable mods with and not block the main thread."""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, archive):
+        """Initialize the mod disabler thread."""
         logger.debug("Initialzing mod disabler thread")
         QtCore.QThread.__init__(self)
         self.sim_folder = sim_folder
@@ -194,13 +198,14 @@ class disable_mod_thread(QtCore.QThread):
 
 
 class create_backup_thread(QtCore.QThread):
-    """Setup a thread to create backup with and not block the main thread"""
+    """Setup a thread to create backup with and not block the main thread."""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_folder):
+        """Initialize the backup creator thread."""
         logger.debug("Initialzing backup creator thread")
         QtCore.QThread.__init__(self)
         self.sim_folder = sim_folder
@@ -219,7 +224,7 @@ class create_backup_thread(QtCore.QThread):
 
 
 def fix_permissions(folder, update_func=None):
-    """Recursively fixes the permissions of a folder so that it can be deleted"""
+    """Recursively fixes the permissions of a folder so that it can be deleted."""
     if update_func:
         update_func("Fixing permissions for {}".format(folder))
 
@@ -239,7 +244,7 @@ def fix_permissions(folder, update_func=None):
 
 
 def listdir_dirs(folder):
-    """Returns a list of directories inside of a directory"""
+    """Returns a list of directories inside of a directory."""
     # logger.debug("Listing directories of {}".format(folder))
     if os.path.isdir(folder):
         dirs = []
@@ -254,7 +259,7 @@ def listdir_dirs(folder):
 
 
 def human_readable_size(size, decimal_places=2):
-    """Convert number of bytes into human readable value"""
+    """Convert number of bytes into human readable value."""
     # https://stackoverflow.com/a/43690506/9944427
     # logger.debug("Converting {} bytes to human readable format".format(size))
     for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
@@ -265,7 +270,7 @@ def human_readable_size(size, decimal_places=2):
 
 
 def get_folder_size(folder):
-    """Return the size in bytes of a folder, recursively"""
+    """Return the size in bytes of a folder, recursively."""
     logger.debug("Returning size of {} recursively".format(folder))
     if os.path.isdir(folder):
         return sum(
@@ -279,7 +284,7 @@ def get_folder_size(folder):
 
 
 def delete_file(file, first=True, update_func=None):
-    """Deletes a file if it exists"""
+    """Deletes a file if it exists."""
     # check if it exists
     if os.path.isfile(file):
         try:
@@ -305,7 +310,7 @@ def delete_file(file, first=True, update_func=None):
 
 
 def delete_folder(folder, first=True, update_func=None):
-    """Deletes a folder if it exists"""
+    """Deletes a folder if it exists."""
     # check if it exists
     if os.path.isdir(folder):
         try:
@@ -331,7 +336,7 @@ def delete_folder(folder, first=True, update_func=None):
 
 
 def copy_folder(src, dest, update_func=None):
-    """Copies a folder if it exists"""
+    """Copies a folder if it exists."""
     logger.debug("Copying folder {} to {}".format(src, dest))
     # check if it exists
     if os.path.isdir(src):
@@ -350,29 +355,29 @@ def copy_folder(src, dest, update_func=None):
 
 
 def move_folder(src, dest, update_func=None):
-    """Copies a folder and deletes the original"""
+    """Copies a folder and deletes the original."""
     logger.debug("Moving folder {} to {}".format(src, dest))
     copy_folder(src, dest, update_func=update_func)
     delete_folder(src, update_func=update_func)
 
 
 def create_tmp_folder(update_func=None):
-    """Deletes existing temp folder if it exists and creates a new one"""
+    """Deletes existing temp folder if it exists and creates a new one."""
     delete_folder(TEMP_FOLDER, update_func=update_func)
     logger.debug("Creating temp folder {}".format(TEMP_FOLDER))
     os.makedirs(TEMP_FOLDER)
 
 
 def create_mod_cache_folder():
-    """Creates mod cache folder if it does not exist"""
+    """Creates mod cache folder if it does not exist."""
     if not os.path.exists(MOD_CACHE_FOLDER):
         logger.debug("Creating mod cache folder {}".format(MOD_CACHE_FOLDER))
         os.makedirs(MOD_CACHE_FOLDER)
 
 
 def parse_user_cfg(sim_folder=None, filename=None):
-    """Parses the given UserCfg.opt file to find the installed packages path
-    Returns the path as a string"""
+    """Parses the given UserCfg.opt file.
+    This finds the installed packages path and returns the path as a string."""
 
     logger.debug("Parsing UserCfg.opt file")
 
@@ -400,14 +405,14 @@ def parse_user_cfg(sim_folder=None, filename=None):
 
 
 def is_sim_folder(folder):
-    """Returns True/False, whether FlightSimulator.CFG exists inside the
-    given directory. Not a perfect tests, but a solid guess."""
+    """Returns if FlightSimulator.CFG exists inside the given directory.
+    Not a perfect tests, but a solid guess."""
     logger.debug("Testing if {} is main MSFS folder".format(folder))
     try:
         status = os.path.isfile(os.path.join(folder, "FlightSimulator.CFG"))
         logger.debug("Folder {} is main MSFS folder: {}".format(folder, status))
         return status
-    except Exception as e:
+    except Exception:
         logger.exception("Checking sim folder status failed")
         return False
 
@@ -422,16 +427,15 @@ def is_sim_packages_folder(folder):
         status = "Official" in packages_folders and "Community" in packages_folders
         logger.debug("Folder {} is MSFS sim packages folder: {}".format(folder, status))
         return status
-    except Exception as e:
+    except Exception:
         logger.exception("Checking sim packages folder status failed")
         return False
 
 
 def find_sim_folder():
-    """Attempts to automatically locate the install
-    location of Flight Simulator Packages.
+    """Attempts to automatically locate the install location of FS Packages.
     Returns if reading from config file was successful, and
-    returns absolute sim folder path. Otherwise, returns None if it fails"""
+    returns absolute sim folder path. Otherwise, returns None if it fails."""
 
     logger.debug("Attempting to automatically locate simulator path")
 
@@ -511,7 +515,7 @@ def find_sim_folder():
 
 def sim_mod_folder(sim_folder):
     """Returns the path to the community packages folder inside Flight Simulator.
-    Tries to resolve symlinks in every step of the path"""
+    Tries to resolve symlinks in every step of the path."""
     # logger.debug("Determining path for sim community packages folder")
 
     if os.path.islink(sim_folder):
@@ -528,7 +532,7 @@ def sim_mod_folder(sim_folder):
 
 
 def get_mod_folder(sim_folder, folder, enabled):
-    """Returns path to mod folder given folder name and enabled status"""
+    """Returns path to mod folder given folder name and enabled status."""
     # logger.debug("Determining path for mod {}, enabled: {}".format(folder, enabled))
 
     if enabled:
@@ -542,7 +546,7 @@ def get_mod_folder(sim_folder, folder, enabled):
 
 
 def parse_mod_layout(sim_folder, folder, enabled):
-    """Builds the mod files info as a dictionary. Parsed from the layout.json"""
+    """Builds the mod files info as a dictionary. Parsed from the layout.json."""
     mod_folder = get_mod_folder(sim_folder, folder, enabled)
     logger.debug("Parsing layout for {}".format(mod_folder))
 
@@ -561,7 +565,7 @@ def parse_mod_layout(sim_folder, folder, enabled):
 
 
 def parse_mod_files(sim_folder, folder, enabled):
-    """Builds the mod files info as a dictionary. Parsed from the layout.json"""
+    """Builds the mod files info as a dictionary. Parsed from the layout.json."""
     mod_folder = get_mod_folder(sim_folder, folder, enabled)
     logger.debug("Parsing all mod files for {}".format(mod_folder))
 
@@ -579,7 +583,7 @@ def parse_mod_files(sim_folder, folder, enabled):
 
 
 def parse_mod_manifest(sim_folder, folder, enabled):
-    """Builds the mod metadata as a dictionary. Parsed from the manifest.json"""
+    """Builds the mod metadata as a dictionary. Parsed from the manifest.json."""
     mod_folder = get_mod_folder(sim_folder, folder, enabled)
     logger.debug("Parsing manifest for {}".format(mod_folder))
 
@@ -617,7 +621,7 @@ def parse_mod_manifest(sim_folder, folder, enabled):
 
 
 def get_enabled_mods(sim_folder):
-    """Returns data for the enabled mods"""
+    """Returns data for the enabled mods."""
     logger.debug("Retrieving list of enabled mods")
     enabled_mods = []
     errors = []
@@ -633,7 +637,7 @@ def get_enabled_mods(sim_folder):
 
 
 def get_disabled_mods(sim_folder):
-    """Returns data for the disabled mods"""
+    """Returns data for the disabled mods."""
     logger.debug("Retrieving list of disabled mods")
     # ensure cache folder already exists
     create_mod_cache_folder()
@@ -652,7 +656,7 @@ def get_disabled_mods(sim_folder):
 
 
 def create_archive(folder, archive, update_func=None):
-    """Creates an archive file and returns the new path"""
+    """Creates an archive file and returns the new path."""
     uncomp_size = human_readable_size(get_folder_size(folder))
 
     if update_func:
@@ -679,7 +683,7 @@ def create_archive(folder, archive, update_func=None):
 
 
 def extract_archive(archive, update_func=None):
-    """Extracts an archive file into a temp directory and returns the new path"""
+    """Extracts an archive file into a temp directory and returns the new path."""
     logger.debug("Extracting archive {}".format(archive))
     # create a temp directory if it does not exist
     create_tmp_folder(update_func=update_func)
@@ -705,7 +709,7 @@ def extract_archive(archive, update_func=None):
 
 
 def determine_mod_folders(folder, update_func=None):
-    """Walks a directory to find the folder(s) with a manifest.json file in them"""
+    """Walks a directory to find the folder(s) with a manifest.json file in them."""
     logger.debug("Locating mod folders inside {}".format(folder))
     mod_folders = []
 
@@ -732,7 +736,7 @@ def determine_mod_folders(folder, update_func=None):
 
 
 def install_mods(sim_folder, extracted_archive, update_func=None):
-    """Extracts and installs a new mod"""
+    """Extracts and installs a new mod."""
     logger.debug("Installing mod {}".format(extracted_archive))
 
     # determine the mods inside the extracted archive
@@ -755,7 +759,7 @@ def install_mods(sim_folder, extracted_archive, update_func=None):
 
 
 def install_mod_archive(sim_folder, mod_archive, update_func=None):
-    """Extracts and installs a new mod"""
+    """Extracts and installs a new mod."""
     logger.debug("Installing mod {}".format(mod_archive))
     # extract the archive
     extracted_archive = extract_archive(mod_archive, update_func=update_func)
@@ -764,26 +768,28 @@ def install_mod_archive(sim_folder, mod_archive, update_func=None):
 
 
 def uninstall_mod(sim_folder, mod_folder, enabled, update_func=None):
-    """Uninstalls a mod"""
+    """Uninstalls a mod."""
     logger.debug("Uninstalling mod {}".format(mod_folder))
     # delete folder
     delete_folder(
         get_mod_folder(sim_folder, mod_folder, enabled), update_func=update_func
     )
+    return True
 
 
 def enable_mod(sim_folder, mod_folder, update_func=None):
-    """Copies mod folder into flight sim install"""
+    """Copies mod folder into flight sim install."""
     logger.debug("Enabling mod {}".format(mod_folder))
     src_folder = os.path.join(MOD_CACHE_FOLDER, mod_folder)
     dest_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
 
     # move mod to sim
     move_folder(src_folder, dest_folder, update_func=update_func)
+    return True
 
 
 def disable_mod(sim_folder, mod_folder, update_func=None):
-    """Copies mod folder into mod cache"""
+    """Copies mod folder into mod cache."""
     logger.debug("Disabling mod {}".format(mod_folder))
     create_mod_cache_folder()
 
@@ -792,8 +798,9 @@ def disable_mod(sim_folder, mod_folder, update_func=None):
 
     # move mod to mod cache
     move_folder(src_folder, dest_folder, update_func=update_func)
+    return True
 
 
 def create_backup(sim_folder, archive, update_func=None):
-    """Creates a backup of all enabled mods"""
+    """Creates a backup of all enabled mods."""
     return create_archive(sim_mod_folder(sim_folder), archive, update_func=update_func)

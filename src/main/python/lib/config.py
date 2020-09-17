@@ -14,7 +14,7 @@ THEME_KEY = "theme"
 
 def get_key_value(key):
     """Attempts to load value from key in the config file.
-    Returns a tuple of if the value was found, and if so, what the contents where"""
+    Returns a tuple of if the value was found, and if so, what the contents where."""
     logger.debug(
         "Attempting to read key '{}' from the main config file {}".format(
             key, CONFIG_FILE
@@ -37,7 +37,7 @@ def get_key_value(key):
 
 
 def set_key_value(key, value):
-    """Writes a key and value to the config file"""
+    """Writes a key and value to the config file."""
     logger.debug(
         "Attempting to write key '{}' and value '{}' to the main config file {}".format(
             key, value, CONFIG_FILE

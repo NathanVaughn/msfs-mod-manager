@@ -1,7 +1,6 @@
 import datetime
 import json
 import urllib.request
-import datetime
 
 from loguru import logger
 
@@ -9,7 +8,7 @@ import lib.config as config
 
 
 def get_version(appctxt):
-    """Returns the version of the application"""
+    """Returns the version of the application."""
     logger.debug("Attemping to determine current application version")
     try:
         logger.debug("Parsing {}".format(appctxt.get_resource("base.json")))
@@ -24,8 +23,8 @@ def get_version(appctxt):
 
 
 def check_version(appctxt):
-    """Returns the release URL if a new version is installed. Otherwise,
-    returns False"""
+    """Returns the release URL if a new version is installed.
+    Otherwise, returns False."""
     logger.debug("Checking if a new version is available")
     time_format = "%Y-%m-%d %H:%M:%S"
 
@@ -62,7 +61,8 @@ def check_version(appctxt):
 
     try:
         logger.debug("Attempting to open url {}".format(url))
-        page = urllib.request.urlopen(url)
+        # always will be opening the above hard-coded URL
+        page = urllib.request.urlopen(url)  # nosec
     except Exception as e:
         logger.exception("Opening url {} failed".format(url))
         return
@@ -77,7 +77,7 @@ def check_version(appctxt):
         logger.debug("Attemping to parse page contents")
         parsed_data = json.loads(data)
         remote_version = parsed_data["tag_name"]
-    except Exception as e:
+    except Exception:
         logger.exception("Parsing page contents failed")
         return False
 
