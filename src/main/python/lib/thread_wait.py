@@ -10,6 +10,7 @@ def thread_wait(
     finsh_func=None,
     failed_signal=None,
     failed_func=None,
+    update_signal=None,
 ):
     """Prevent the primary event loop from progressing without blocking GUI events,
     until the given signal is emitted or the timeout reached"""
@@ -44,6 +45,9 @@ def thread_wait(
         timer.timeout.connect(timeout_quit)
         timer.setSingleShot(True)
         timer.start(timeout)
+
+        if update_signal:
+            update_signal.connect(lambda: timer.start(timeout))
 
     # create a failed quit function
     def failed_quit(err):

@@ -246,6 +246,7 @@ class main_widget(QtWidgets.QWidget):
                 finsh_func=finish,
                 failed_signal=installer.failed,
                 failed_func=failed,
+                update_signal=installer.activity_update,
             ):
                 installer.start()
 
@@ -334,6 +335,7 @@ class main_widget(QtWidgets.QWidget):
             finsh_func=finish,
             failed_signal=installer.failed,
             failed_func=failed,
+            update_signal=installer.activity_update,
         ):
             installer.start()
 
@@ -403,6 +405,7 @@ class main_widget(QtWidgets.QWidget):
                 uninstaller.finished,
                 failed_signal=uninstaller.failed,
                 failed_func=failed,
+                update_signal=uninstaller.activity_update,
             ):
                 uninstaller.start()
 
@@ -442,7 +445,10 @@ class main_widget(QtWidgets.QWidget):
 
             # start the thread
             with thread_wait(
-                enabler.finished, failed_signal=enabler.failed, failed_func=failed
+                enabler.finished,
+                failed_signal=enabler.failed,
+                failed_func=failed,
+                update_signal=enabler.activity_update,
             ):
                 enabler.start()
 
@@ -483,7 +489,10 @@ class main_widget(QtWidgets.QWidget):
 
             # start the thread
             with thread_wait(
-                disabler.finished, failed_signal=disabler.failed, failed_func=failed
+                disabler.finished,
+                failed_signal=disabler.failed,
+                failed_func=failed,
+                update_signal=disabler.activity_update,
             ):
                 disabler.start()
 
@@ -545,6 +554,7 @@ class main_widget(QtWidgets.QWidget):
             timeout=1200000,
             failed_signal=backuper.failed,
             failed_func=failed,
+            update_signal=backuper.activity_update,
         ):
             backuper.start()
 
