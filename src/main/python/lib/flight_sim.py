@@ -63,6 +63,7 @@ class install_mods_thread(QtCore.QThread):
         self.extracted_archive = extracted_archive
 
     def run(self):
+        """Start thread."""
         logger.debug("Running mod installer thread")
         try:
             output = install_mods(
@@ -91,6 +92,7 @@ class install_mod_archive_thread(QtCore.QThread):
         self.mod_archive = mod_archive
 
     def run(self):
+        """Start thread."""
         logger.debug("Running mod archive installer thread")
         try:
             output = install_mod_archive(
@@ -118,6 +120,7 @@ class uninstall_mod_thread(QtCore.QThread):
         self.enabled = enabled
 
     def run(self):
+        """Start thread."""
         logger.debug("Running mod uninstaller thread")
         try:
             output = uninstall_mod(
@@ -147,6 +150,7 @@ class enable_mod_thread(QtCore.QThread):
         self.mod_folder = mod_folder
 
     def run(self):
+        """Start thread."""
         logger.debug("Running mod enabler thread")
         try:
             output = enable_mod(
@@ -173,6 +177,7 @@ class disable_mod_thread(QtCore.QThread):
         self.archive = archive
 
     def run(self):
+        """Start thread."""
         logger.debug("Running mod disabler thread")
         try:
             output = disable_mod(
@@ -199,6 +204,7 @@ class create_backup_thread(QtCore.QThread):
         self.archive = mod_folder
 
     def run(self):
+        """Start thread."""
         logger.debug("Running backup creator thread")
         try:
             output = create_backup(

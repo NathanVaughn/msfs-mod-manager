@@ -19,4 +19,6 @@ disable=invalid-name,
         duplicate-code,
         unused-argument,
         blacklisted-name,
-        no-member
+        no-member,
+        no-name-in-module,
+        cell-var-from-loop
