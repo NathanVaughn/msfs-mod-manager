@@ -1,2 +1,15 @@
+[MASTER]
+extension-pkg-whitelist=PySide2.QtCore,PySide2.QtGui,PySide2.QtWidgets
+
 [MESSAGES CONTROL]
-disable=D203,D205
+disable=invalid-name,
+        too-few-public-methods,
+        missing-module-docstring,
+        broad-except,
+        too-many-return-statements,
+        no-else-raise,
+        no-else-return,
+        raise-missing-from,
+        too-many-arguments,
+        too-many-instance-attributes,
+        missing-class-docstring

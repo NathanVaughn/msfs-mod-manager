@@ -22,44 +22,30 @@ if not os.path.exists(config.BASE_FOLDER):
 class AccessError(Exception):
     """Raised after an uncorrectable permission error."""
 
-    pass
-
 
 class ExtractionError(Exception):
     """Raised when an archive cannot be extracted.
     Usually due to a missing appropriate extractor program."""
 
-    pass
-
 
 class LayoutError(Exception):
     """Raised when a layout.json file cannot be parsed for a mod."""
-
-    pass
 
 
 class NoLayoutError(Exception):
     """Raised when a layout.json file cannot be found for a mod."""
 
-    pass
-
 
 class ManifestError(Exception):
     """Raised when a manifest.json file cannot be parsed for a mod."""
-
-    pass
 
 
 class NoManifestError(Exception):
     """Raised when a manifest.json file cannot be found for a mod."""
 
-    pass
-
 
 class NoModsError(Exception):
     """Raised when no mods are found in an archive."""
-
-    pass
 
 
 class install_mods_thread(QtCore.QThread):
@@ -118,6 +104,7 @@ class install_mod_archive_thread(QtCore.QThread):
 
 class uninstall_mod_thread(QtCore.QThread):
     """Setup a thread to uninstall mods with and not block the main thread."""
+
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
@@ -147,6 +134,7 @@ class uninstall_mod_thread(QtCore.QThread):
 
 class enable_mod_thread(QtCore.QThread):
     """Setup a thread to enable mods with and not block the main thread."""
+
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
@@ -172,6 +160,7 @@ class enable_mod_thread(QtCore.QThread):
 
 class disable_mod_thread(QtCore.QThread):
     """Setup a thread to disable mods with and not block the main thread."""
+
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
@@ -197,6 +186,7 @@ class disable_mod_thread(QtCore.QThread):
 
 class create_backup_thread(QtCore.QThread):
     """Setup a thread to create backup with and not block the main thread."""
+
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
@@ -657,9 +647,7 @@ def create_archive(folder, archive, update_func=None):
 
     if update_func:
         update_func(
-            "Creating archive {}, {} uncompressed.\n This will almost certainly take a while.".format(
-                archive, uncomp_size
-            )
+            "Creating archive {}, {} uncompressed.\n This will almost certainly take a while.".format(archive, uncomp_size)
         )
 
     # delete the archive if it already exists,

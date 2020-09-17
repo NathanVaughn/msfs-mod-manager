@@ -63,9 +63,9 @@ def check_version(appctxt):
         logger.debug("Attempting to open url {}".format(url))
         # always will be opening the above hard-coded URL
         page = urllib.request.urlopen(url)  # nosec
-    except Exception as e:
+    except Exception:
         logger.exception("Opening url {} failed".format(url))
-        return
+        return False
 
     # read page contents
     logger.debug("Reading page contents")
