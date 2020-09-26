@@ -168,3 +168,8 @@ QLineEdit {
 QGroupBox {
     border: 1px solid #626463;
 }
+
+/* QLabel */
+QLabel {
+    color: #FFFFFF;
+}

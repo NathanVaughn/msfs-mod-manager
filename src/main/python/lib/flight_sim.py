@@ -4,9 +4,9 @@ import os
 import shutil
 import stat
 
-from loguru import logger
 import patoolib
 import PySide2.QtCore as QtCore
+from loguru import logger
 
 import lib.config as config
 
@@ -653,7 +653,9 @@ def create_archive(folder, archive, update_func=None):
 
     if update_func:
         update_func(
-            "Creating archive {}, {} uncompressed.\n This will almost certainly take a while.".format(archive, uncomp_size)
+            "Creating archive {}, {} uncompressed.\n This will almost certainly take a while.".format(
+                archive, uncomp_size
+            )
         )
 
     # delete the archive if it already exists,

@@ -1,6 +1,7 @@
 from contextlib import contextmanager
-from loguru import logger
+
 import PySide2.QtCore as QtCore
+from loguru import logger
 
 
 @contextmanager

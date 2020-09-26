@@ -3,8 +3,8 @@ import os
 import sys
 import webbrowser
 
-from loguru import logger
 import PySide2.QtWidgets as QtWidgets
+from loguru import logger
 
 import lib.config as config
 from lib import flight_sim, version
@@ -66,6 +66,7 @@ class main_widget(QtWidgets.QWidget):
 
     def find_sim(self):
         """Sets the path to the simulator root folder."""
+
         def user_selection():
             """Function to keep user in a loop until they select correct folder."""
             # prompt user to select
@@ -571,7 +572,7 @@ class main_widget(QtWidgets.QWidget):
         # open resulting directory
         if result == QtWidgets.QMessageBox.Yes:
             # this will always be opening a folder and therefore is safe
-            os.startfile(os.path.dirname(archive)) # nosec
+            os.startfile(os.path.dirname(archive))  # nosec
 
     def refresh(self, first=False):
         """Refreshes all mod data."""

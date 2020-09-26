@@ -3,9 +3,9 @@ import os
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from widgets.main_widget import main_widget
+from lib.theme import get_theme, set_theme
 from lib.version import get_version
-from lib.theme import set_theme, get_theme
+from widgets.main_widget import main_widget
 
 
 class main_window(QtWidgets.QMainWindow):

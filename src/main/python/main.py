@@ -5,6 +5,7 @@ from fbs_runtime.application_context.PySide2 import ApplicationContext
 from loguru import logger
 
 from lib.config import BASE_FOLDER
+from lib.resize import max_resize
 from lib.version import get_version
 from widgets.main_window import main_window
 
@@ -39,7 +40,7 @@ if __name__ == "__main__":
     main_window.main_widget.refresh(first=True)
 
     # resize and show
-    main_window.resize(main_window.sizeHint())
+    max_resize(main_window, main_window.sizeHint())
     main_window.show()
 
     # execute the application

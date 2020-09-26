@@ -1,5 +1,6 @@
-import lib.config as config
 from loguru import logger
+
+import lib.config as config
 
 FS_THEME = "fs"
 

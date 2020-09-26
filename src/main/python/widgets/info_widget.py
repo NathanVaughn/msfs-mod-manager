@@ -4,6 +4,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 import lib.flight_sim as flight_sim
+import lib.resize as resize
 from widgets.files_table import files_table
 
 
@@ -89,9 +90,9 @@ class info_widget(QtWidgets.QWidget):
         self.files_table.set_data(files_data)
 
         # resize
-        self.setMaximumHeight(700)
-        # weird magic number to account for too small size hint
-        self.resize(self.sizeHint().width() + 32, self.sizeHint().height())
+        resize.max_resize(
+            self, QtCore.QSize(self.sizeHint().width() + 32, self.sizeHint().height())
+        )
 
         # misc data to hold onto
         self.mod_folder = mod_data["folder_name"]
@@ -110,7 +111,7 @@ class info_widget(QtWidgets.QWidget):
     def open_folder(self):
         """Opens the folder for the mod."""
         # this will always be opening a folder and therefore is safe
-        os.startfile( # nosec
+        os.startfile(  # nosec
             flight_sim.get_mod_folder(
                 self.parent.sim_folder, self.mod_folder, self.enabled
             ),
