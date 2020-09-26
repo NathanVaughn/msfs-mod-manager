@@ -9,6 +9,7 @@ CONFIG_FILE = os.path.abspath(os.path.join(BASE_FOLDER, "config.ini"))
 SECTION_KEY = "settings"
 SIM_FOLDER_KEY = "sim_folder"
 LAST_VER_CHECK_KEY = "last_version_check"
+NEVER_VER_CHEK_KEY = "never_version_check"
 THEME_KEY = "theme"
 
 
@@ -38,6 +39,8 @@ def get_key_value(key):
 
 def set_key_value(key, value):
     """Writes a key and value to the config file."""
+    value = str(value)
+
     logger.debug(
         "Attempting to write key '{}' and value '{}' to the main config file {}".format(
             key, value, CONFIG_FILE

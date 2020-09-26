@@ -28,6 +28,12 @@ def check_version(appctxt):
     logger.debug("Checking if a new version is available")
     time_format = "%Y-%m-%d %H:%M:%S"
 
+    # first try to check if updates are supressed
+    logger.debug("Trying to read never version check from config file")
+    succeed, value = config.get_key_value(config.NEVER_VER_CHEK_KEY)
+    if succeed and value.lower() == "true":
+        return False
+
     # first try to read from the config file
     logger.debug("Trying to read last version check from config file")
     succeed, value = config.get_key_value(config.LAST_VER_CHECK_KEY)

@@ -13,6 +13,7 @@ from widgets.about_widget import about_widget
 from widgets.info_widget import info_widget
 from widgets.main_table import main_table
 from widgets.progress_widget import progress_widget
+from widgets.version_check_widget import version_check_widget
 
 ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
 
@@ -131,15 +132,11 @@ class main_widget(QtWidgets.QWidget):
         return_url = version.check_version(self.appctxt)
 
         if return_url:
-            result = QtWidgets.QMessageBox().information(
-                self,
-                "Confirmation",
-                "A new version is available. Would you like to go to GitHub to download it?",
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-                QtWidgets.QMessageBox.Yes,
-            )
+            result, remember = version_check_widget(self).exec_()
             if result == QtWidgets.QMessageBox.Yes:
                 webbrowser.open(return_url)
+            elif remember:
+                config.set_key_value(config.NEVER_VER_CHEK_KEY, True)
 
     def about(self):
         """Launch the about widget."""
