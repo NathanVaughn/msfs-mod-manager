@@ -20,4 +20,6 @@ disable=invalid-name,
         unused-argument,
         blacklisted-name,
         cell-var-from-loop,
-        inconsistent-return-statements
+        inconsistent-return-statements,
+        no-member,
+        no-name-in-module

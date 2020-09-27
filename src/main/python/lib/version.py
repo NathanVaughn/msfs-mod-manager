@@ -10,6 +10,7 @@ from loguru import logger
 import lib.config as config
 import lib.files as files
 import lib.thread as thread
+import lib.types as types
 
 INSTALLER = "MSFSModManagerSetup.exe"
 
@@ -51,7 +52,7 @@ def check_version_config(time_format):
     # first try to check if updates are supressed
     logger.debug("Trying to read never version check from config file")
     succeed, value = config.get_key_value(config.NEVER_VER_CHEK_KEY)
-    if succeed and value.lower() == "true":
+    if succeed and types.str2bool(value):
         return False
 
     # first try to read from the config file

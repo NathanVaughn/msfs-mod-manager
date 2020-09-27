@@ -88,7 +88,7 @@ class info_widget(QtWidgets.QWidget):
         self.minimum_game_version_field.setText(mod_data["minimum_game_version"])
 
         # file data
-        self.files_table.set_data(files_data)
+        self.files_table.set_data(files_data, first=True)
 
         # resize
         resize.max_resize(
