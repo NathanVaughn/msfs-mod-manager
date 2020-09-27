@@ -48,172 +48,104 @@ class NoModsError(Exception):
     """Raised when no mods are found in an archive."""
 
 
-class install_mods_thread(QtCore.QThread):
-    """Setup a thread to install mods with and not block the main thread."""
+class base_thread(QtCore.QThread):
+    """Base thread class."""
 
     activity_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
+
+    def __init__(self, function):
+        """Initialize the thread."""
+        self.function = function
+        QtCore.QThread.__init__(self)
+
+    def run(self):
+        """Start thread."""
+        logger.debug("Running thread")
+        try:
+            output = self.function()
+            self.finished.emit(output)
+        except Exception as e:
+            self.failed.emit(e)
+        logger.debug("Thread completed")
+
+
+class install_mods_thread(base_thread):
+    """Setup a thread to install mods with and not block the main thread."""
 
     def __init__(self, sim_folder, extracted_archive):
         """Initialize the mod installer thread."""
         logger.debug("Initialzing mod installer thread")
-        QtCore.QThread.__init__(self)
-        self.sim_folder = sim_folder
-        self.extracted_archive = extracted_archive
-
-    def run(self):
-        """Start thread."""
-        logger.debug("Running mod installer thread")
-        try:
-            output = install_mods(
-                self.sim_folder,
-                self.extracted_archive,
-                update_func=self.activity_update.emit,
-            )
-            self.finished.emit(output)
-        except Exception as e:
-            self.failed.emit(e)
-        logger.debug("Mod installer thread completed")
+        function = lambda: install_mods(
+            sim_folder,
+            extracted_archive,
+            update_func=self.activity_update.emit,
+        )
+        base_thread.__init__(self, function)
 
 
-class install_mod_archive_thread(QtCore.QThread):
+class install_mod_archive_thread(base_thread):
     """Setup a thread to install mod archive with and not block the main thread."""
-
-    activity_update = QtCore.Signal(object)
-    finished = QtCore.Signal(object)
-    failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_archive):
         """Initialize the mod archive installer thread."""
         logger.debug("Initialzing mod archive installer thread")
-        QtCore.QThread.__init__(self)
-        self.sim_folder = sim_folder
-        self.mod_archive = mod_archive
-
-    def run(self):
-        """Start thread."""
-        logger.debug("Running mod archive installer thread")
-        try:
-            output = install_mod_archive(
-                self.sim_folder, self.mod_archive, update_func=self.activity_update.emit
-            )
-            self.finished.emit(output)
-        except Exception as e:
-            self.failed.emit(e)
-        logger.debug("Mod archive installer thread completed")
+        function = lambda: install_mod_archive(
+            sim_folder, mod_archive, update_func=self.activity_update.emit
+        )
+        base_thread.__init__(self, function)
 
 
-class uninstall_mod_thread(QtCore.QThread):
+class uninstall_mod_thread(base_thread):
     """Setup a thread to uninstall mods with and not block the main thread."""
-
-    activity_update = QtCore.Signal(object)
-    finished = QtCore.Signal(object)
-    failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_folder, enabled):
         """Initialize the mod uninstaller thread."""
         logger.debug("Initialzing mod uninstaller thread")
-        QtCore.QThread.__init__(self)
-        self.sim_folder = sim_folder
-        self.mod_folder = mod_folder
-        self.enabled = enabled
-
-    def run(self):
-        """Start thread."""
-        logger.debug("Running mod uninstaller thread")
-        try:
-            output = uninstall_mod(
-                self.sim_folder,
-                self.mod_folder,
-                self.enabled,
-                update_func=self.activity_update.emit,
-            )
-            self.finished.emit(output)
-        except Exception as e:
-            self.failed.emit(e)
-        logger.debug("Mod uninstaller thread completed")
+        function = lambda: uninstall_mod(
+            sim_folder,
+            mod_folder,
+            enabled,
+            update_func=self.activity_update.emit,
+        )
+        base_thread.__init__(self, function)
 
 
-class enable_mod_thread(QtCore.QThread):
+class enable_mod_thread(base_thread):
     """Setup a thread to enable mods with and not block the main thread."""
-
-    activity_update = QtCore.Signal(object)
-    finished = QtCore.Signal(object)
-    failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, mod_folder):
         """Initialize the mod enabler thread."""
         logger.debug("Initialzing mod enabler thread")
-        QtCore.QThread.__init__(self)
-        self.sim_folder = sim_folder
-        self.mod_folder = mod_folder
-
-    def run(self):
-        """Start thread."""
-        logger.debug("Running mod enabler thread")
-        try:
-            output = enable_mod(
-                self.sim_folder, self.mod_folder, update_func=self.activity_update.emit
-            )
-            self.finished.emit(output)
-        except Exception as e:
-            self.failed.emit(e)
-        logger.debug("Mod enabler thread completed")
+        function = lambda: enable_mod(
+            sim_folder, mod_folder, update_func=self.activity_update.emit
+        )
+        base_thread.__init__(self, function)
 
 
-class disable_mod_thread(QtCore.QThread):
+class disable_mod_thread(base_thread):
     """Setup a thread to disable mods with and not block the main thread."""
-
-    activity_update = QtCore.Signal(object)
-    finished = QtCore.Signal(object)
-    failed = QtCore.Signal(Exception)
 
     def __init__(self, sim_folder, archive):
         """Initialize the mod disabler thread."""
         logger.debug("Initialzing mod disabler thread")
-        QtCore.QThread.__init__(self)
-        self.sim_folder = sim_folder
-        self.archive = archive
-
-    def run(self):
-        """Start thread."""
-        logger.debug("Running mod disabler thread")
-        try:
-            output = disable_mod(
-                self.sim_folder, self.archive, update_func=self.activity_update.emit
-            )
-            self.finished.emit(output)
-        except Exception as e:
-            self.failed.emit(e)
-        logger.debug("Mod disabler thread completed")
+        function = lambda: disable_mod(
+            sim_folder, archive, update_func=self.activity_update.emit
+        )
+        base_thread.__init__(self, function)
 
 
-class create_backup_thread(QtCore.QThread):
+class create_backup_thread(base_thread):
     """Setup a thread to create backup with and not block the main thread."""
 
-    activity_update = QtCore.Signal(object)
-    finished = QtCore.Signal(object)
-    failed = QtCore.Signal(Exception)
-
-    def __init__(self, sim_folder, mod_folder):
+    def __init__(self, sim_folder, archive):
         """Initialize the backup creator thread."""
         logger.debug("Initialzing backup creator thread")
-        QtCore.QThread.__init__(self)
-        self.sim_folder = sim_folder
-        self.archive = mod_folder
-
-    def run(self):
-        """Start thread."""
-        logger.debug("Running backup creator thread")
-        try:
-            output = create_backup(
-                self.sim_folder, self.archive, update_func=self.activity_update.emit
-            )
-            self.finished.emit(output)
-        except Exception as e:
-            self.failed.emit(e)
-        logger.debug("Mod backup creator completed")
+        function = lambda: create_backup(
+            sim_folder, archive, update_func=self.activity_update.emit
+        )
+        base_thread.__init__(self, function)
 
 
 def fix_permissions(folder, update_func=None):
