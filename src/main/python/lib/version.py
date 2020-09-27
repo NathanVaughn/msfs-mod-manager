@@ -1,5 +1,8 @@
+import ctypes
 import datetime
 import json
+import os
+import sys
 import urllib.request
 
 from loguru import logger
@@ -22,7 +25,12 @@ def get_version(appctxt):
         return "v??"
 
 
-def check_version(appctxt):
+def is_installed():
+    """Returns if application is installed version"""
+    return os.path.isfile(os.path.join(os.getcwd(), "uninstall.exe"))
+
+
+def check_version(appctxt, installed=False):
     """Returns the release URL if a new version is installed.
     Otherwise, returns False."""
     logger.debug("Checking if a new version is available")
@@ -100,7 +108,42 @@ def check_version(appctxt):
     if remote_version > get_version(appctxt):
         # if so, return release url
         logger.debug("Remote version is newer than local version")
-        return parsed_data["html_url"]
+        if installed:
+            # return setup.exe url
+            for asset in parsed_data["assets"]:
+                if asset["name"] == "MSFSModManagerSetup.exe":
+                    return asset["browser_download_url"]
+        else:
+            # return release url
+            return parsed_data["html_url"]
     else:
         logger.debug("Remote version is not newer than local version")
         return False
+
+
+def download_new_version(asset_url):
+    """Downloads new installer version."""
+    download_path = os.path.join(
+        os.path.expanduser("~"), "Downloads", "MSFSModManagerSetup.exe"
+    )
+
+    # delete existing installer if it exists
+    if os.path.isfile(download_path):
+        os.remove(download_path)
+
+    # download file
+    try:
+        logger.debug("Attempting to download url {}".format(asset_url))
+        urllib.request.urlretrieve(asset_url, download_path)  # nosec
+    except Exception:
+        logger.exception("Downloading url {} failed".format(asset_url))
+        return False
+
+    return download_path
+
+
+def install_new_version(installer_path):
+    """Runs the new installer and causes a UAC prompt."""
+    # https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecutew
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", installer_path, "", None, 1)
+    sys.exit()

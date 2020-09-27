@@ -129,12 +129,16 @@ class main_widget(QtWidgets.QWidget):
 
     def check_version(self):
         """Checks the application version and allows user to open browser to update."""
-        return_url = version.check_version(self.appctxt)
+        installed = version.is_installed()
+        return_url = version.check_version(self.appctxt, installed)
 
         if return_url:
-            result, remember = version_check_widget(self).exec_()
+            result, remember = version_check_widget(self, installed).exec_()
             if result == QtWidgets.QMessageBox.Yes:
-                webbrowser.open(return_url)
+                if installed:
+                    version.install_new_version(return_url)
+                else:
+                    webbrowser.open(return_url)
             elif remember:
                 config.set_key_value(config.NEVER_VER_CHEK_KEY, True)
 
