@@ -4,11 +4,34 @@ import PySide2.QtCore as QtCore
 from loguru import logger
 
 
+class base_thread(QtCore.QThread):
+    """Base thread class."""
+
+    activity_update = QtCore.Signal(object)
+    finished = QtCore.Signal(object)
+    failed = QtCore.Signal(Exception)
+
+    def __init__(self, function):
+        """Initialize the thread."""
+        self.function = function
+        QtCore.QThread.__init__(self)
+
+    def run(self):
+        """Start thread."""
+        logger.debug("Running thread")
+        try:
+            output = self.function()
+            self.finished.emit(output)
+        except Exception as e:
+            self.failed.emit(e)
+        logger.debug("Thread completed")
+
+
 @contextmanager
 def thread_wait(
     finished_signal,
     timeout=600000,
-    finsh_func=None,
+    finish_func=None,
     failed_signal=None,
     failed_func=None,
     update_signal=None,
@@ -30,8 +53,8 @@ def thread_wait(
     finished_signal.connect(finished_quit)
 
     # if an optional finish function is provided, also connect that signal to it
-    if finsh_func:
-        finished_signal.connect(finsh_func)
+    if finish_func:
+        finished_signal.connect(finish_func)
 
     timer = None
 

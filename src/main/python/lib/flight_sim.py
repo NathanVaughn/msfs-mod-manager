@@ -1,26 +1,13 @@
 import datetime
 import json
 import os
-import shutil
-import stat
 
 import patoolib
-import PySide2.QtCore as QtCore
 from loguru import logger
 
 import lib.config as config
-
-TEMP_FOLDER = os.path.abspath(
-    os.path.join(os.getenv("LOCALAPPDATA"), "Temp", "MSFS Mod Manager")
-)
-MOD_CACHE_FOLDER = os.path.abspath(os.path.join(config.BASE_FOLDER, "modCache"))
-
-if not os.path.exists(config.BASE_FOLDER):
-    os.makedirs(config.BASE_FOLDER)
-
-
-class AccessError(Exception):
-    """Raised after an uncorrectable permission error."""
+import lib.files as files
+import lib.thread as thread
 
 
 class ExtractionError(Exception):
@@ -48,30 +35,7 @@ class NoModsError(Exception):
     """Raised when no mods are found in an archive."""
 
 
-class base_thread(QtCore.QThread):
-    """Base thread class."""
-
-    activity_update = QtCore.Signal(object)
-    finished = QtCore.Signal(object)
-    failed = QtCore.Signal(Exception)
-
-    def __init__(self, function):
-        """Initialize the thread."""
-        self.function = function
-        QtCore.QThread.__init__(self)
-
-    def run(self):
-        """Start thread."""
-        logger.debug("Running thread")
-        try:
-            output = self.function()
-            self.finished.emit(output)
-        except Exception as e:
-            self.failed.emit(e)
-        logger.debug("Thread completed")
-
-
-class install_mods_thread(base_thread):
+class install_mods_thread(thread.base_thread):
     """Setup a thread to install mods with and not block the main thread."""
 
     def __init__(self, sim_folder, extracted_archive):
@@ -82,10 +46,10 @@ class install_mods_thread(base_thread):
             extracted_archive,
             update_func=self.activity_update.emit,
         )
-        base_thread.__init__(self, function)
+        thread.base_thread.__init__(self, function)
 
 
-class install_mod_archive_thread(base_thread):
+class install_mod_archive_thread(thread.base_thread):
     """Setup a thread to install mod archive with and not block the main thread."""
 
     def __init__(self, sim_folder, mod_archive):
@@ -94,10 +58,10 @@ class install_mod_archive_thread(base_thread):
         function = lambda: install_mod_archive(
             sim_folder, mod_archive, update_func=self.activity_update.emit
         )
-        base_thread.__init__(self, function)
+        thread.base_thread.__init__(self, function)
 
 
-class uninstall_mod_thread(base_thread):
+class uninstall_mod_thread(thread.base_thread):
     """Setup a thread to uninstall mods with and not block the main thread."""
 
     def __init__(self, sim_folder, mod_folder, enabled):
@@ -109,10 +73,10 @@ class uninstall_mod_thread(base_thread):
             enabled,
             update_func=self.activity_update.emit,
         )
-        base_thread.__init__(self, function)
+        thread.base_thread.__init__(self, function)
 
 
-class enable_mod_thread(base_thread):
+class enable_mod_thread(thread.base_thread):
     """Setup a thread to enable mods with and not block the main thread."""
 
     def __init__(self, sim_folder, mod_folder):
@@ -121,10 +85,10 @@ class enable_mod_thread(base_thread):
         function = lambda: enable_mod(
             sim_folder, mod_folder, update_func=self.activity_update.emit
         )
-        base_thread.__init__(self, function)
+        thread.base_thread.__init__(self, function)
 
 
-class disable_mod_thread(base_thread):
+class disable_mod_thread(thread.base_thread):
     """Setup a thread to disable mods with and not block the main thread."""
 
     def __init__(self, sim_folder, archive):
@@ -133,10 +97,10 @@ class disable_mod_thread(base_thread):
         function = lambda: disable_mod(
             sim_folder, archive, update_func=self.activity_update.emit
         )
-        base_thread.__init__(self, function)
+        thread.base_thread.__init__(self, function)
 
 
-class create_backup_thread(base_thread):
+class create_backup_thread(thread.base_thread):
     """Setup a thread to create backup with and not block the main thread."""
 
     def __init__(self, sim_folder, archive):
@@ -145,159 +109,7 @@ class create_backup_thread(base_thread):
         function = lambda: create_backup(
             sim_folder, archive, update_func=self.activity_update.emit
         )
-        base_thread.__init__(self, function)
-
-
-def fix_permissions(folder, update_func=None):
-    """Recursively fixes the permissions of a folder so that it can be deleted."""
-    if update_func:
-        update_func("Fixing permissions for {}".format(folder))
-
-    logger.debug("Fixing permissions for {}".format(folder))
-
-    for root, dirs, files in os.walk(folder):
-        for d in dirs:
-            logger.debug(
-                "Applying stat.S_IWUSR permission to {}".format(os.path.join(root, d))
-            )
-            os.chmod(os.path.join(root, d), stat.S_IWUSR)
-        for f in files:
-            logger.debug(
-                "Applying stat.S_IWUSR permission to {}".format(os.path.join(root, f))
-            )
-            os.chmod(os.path.join(root, f), stat.S_IWUSR)
-
-
-def listdir_dirs(folder):
-    """Returns a list of directories inside of a directory."""
-    # logger.debug("Listing directories of {}".format(folder))
-    if os.path.isdir(folder):
-        dirs = []
-        for item in os.listdir(folder):
-            if os.path.isdir(os.path.join(folder, item)):
-                dirs.append(item)
-
-        return dirs
-    else:
-        logger.warning("Folder {} does not exist".format(folder))
-        return []
-
-
-def human_readable_size(size, decimal_places=2):
-    """Convert number of bytes into human readable value."""
-    # https://stackoverflow.com/a/43690506/9944427
-    # logger.debug("Converting {} bytes to human readable format".format(size))
-    for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
-        if size < 1024.0 or unit == "PB":
-            break
-        size /= 1024.0
-    return f"{size:.{decimal_places}f} {unit}"
-
-
-def get_folder_size(folder):
-    """Return the size in bytes of a folder, recursively."""
-    logger.debug("Returning size of {} recursively".format(folder))
-    if os.path.isdir(folder):
-        return sum(
-            os.path.getsize(os.path.join(dirpath, filename))
-            for dirpath, _, filenames in os.walk(folder)
-            for filename in filenames
-        )
-    else:
-        logger.warning("Folder {} does not exist".format(folder))
-        return 0
-
-
-def delete_file(file, first=True, update_func=None):
-    """Deletes a file if it exists."""
-    # check if it exists
-    if os.path.isfile(file):
-        try:
-            logger.debug("Attempting to delete file {}".format(file))
-            # try to delete it
-            if update_func:
-                update_func("Deleting file {}".format(file))
-            os.remove(file)
-        except PermissionError:
-            logger.debug("File deletion failed")
-            # if there is a permission error
-            if not first:
-                logger.error("Not first attempt, raising exception")
-                # if not the first attempt, raise error
-                raise AccessError(file)
-            else:
-                logger.debug("Attempting to fix permissions")
-                # otherwise, try to fix permissions and try again
-                fix_permissions(os.path.dirname(file), update_func=update_func)
-                delete_file(file, first=False, update_func=update_func)
-    else:
-        logger.debug("File {} does not exist".format(file))
-
-
-def delete_folder(folder, first=True, update_func=None):
-    """Deletes a folder if it exists."""
-    # check if it exists
-    if os.path.isdir(folder):
-        try:
-            logger.debug("Attempting to delete folder {}".format(folder))
-            # try to delete it
-            if update_func:
-                update_func("Deleting folder {}".format(folder))
-            shutil.rmtree(folder)
-        except PermissionError:
-            logger.debug("Folder deletion failed")
-            # if there is a permission error
-            if not first:
-                logger.error("Not first attempt, raising exception")
-                # if not the first attempt, raise error
-                raise AccessError(folder)
-            else:
-                logger.debug("Attempting to fix permissions")
-                # otherwise, try to fix permissions and try again
-                fix_permissions(folder, update_func=update_func)
-                delete_folder(folder, first=False, update_func=update_func)
-    else:
-        logger.debug("Folder {} does not exist".format(folder))
-
-
-def copy_folder(src, dest, update_func=None):
-    """Copies a folder if it exists."""
-    logger.debug("Copying folder {} to {}".format(src, dest))
-    # check if it exists
-    if os.path.isdir(src):
-        delete_folder(dest, update_func=update_func)
-
-        # copy the directory
-        if update_func:
-            update_func(
-                "Copying {} to {} ({})".format(
-                    src, dest, human_readable_size(get_folder_size(src))
-                )
-            )
-        shutil.copytree(src, dest)
-    else:
-        logger.warning("Source folder {} does not exist".format(src))
-
-
-def move_folder(src, dest, update_func=None):
-    """Copies a folder and deletes the original."""
-    logger.debug("Moving folder {} to {}".format(src, dest))
-    copy_folder(src, dest, update_func=update_func)
-    delete_folder(src, update_func=update_func)
-
-
-def create_tmp_folder(update_func=None):
-    """Deletes existing temp folder if it exists and creates a new one."""
-    delete_folder(TEMP_FOLDER, update_func=update_func)
-    logger.debug("Creating temp folder {}".format(TEMP_FOLDER))
-    os.makedirs(TEMP_FOLDER)
-
-
-def create_mod_cache_folder():
-    """Creates mod cache folder if it does not exist."""
-    if not os.path.exists(MOD_CACHE_FOLDER):
-        logger.debug("Creating mod cache folder {}".format(MOD_CACHE_FOLDER))
-        os.makedirs(MOD_CACHE_FOLDER)
+        thread.base_thread.__init__(self, function)
 
 
 def parse_user_cfg(sim_folder=None, filename=None):
@@ -348,7 +160,7 @@ def is_sim_packages_folder(folder):
     # test if the folder above it contains both 'Community' and 'Official'
     logger.debug("Testing if {} is MSFS sim packages folder".format(folder))
     try:
-        packages_folders = listdir_dirs(folder)
+        packages_folders = files.listdir_dirs(folder)
         status = "Official" in packages_folders and "Community" in packages_folders
         logger.debug("Folder {} is MSFS sim packages folder: {}".format(folder, status))
         return status
@@ -462,7 +274,7 @@ def get_mod_folder(sim_folder, folder, enabled):
     if enabled:
         mod_folder = os.path.join(sim_mod_folder(sim_folder), folder)
     else:
-        mod_folder = os.path.join(MOD_CACHE_FOLDER, folder)
+        mod_folder = os.path.join(files.MOD_CACHE_FOLDER, folder)
 
     # logger.debug("Final mod path: {}".format(mod_folder))
 
@@ -494,8 +306,8 @@ def parse_mod_files(sim_folder, folder, enabled):
     logger.debug("Parsing all mod files for {}".format(mod_folder))
 
     data = []
-    for root, _, files in os.walk(mod_folder):
-        for file in files:
+    for root, _, files_ in os.walk(mod_folder):
+        for file in files_:
             data.append(
                 {
                     "path": os.path.join(os.path.relpath(root, mod_folder), file),
@@ -550,7 +362,7 @@ def get_enabled_mods(sim_folder):
     enabled_mods = []
     errors = []
 
-    for folder in listdir_dirs(sim_mod_folder(sim_folder)):
+    for folder in files.listdir_dirs(sim_mod_folder(sim_folder)):
         # parse each mod
         try:
             enabled_mods.append(parse_mod_manifest(sim_folder, folder, True))
@@ -564,12 +376,12 @@ def get_disabled_mods(sim_folder):
     """Returns data for the disabled mods."""
     logger.debug("Retrieving list of disabled mods")
     # ensure cache folder already exists
-    create_mod_cache_folder()
+    files.create_mod_cache_folder()
 
     disabled_mods = []
     errors = []
 
-    for folder in listdir_dirs(MOD_CACHE_FOLDER):
+    for folder in files.listdir_dirs(files.MOD_CACHE_FOLDER):
         # parse each mod
         try:
             disabled_mods.append(parse_mod_manifest(sim_folder, folder, False))
@@ -581,18 +393,18 @@ def get_disabled_mods(sim_folder):
 
 def create_archive(folder, archive, update_func=None):
     """Creates an archive file and returns the new path."""
-    uncomp_size = human_readable_size(get_folder_size(folder))
+    uncomp_size = files.human_readable_size(files.get_folder_size(folder))
 
     if update_func:
         update_func(
-            "Creating archive {}, {} uncompressed.\n This will almost certainly take a while.".format(
+            "Creating archive {} ({} uncompressed).\n This will almost certainly take a while.".format(
                 archive, uncomp_size
             )
         )
 
     # delete the archive if it already exists,
     # as patoolib will refuse to overwrite an existing archive
-    delete_file(archive, update_func=update_func)
+    files.delete_file(archive, update_func=update_func)
 
     logger.debug("Creating archive {}".format(archive))
     # create the archive
@@ -610,15 +422,19 @@ def extract_archive(archive, update_func=None):
     """Extracts an archive file into a temp directory and returns the new path."""
     logger.debug("Extracting archive {}".format(archive))
     # create a temp directory if it does not exist
-    create_tmp_folder(update_func=update_func)
+    files.create_tmp_folder(update_func=update_func)
     # determine the base name of the archive
     basefilename = os.path.splitext(os.path.basename(archive))[0]
 
     # extract the archive
-    extracted_archive = os.path.join(TEMP_FOLDER, basefilename)
+    extracted_archive = os.path.join(files.TEMP_FOLDER, basefilename)
     try:
         if update_func:
-            update_func("Extracting archive {}".format(archive))
+            update_func(
+                "Extracting archive {} ({})".format(
+                    archive, files.human_readable_size(os.path.getsize(archive))
+                )
+            )
 
         logger.debug("Extracting archive {} to {}".format(archive, extract_archive))
 
@@ -674,7 +490,7 @@ def install_mods(sim_folder, extracted_archive, update_func=None):
         dest_folder = os.path.join(sim_mod_folder(sim_folder), base_mod_folder)
 
         # move mod to sim
-        move_folder(mod_folder, dest_folder, update_func=update_func)
+        files.move_folder(mod_folder, dest_folder, update_func=update_func)
 
         installed_mods.append(base_mod_folder)
 
@@ -695,7 +511,7 @@ def uninstall_mod(sim_folder, mod_folder, enabled, update_func=None):
     """Uninstalls a mod."""
     logger.debug("Uninstalling mod {}".format(mod_folder))
     # delete folder
-    delete_folder(
+    files.delete_folder(
         get_mod_folder(sim_folder, mod_folder, enabled), update_func=update_func
     )
     return True
@@ -704,24 +520,24 @@ def uninstall_mod(sim_folder, mod_folder, enabled, update_func=None):
 def enable_mod(sim_folder, mod_folder, update_func=None):
     """Copies mod folder into flight sim install."""
     logger.debug("Enabling mod {}".format(mod_folder))
-    src_folder = os.path.join(MOD_CACHE_FOLDER, mod_folder)
+    src_folder = os.path.join(files.MOD_CACHE_FOLDER, mod_folder)
     dest_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
 
     # move mod to sim
-    move_folder(src_folder, dest_folder, update_func=update_func)
+    files.move_folder(src_folder, dest_folder, update_func=update_func)
     return True
 
 
 def disable_mod(sim_folder, mod_folder, update_func=None):
     """Copies mod folder into mod cache."""
     logger.debug("Disabling mod {}".format(mod_folder))
-    create_mod_cache_folder()
+    files.create_mod_cache_folder()
 
     src_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
-    dest_folder = os.path.join(MOD_CACHE_FOLDER, mod_folder)
+    dest_folder = os.path.join(files.MOD_CACHE_FOLDER, mod_folder)
 
     # move mod to mod cache
-    move_folder(src_folder, dest_folder, update_func=update_func)
+    files.move_folder(src_folder, dest_folder, update_func=update_func)
     return True
 
 

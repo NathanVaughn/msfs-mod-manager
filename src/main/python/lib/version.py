@@ -8,6 +8,22 @@ import urllib.request
 from loguru import logger
 
 import lib.config as config
+import lib.files as files
+import lib.thread as thread
+
+INSTALLER = "MSFSModManagerSetup.exe"
+
+
+class download_new_version_thread(thread.base_thread):
+    """Setup a thread to download the new version and not block the main thread."""
+
+    def __init__(self, asset_url):
+        """Initialize the version downloader thread."""
+        logger.debug("Initialzing version downloader thread")
+        function = lambda: download_new_version(
+            asset_url, update_func=self.activity_update.emit
+        )
+        thread.base_thread.__init__(self, function)
 
 
 def get_version(appctxt):
@@ -30,12 +46,8 @@ def is_installed():
     return os.path.isfile(os.path.join(os.getcwd(), "uninstall.exe"))
 
 
-def check_version(appctxt, installed=False):
-    """Returns the release URL if a new version is installed.
-    Otherwise, returns False."""
-    logger.debug("Checking if a new version is available")
-    time_format = "%Y-%m-%d %H:%M:%S"
-
+def check_version_config(time_format):
+    """Checks config file to see if update check should proceed."""
     # first try to check if updates are supressed
     logger.debug("Trying to read never version check from config file")
     succeed, value = config.get_key_value(config.NEVER_VER_CHEK_KEY)
@@ -69,6 +81,18 @@ def check_version(appctxt, installed=False):
             logger.exception("Parsing {} to datetime failed".format(value))
     else:
         logger.debug("Unable to read last version check from config file")
+
+    return True
+
+
+def check_version(appctxt, installed=False):
+    """Returns the release URL if a new version is installed.
+    Otherwise, returns False."""
+    logger.debug("Checking if a new version is available")
+    time_format = "%Y-%m-%d %H:%M:%S"
+
+    if not check_version_config(time_format):
+        return False
 
     # open the remote url
     url = "https://api.github.com/repos/NathanVaughn/msfs-mod-manager/releases/latest"
@@ -111,7 +135,7 @@ def check_version(appctxt, installed=False):
         if installed:
             # return setup.exe url
             for asset in parsed_data["assets"]:
-                if asset["name"] == "MSFSModManagerSetup.exe":
+                if asset["name"] == INSTALLER:
                     return asset["browser_download_url"]
         else:
             # return release url
@@ -121,20 +145,26 @@ def check_version(appctxt, installed=False):
         return False
 
 
-def download_new_version(asset_url):
+def download_new_version(asset_url, update_func=None):
     """Downloads new installer version."""
-    download_path = os.path.join(
-        os.path.expanduser("~"), "Downloads", "MSFSModManagerSetup.exe"
-    )
+    download_path = os.path.join(os.path.expanduser("~"), "Downloads", INSTALLER)
 
     # delete existing installer if it exists
-    if os.path.isfile(download_path):
-        os.remove(download_path)
+    files.delete_file(download_path)
+
+    def request_hook(block_num, block_size, total_size):
+        if total_size > 0:
+            readsofar = block_num * block_size
+            percent = readsofar * 100 / total_size
+            update_func(percent)
 
     # download file
     try:
         logger.debug("Attempting to download url {}".format(asset_url))
-        urllib.request.urlretrieve(asset_url, download_path)  # nosec
+        if update_func:
+            urllib.request.urlretrieve(asset_url, download_path, request_hook)  # nosec
+        else:
+            urllib.request.urlretrieve(asset_url, download_path)  # nosec
     except Exception:
         logger.exception("Downloading url {} failed".format(asset_url))
         return False

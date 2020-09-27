@@ -3,6 +3,7 @@ import os
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+import lib.files as files
 import lib.flight_sim as flight_sim
 import lib.resize as resize
 from widgets.files_table import files_table
@@ -99,8 +100,8 @@ class info_widget(QtWidgets.QWidget):
         self.enabled = mod_data["enabled"]
 
         self.total_size_field.setText(
-            flight_sim.human_readable_size(
-                flight_sim.get_folder_size(
+            files.human_readable_size(
+                files.get_folder_size(
                     flight_sim.get_mod_folder(
                         self.parent.sim_folder, self.mod_folder, self.enabled
                     )

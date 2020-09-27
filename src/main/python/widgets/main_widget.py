@@ -7,8 +7,10 @@ import PySide2.QtWidgets as QtWidgets
 from loguru import logger
 
 import lib.config as config
-from lib import flight_sim, version
-from lib.thread_wait import thread_wait
+import lib.files as files
+import lib.flight_sim as flight_sim
+import lib.thread as thread
+import lib.version as version
 from widgets.about_widget import about_widget
 from widgets.info_widget import info_widget
 from widgets.main_table import main_table
@@ -136,7 +138,41 @@ class main_widget(QtWidgets.QWidget):
             result, remember = version_check_widget(self, installed).exec_()
             if result == QtWidgets.QMessageBox.Yes:
                 if installed:
-                    version.install_new_version(return_url)
+                    # progress bar
+                    progress = progress_widget(self, self.appctxt)
+                    progress.set_percent()
+                    progress.set_activity(
+                        "Downloading latest version ({})".format(return_url)
+                    )
+
+                    # setup downloader thread
+                    downloader = version.download_new_version_thread(return_url)
+                    downloader.activity_update.connect(progress.set_percentage)
+
+                    def failed(err):
+                        typ = type(err)
+                        message = err
+
+                        logger.exception("Failed to download new version")
+                        QtWidgets.QMessageBox().warning(
+                            self,
+                            "Error",
+                            "Something went terribly wrong.\n{}: {}".format(
+                                typ, message
+                            ),
+                        )
+
+                    # start the thread
+                    with thread.thread_wait(
+                        downloader.finished,
+                        finish_func=version.install_new_version,
+                        failed_signal=downloader.failed,
+                        failed_func=failed,
+                        update_signal=downloader.activity_update,
+                    ):
+                        downloader.start()
+
+                    progress.close()
                 else:
                     webbrowser.open(return_url)
             elif remember:
@@ -215,7 +251,7 @@ class main_widget(QtWidgets.QWidget):
                             mod_archive
                         ),
                     )
-                elif flight_sim.AccessError == typ:
+                elif files.AccessError == typ:
                     QtWidgets.QMessageBox().warning(
                         self,
                         "Error",
@@ -244,9 +280,9 @@ class main_widget(QtWidgets.QWidget):
             installer.activity_update.connect(progress.set_activity)
 
             # start the thread
-            with thread_wait(
+            with thread.thread_wait(
                 installer.finished,
-                finsh_func=finish,
+                finish_func=finish,
                 failed_signal=installer.failed,
                 failed_func=failed,
                 update_signal=installer.activity_update,
@@ -306,7 +342,7 @@ class main_widget(QtWidgets.QWidget):
                         mod_folder
                     ),
                 )
-            elif flight_sim.AccessError == typ:
+            elif files.AccessError == typ:
                 QtWidgets.QMessageBox().warning(
                     self,
                     "Error",
@@ -333,9 +369,9 @@ class main_widget(QtWidgets.QWidget):
         installer.activity_update.connect(progress.set_activity)
 
         # start the thread
-        with thread_wait(
+        with thread.thread_wait(
             installer.finished,
-            finsh_func=finish,
+            finish_func=finish,
             failed_signal=installer.failed,
             failed_func=failed,
             update_signal=installer.activity_update,
@@ -404,7 +440,7 @@ class main_widget(QtWidgets.QWidget):
                 )
 
             # start the thread
-            with thread_wait(
+            with thread.thread_wait(
                 uninstaller.finished,
                 failed_signal=uninstaller.failed,
                 failed_func=failed,
@@ -447,7 +483,7 @@ class main_widget(QtWidgets.QWidget):
                 )
 
             # start the thread
-            with thread_wait(
+            with thread.thread_wait(
                 enabler.finished,
                 failed_signal=enabler.failed,
                 failed_func=failed,
@@ -491,7 +527,7 @@ class main_widget(QtWidgets.QWidget):
                 )
 
             # start the thread
-            with thread_wait(
+            with thread.thread_wait(
                 disabler.finished,
                 failed_signal=disabler.failed,
                 failed_func=failed,
@@ -552,7 +588,7 @@ class main_widget(QtWidgets.QWidget):
                 )
 
         # start the thread, with extra 20 min timeout
-        with thread_wait(
+        with thread.thread_wait(
             backuper.finished,
             timeout=1200000,
             failed_signal=backuper.failed,
