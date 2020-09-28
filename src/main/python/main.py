@@ -26,7 +26,7 @@ if __name__ == "__main__":
         enqueue=True,
     )
     logger.info("-----------------------")
-    logger.info("Launching application - {}".format(get_version(appctxt)))
+    logger.info("Launching application")
 
     # create instance of main window
     main_window = main_window(app, appctxt)

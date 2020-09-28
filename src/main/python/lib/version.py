@@ -133,18 +133,20 @@ def check_version(appctxt, installed=False):
     if remote_version > get_version(appctxt):
         # if so, return release url
         logger.debug("Remote version is newer than local version")
+        download_url = False
+
         if installed:
             # return setup.exe url
             for asset in parsed_data["assets"]:
-                if asset["name"] == INSTALLER:
-                    url = asset["browser_download_url"]
+                if asset["name"].endswith(".exe"):
+                    download_url = asset["browser_download_url"]
                     break
         else:
             # return release url
-            url = parsed_data["html_url"]
+            download_url = parsed_data["html_url"]
 
-        logger.debug("New release url: {}".format(url))
-        return url
+        logger.debug("New release url: {}".format(download_url))
+        return download_url
     else:
         logger.debug("Remote version is not newer than local version")
         return False
