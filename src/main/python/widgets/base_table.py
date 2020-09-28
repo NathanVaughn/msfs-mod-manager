@@ -77,3 +77,18 @@ class base_table(QtWidgets.QTableWidget):
         self.resizeColumnsToContents()
         # this HAS to come second for some reason
         self.resizeRowsToContents()
+
+    def get_row_strings(self):
+        """Returns list of row data as strings."""
+        return [
+            ", ".join([self.item(r, c).text() for c in range(self.columnCount())])
+            for r in range(self.rowCount())
+        ]
+
+    def hide_rows(self, rows):
+        """Hides given row indexes."""
+        [self.hideRow(r) for r in rows]
+
+    def show_all_rows(self):
+        """Shows all rows."""
+        [self.showRow(r) for r in range(self.rowCount())]

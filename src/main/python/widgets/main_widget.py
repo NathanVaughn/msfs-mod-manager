@@ -50,8 +50,21 @@ class main_widget(QtWidgets.QWidget):
         self.refresh_button = QtWidgets.QPushButton("Refresh", self)
         self.layout.addWidget(self.refresh_button, 0, 9)
 
+        self.sublayout = QtWidgets.QHBoxLayout()
+
+        self.search_label = QtWidgets.QLabel("Search:", self)
+        self.sublayout.addWidget(self.search_label)
+
+        self.search_field = QtWidgets.QLineEdit(self)
+        self.sublayout.addWidget(self.search_field)
+
+        self.clear_button = QtWidgets.QPushButton("Clear", self)
+        self.sublayout.addWidget(self.clear_button)
+
+        self.layout.addLayout(self.sublayout, 1, 6, 1, 4)
+
         self.main_table = main_table(self)
-        self.layout.addWidget(self.main_table, 1, 0, 1, 10)
+        self.layout.addWidget(self.main_table, 2, 0, 1, 10)
 
         self.setLayout(self.layout)
 
@@ -62,6 +75,9 @@ class main_widget(QtWidgets.QWidget):
         self.refresh_button.clicked.connect(self.refresh)
         self.info_button.clicked.connect(self.info)
         self.main_table.doubleClicked.connect(self.info)
+
+        self.clear_button.clicked.connect(self.clear_search)
+        self.search_field.textChanged.connect(self.search)
 
     def get_selected_rows(self):
         """Returns a list of row indexes that are currently selected."""
@@ -633,3 +649,27 @@ class main_widget(QtWidgets.QWidget):
             )
 
         self.refresh_button.setEnabled(True)
+
+    def search(self):
+        """Filter rows to match search term."""
+        # strip and lowercase
+        search_term = self.search_field.text().strip().lower()
+        if not search_term:
+            self.main_table.show_all_rows()
+            return
+
+        # prep data
+        data = self.main_table.get_row_strings()
+        data = [row.lower() for row in data]
+
+        # search rows
+        rows_to_hide = [r for r, row in enumerate(data) if search_term not in row]
+
+        # reset rows
+        self.main_table.show_all_rows()
+        # hide rows
+        self.main_table.hide_rows(rows_to_hide)
+
+    def clear_search(self):
+        """Clear the search field."""
+        self.search_field.clear()

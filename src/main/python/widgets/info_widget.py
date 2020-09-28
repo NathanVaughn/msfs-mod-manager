@@ -20,6 +20,8 @@ class info_widget(QtWidgets.QWidget):
         self.setWindowFlags(
             QtCore.Qt.WindowSystemMenuHint
             | QtCore.Qt.WindowTitleHint
+            | QtCore.Qt.WindowMinimizeButtonHint
+            | QtCore.Qt.WindowMaximizeButtonHint
             | QtCore.Qt.WindowCloseButtonHint
         )
         # self.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -29,38 +31,38 @@ class info_widget(QtWidgets.QWidget):
         self.top_group = QtWidgets.QGroupBox()
         self.top_layout = QtWidgets.QFormLayout()
 
-        self.content_type_field = QtWidgets.QLineEdit()
+        self.content_type_field = QtWidgets.QLineEdit(self)
         self.content_type_field.setReadOnly(True)
         self.top_layout.addRow("Content Type", self.content_type_field)
 
-        self.title_field = QtWidgets.QLineEdit()
+        self.title_field = QtWidgets.QLineEdit(self)
         self.title_field.setReadOnly(True)
         self.top_layout.addRow("Title", self.title_field)
 
-        self.manufacturer_field = QtWidgets.QLineEdit()
+        self.manufacturer_field = QtWidgets.QLineEdit(self)
         self.manufacturer_field.setReadOnly(True)
         self.top_layout.addRow("Manufacturer", self.manufacturer_field)
 
-        self.creator_field = QtWidgets.QLineEdit()
+        self.creator_field = QtWidgets.QLineEdit(self)
         self.creator_field.setReadOnly(True)
         self.top_layout.addRow("Creator", self.creator_field)
 
-        self.package_version_field = QtWidgets.QLineEdit()
+        self.package_version_field = QtWidgets.QLineEdit(self)
         self.package_version_field.setReadOnly(True)
         self.top_layout.addRow("Package Version", self.package_version_field)
 
-        self.minimum_game_version_field = QtWidgets.QLineEdit()
+        self.minimum_game_version_field = QtWidgets.QLineEdit(self)
         self.minimum_game_version_field.setReadOnly(True)
         self.top_layout.addRow("Minimum Game Version", self.minimum_game_version_field)
 
-        self.total_size_field = QtWidgets.QLineEdit()
+        self.total_size_field = QtWidgets.QLineEdit(self)
         self.total_size_field.setReadOnly(True)
         self.top_layout.addRow("Total Size", self.total_size_field)
 
         self.top_group.setLayout(self.top_layout)
         self.layout.addWidget(self.top_group)
 
-        self.open_folder_button = QtWidgets.QPushButton("Open Folder")
+        self.open_folder_button = QtWidgets.QPushButton("Open Folder", self)
         self.layout.addWidget(self.open_folder_button)
 
         self.files_table = files_table(self)

@@ -53,6 +53,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
+          body: ${{ github.event.commit_comment }}
           draft: false
           prerelease: false
 
@@ -63,7 +64,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./target/MSFSModManagerPortable.zip
-          asset_name: MSFSModManagerPortable.zip
+          asset_name: MSFSModManagerPortable${{ github.ref }}.zip
           asset_content_type: application/zip
 
       - name: Add Installer Artifact
@@ -73,7 +74,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./target/MSFS Mod ManagerSetup.exe
-          asset_name: MSFSModManagerSetup.exe
+          asset_name: MSFSModManagerSetup${{ github.ref }}.exe
           asset_content_type: application/vnd.microsoft.portable-executable
 
       # - name: Clean

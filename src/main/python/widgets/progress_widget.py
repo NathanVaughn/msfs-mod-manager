@@ -19,11 +19,11 @@ class progress_widget(QtWidgets.QDialog):
 
         self.layout = QtWidgets.QVBoxLayout()
 
-        self.activity = QtWidgets.QLabel()
+        self.activity = QtWidgets.QLabel(parent=self)
         self.activity.setWordWrap(True)
         self.layout.addWidget(self.activity)
 
-        self.bar = QtWidgets.QProgressBar()
+        self.bar = QtWidgets.QProgressBar(self)
         self.layout.addWidget(self.bar)
 
         self.setLayout(self.layout)

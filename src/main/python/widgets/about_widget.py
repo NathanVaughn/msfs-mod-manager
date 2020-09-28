@@ -23,19 +23,20 @@ class about_widget(QtWidgets.QDialog):
         self.layout = QtWidgets.QVBoxLayout()
         self.font = QtGui.QFont("Arial", 16)
 
-        self.icon = QtWidgets.QLabel()
+        self.icon = QtWidgets.QLabel(parent=self)
         self.icon.setPixmap(
             QtGui.QPixmap(self.appctxt.get_resource(os.path.join("icons", "icon.png")))
         )
         self.layout.addWidget(self.icon)
 
-        self.name = QtWidgets.QLabel("Microsoft Flight Simulator Mod Manager")
+        self.name = QtWidgets.QLabel("Microsoft Flight Simulator Mod Manager", self)
         self.name.setFont(self.font)
         self.name.setAlignment(QtCore.Qt.AlignCenter)
         self.layout.addWidget(self.name)
 
         self.author = QtWidgets.QLabel(
-            "Developed by <a href='https://nathanv.me'><span style='color:LightSkyBlue;'>Nathan Vaughn</span></a>"
+            "Developed by <a href='https://nathanv.me'><span style='color:LightSkyBlue;'>Nathan Vaughn</span></a>",
+            self,
         )
         self.author.setFont(self.font)
         self.author.setOpenExternalLinks(True)
@@ -43,7 +44,7 @@ class about_widget(QtWidgets.QDialog):
         self.layout.addWidget(self.author)
 
         self.license = QtWidgets.QLabel(
-            "Copyright 2020 - Licensed under the GPL License"
+            "Copyright 2020 - Licensed under the GPL License", self
         )
         self.license.setFont(self.font)
         self.license.setAlignment(QtCore.Qt.AlignCenter)
