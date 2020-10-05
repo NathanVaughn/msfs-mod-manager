@@ -13,7 +13,6 @@ isort = "*"
 [packages]
 patool = "*"
 pyside2 = "*"
-pyinstaller = "*"
 fbs = "*"
 loguru = "*"
 pywin32 = "*"
