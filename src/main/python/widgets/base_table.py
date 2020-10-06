@@ -88,7 +88,9 @@ class base_table(QtWidgets.QTableWidget):
     def hide_rows(self, rows):
         """Hides given row indexes."""
         [self.hideRow(r) for r in rows]
+        self.resize()
 
     def show_all_rows(self):
         """Shows all rows."""
         [self.showRow(r) for r in range(self.rowCount())]
+        self.resize()

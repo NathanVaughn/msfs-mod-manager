@@ -645,6 +645,7 @@ class main_widget(QtWidgets.QWidget):
                 ),
             )
 
+        self.search()
         self.refresh_button.setEnabled(True)
 
     def search(self):
