@@ -72,11 +72,11 @@ your game.
 
 Filter mods as you type to help you find what you're looking for.
 
+![Mod Searching Demo](screenshots/search.gif)
+
 ### More To Come
 
 This is still under active development. Pull requests welcome!
-
-![Mod Searching Demo](screenshots/search.gif)
 
 ## Usage
 
