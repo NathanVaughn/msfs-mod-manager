@@ -116,10 +116,7 @@ class main_widget(QtWidgets.QWidget):
                 user_selection()
 
         # try to automatically find the sim
-        (
-            success,
-            self.sim_folder,
-        ) = flight_sim.find_sim_folder()
+        (success, self.sim_folder,) = flight_sim.find_sim_folder()
 
         if not self.sim_folder:
             # show error

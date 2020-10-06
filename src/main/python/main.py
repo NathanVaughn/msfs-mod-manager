@@ -6,7 +6,6 @@ from loguru import logger
 
 from lib.config import BASE_FOLDER
 from lib.resize import max_resize
-from lib.version import get_version
 from widgets.main_window import main_window
 
 if __name__ == "__main__":
@@ -28,20 +27,23 @@ if __name__ == "__main__":
     logger.info("-----------------------")
     logger.info("Launching application")
 
-    # create instance of main window
-    main_window = main_window(app, appctxt)
-    # build the main window
-    main_window.build()
-    main_window.set_theme()
+    try:
+        # create instance of main window
+        main_window = main_window(app, appctxt)
+        # build the main window
+        main_window.build()
+        main_window.set_theme()
 
-    # load data
-    main_window.main_widget.find_sim()
-    main_window.main_widget.check_version()
-    main_window.main_widget.refresh(first=True)
+        # load data
+        main_window.main_widget.find_sim()
+        main_window.main_widget.check_version()
+        main_window.main_widget.refresh(first=True)
 
-    # resize and show
-    max_resize(main_window, main_window.sizeHint())
-    main_window.show()
+        # resize and show
+        max_resize(main_window, main_window.sizeHint())
+        main_window.show()
 
-    # execute the application
-    sys.exit(app.exec_())
+        # execute the application
+        sys.exit(app.exec_())
+    except:
+        logger.exception("Uncaught exception")
