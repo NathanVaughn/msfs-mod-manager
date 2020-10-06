@@ -4,6 +4,7 @@ import os
 from loguru import logger
 
 BASE_FOLDER = os.path.abspath(os.path.join(os.getenv("APPDATA"), "MSFS Mod Manager"))
+DEBUG_LOG = os.path.join(BASE_FOLDER, "debug.log")
 
 CONFIG_FILE = os.path.abspath(os.path.join(BASE_FOLDER, "config.ini"))
 SECTION_KEY = "settings"

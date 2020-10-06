@@ -118,7 +118,7 @@ def parse_user_cfg(sim_folder=None, filename=None):
 
     installed_packages_path = ""
 
-    with open(filename, "r") as fp:
+    with open(filename, "r", encoding="utf8") as fp:
         for line in fp:
             if line.startswith("InstalledPackagesPath"):
                 logger.debug("Found InstalledPackagesPath line: {}".format(line))
@@ -281,7 +281,7 @@ def parse_mod_layout(sim_folder, folder, enabled):
         logger.error("No layout.json found")
         raise NoLayoutError(mod_folder)
 
-    with open(os.path.join(mod_folder, "layout.json"), "r") as f:
+    with open(os.path.join(mod_folder, "layout.json"), "r", encoding="utf8") as f:
         try:
             data = json.load(f)
         except Exception as e:
@@ -321,7 +321,7 @@ def parse_mod_manifest(sim_folder, folder, enabled):
         logger.error("No manifest.json found")
         raise NoManifestError(mod_folder)
 
-    with open(manifest_path, "r") as f:
+    with open(manifest_path, "r", encoding="utf8") as f:
         try:
             data = json.load(f)
         except Exception as e:
@@ -357,7 +357,7 @@ def get_enabled_mods(sim_folder):
         # parse each mod
         try:
             enabled_mods.append(parse_mod_manifest(sim_folder, folder, True))
-        except NoManifestError:
+        except (NoManifestError, ManifestError):
             errors.append(folder)
 
     return enabled_mods, errors
@@ -376,7 +376,7 @@ def get_disabled_mods(sim_folder):
         # parse each mod
         try:
             disabled_mods.append(parse_mod_manifest(sim_folder, folder, False))
-        except NoManifestError:
+        except (NoManifestError, ManifestError):
             errors.append(folder)
 
     return disabled_mods, errors
@@ -427,7 +427,7 @@ def extract_archive(archive, update_func=None):
                 )
             )
 
-        logger.debug("Extracting archive {} to {}".format(archive, extract_archive))
+        logger.debug("Extracting archive {} to {}".format(archive, extracted_archive))
 
         patoolib.extract_archive(
             archive, outdir=extracted_archive, verbosity=-1, interactive=False

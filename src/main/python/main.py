@@ -1,10 +1,9 @@
-import os
 import sys
 
 from fbs_runtime.application_context.PySide2 import ApplicationContext
 from loguru import logger
 
-from lib.config import BASE_FOLDER
+from lib.config import DEBUG_LOG
 from lib.resize import max_resize
 from widgets.main_window import main_window
 
@@ -17,7 +16,7 @@ if __name__ == "__main__":
 
     # prepare the logger
     logger.add(
-        os.path.join(BASE_FOLDER, "debug.log"),
+        DEBUG_LOG,
         rotation="1 MB",
         retention="1 week",
         backtrace=True,

@@ -3,6 +3,7 @@ import os
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
+from lib.config import DEBUG_LOG
 from lib.theme import get_theme, set_theme
 from lib.version import get_version
 from widgets.main_widget import main_widget
@@ -87,10 +88,20 @@ class main_window(QtWidgets.QMainWindow):
         menu_action.triggered.connect(self.main_widget.about)
         info_menu.addAction(menu_action)
 
+        help_menu = main_menu.addMenu("Help")
+
+        menu_action = QtWidgets.QAction("Open Debug Log", self)
+        menu_action.triggered.connect(self.open_debug_log)
+        help_menu.addAction(menu_action)
+
     def set_theme(self):
-        """Apply theme to the window"""
+        """Apply theme to the window."""
         # apply theme
         set_theme(self.appctxt, self.theme_menu_action.isChecked())
         # reformat table
         self.main_widget.main_table.set_colors(self.theme_menu_action.isChecked())
         self.main_widget.main_table.resize()
+
+    def open_debug_log(self):
+        """Open the debug log in the default application."""
+        os.startfile(DEBUG_LOG)

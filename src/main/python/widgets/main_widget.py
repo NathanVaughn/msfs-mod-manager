@@ -640,7 +640,7 @@ class main_widget(QtWidgets.QWidget):
             QtWidgets.QMessageBox().warning(
                 self,
                 "Error",
-                "Unable to parse mod(s):\n{} \nThis is likely due to a missing manifest.json file.".format(
+                "Unable to parse mod(s):\n{} \nThis is likely due to a missing or corrupt manifest.json file. See the debug log for more info.".format(
                     "\n".join(["- {}".format(error) for error in total_errors])
                 ),
             )
