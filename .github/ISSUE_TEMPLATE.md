@@ -20,3 +20,7 @@
 This file is found at `%APPDATA%\MSFS Mod Manager\debug.log`
 
 (Everything after the last `__main__:<module>:28 - -----------------------` line)
+
+```
+debug log
+```
