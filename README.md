@@ -1,3 +1,7 @@
+<center><img src="src/main/resources/base/icons/icon.png" alt="Bad Logo (I'm not good at graphic design)" width="200"/></center>
+
+# MSFS Mod Manager
+
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/nathanvaughn/msfs-mod-manager)](https://github.com/NathanVaughn/msfs-mod-manager/releases/latest)
 ![GitHub All Releases](https://img.shields.io/github/downloads/nathanvaughn/msfs-mod-manager/total)
@@ -5,13 +9,10 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/01bf5870c736422fa4dab46200b56ed1)](https://www.codacy.com/manual/NathanVaughn/msfs-mod-manager?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=NathanVaughn/msfs-mod-manager&amp;utm_campaign=Badge_Grade)
 [![GitHub license](https://img.shields.io/github/license/NathanVaughn/msfs-mod-manager)](https://github.com/NathanVaughn/msfs-mod-manager/blob/master/LICENSE)
 
-# MSFS Mod Manager
+This is an external mod manager for the new Microsoft Flight Simulator to help you install
+and manage 3rd party addons.
 
-<img src="src/main/resources/base/icons/icon.png" alt="Bad Logo (I'm not good at graphic design)" width="200"/>
-
-This is an external mod manager for the new Microsoft Flight Simulator.
-
-![Main Screen](screenshots/main-1.png)
+![Main Screen](screenshots/main.png)
 
 ## Features
 
@@ -67,9 +68,15 @@ View info about a mod and quickly open the directory it is located in.
 Easily create backups of all of your enabled mods, in case you need to reinstall
 your game.
 
+### Search
+
+Filter mods as you type to help you find what you're looking for.
+
 ### More To Come
 
 This is still under active development. Pull requests welcome!
+
+![Mod Searching Demo](screenshots/search.gif)
 
 ## Usage
 
