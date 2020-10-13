@@ -136,9 +136,29 @@ def parse_user_cfg(sim_folder=None, filename=None):
     return installed_packages_path
 
 
+def get_game_version(sim_folder):
+    """Attempts to guess the game's version.
+    This is based on the fs-base package and the minimum game version listed."""
+    logger.debug("Attempting to determine game version")
+    version = "???"
+    # path to official packages folder
+    official_packages = files.resolve_symlink(os.path.join(sim_folder, "Official"))
+    # choose folder inside
+    store = files.listdir_dirs(official_packages)[0]
+    # build path to fs-base manifest
+    fs_base = files.resolve_symlink(os.path.join(official_packages, store, "fs-base"))
+    # parse it if we guessed correct
+    if os.path.isdir(fs_base):
+        data = parse_mod_manifest(sim_folder, "fs-base", True, mod_folder=fs_base)
+        version = data["minimum_game_version"]
+
+    logger.debug("Game version: {}".format(version))
+    return version
+
+
 def is_sim_folder(folder):
     """Returns if FlightSimulator.CFG exists inside the given directory.
-    Not a perfect tests, but a solid guess."""
+    Not a perfect test, but a solid guess."""
     logger.debug("Testing if {} is main MSFS folder".format(folder))
     try:
         status = os.path.isfile(os.path.join(folder, "FlightSimulator.CFG"))
@@ -245,17 +265,7 @@ def sim_mod_folder(sim_folder):
     Tries to resolve symlinks in every step of the path."""
     # logger.debug("Determining path for sim community packages folder")
 
-    if os.path.islink(sim_folder):
-        # logger.debug("Sim path {} is a symlink. Resolving.".format(sim_folder))
-        sim_folder = os.readlink(sim_folder)
-
-    step_2 = os.path.join(sim_folder, "Community")
-    if os.path.islink(step_2):
-        # logger.debug("Community packages {} is a symlink. Resolving.".format(step_2))
-        step_2 = os.readlink(step_2)
-
-    # logger.debug("Final sim community packages folder path: {}".format(step_2))
-    return step_2
+    return files.resolve_symlink(os.path.join(sim_folder, "Community"))
 
 
 def get_mod_folder(sim_folder, folder, enabled):
@@ -265,7 +275,7 @@ def get_mod_folder(sim_folder, folder, enabled):
     if enabled:
         mod_folder = os.path.join(sim_mod_folder(sim_folder), folder)
     else:
-        mod_folder = os.path.join(files.MOD_CACHE_FOLDER, folder)
+        mod_folder = os.path.join(files.get_mod_cache_folder(), folder)
 
     # logger.debug("Final mod path: {}".format(mod_folder))
 
@@ -309,9 +319,10 @@ def parse_mod_files(sim_folder, folder, enabled):
     return data
 
 
-def parse_mod_manifest(sim_folder, folder, enabled):
+def parse_mod_manifest(sim_folder, folder, enabled, mod_folder=None):
     """Builds the mod metadata as a dictionary. Parsed from the manifest.json."""
-    mod_folder = get_mod_folder(sim_folder, folder, enabled)
+    if not mod_folder:
+        mod_folder = get_mod_folder(sim_folder, folder, enabled)
     logger.debug("Parsing manifest for {}".format(mod_folder))
 
     mod_data = {"folder_name": os.path.basename(mod_folder)}
@@ -372,7 +383,7 @@ def get_disabled_mods(sim_folder):
     disabled_mods = []
     errors = []
 
-    for folder in files.listdir_dirs(files.MOD_CACHE_FOLDER):
+    for folder in files.listdir_dirs(files.get_mod_cache_folder()):
         # parse each mod
         try:
             disabled_mods.append(parse_mod_manifest(sim_folder, folder, False))
@@ -511,8 +522,8 @@ def uninstall_mod(sim_folder, mod_folder, enabled, update_func=None):
 def enable_mod(sim_folder, mod_folder, update_func=None):
     """Copies mod folder into flight sim install."""
     logger.debug("Enabling mod {}".format(mod_folder))
-    src_folder = os.path.join(files.MOD_CACHE_FOLDER, mod_folder)
-    dest_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
+    src_folder = get_mod_folder(sim_folder, mod_folder, False)
+    dest_folder = get_mod_folder(sim_folder, mod_folder, True)
 
     # move mod to sim
     files.move_folder(src_folder, dest_folder, update_func=update_func)
@@ -524,8 +535,8 @@ def disable_mod(sim_folder, mod_folder, update_func=None):
     logger.debug("Disabling mod {}".format(mod_folder))
     files.create_mod_cache_folder()
 
-    src_folder = os.path.join(sim_mod_folder(sim_folder), mod_folder)
-    dest_folder = os.path.join(files.MOD_CACHE_FOLDER, mod_folder)
+    src_folder = get_mod_folder(sim_folder, mod_folder, True)
+    dest_folder = get_mod_folder(sim_folder, mod_folder, False)
 
     # move mod to mod cache
     files.move_folder(src_folder, dest_folder, update_func=update_func)

@@ -1,9 +1,10 @@
 import os
+import webbrowser
 
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from lib.config import DEBUG_LOG
+from lib.config import DEBUG_LOG, CONFIG_FILE
 from lib.theme import get_theme, set_theme
 from lib.version import get_version
 from widgets.main_widget import main_widget
@@ -72,6 +73,12 @@ class main_window(QtWidgets.QMainWindow):
         menu_action.triggered.connect(self.main_widget.disable)
         edit_menu.addAction(menu_action)
 
+        edit_menu.addSeparator()
+
+        menu_action = QtWidgets.QAction("Change Disabled Mod Folder", self)
+        menu_action.triggered.connect(self.main_widget.select_mod_cache)
+        edit_menu.addAction(menu_action)
+
         info_menu = main_menu.addMenu("Info")
 
         menu_action = QtWidgets.QAction("Refresh Mods", self)
@@ -88,10 +95,26 @@ class main_window(QtWidgets.QMainWindow):
         menu_action.triggered.connect(self.main_widget.about)
         info_menu.addAction(menu_action)
 
+        menu_action = QtWidgets.QAction("Versions", self)
+        menu_action.triggered.connect(self.main_widget.versions)
+        info_menu.addAction(menu_action)
+
         help_menu = main_menu.addMenu("Help")
 
+        menu_action = QtWidgets.QAction("Issues/Suggestions", self)
+        menu_action.triggered.connect(
+            lambda: webbrowser.open(
+                "https://github.com/NathanVaughn/msfs-mod-manager/issues/"
+            )
+        )
+        help_menu.addAction(menu_action)
+
         menu_action = QtWidgets.QAction("Open Debug Log", self)
-        menu_action.triggered.connect(self.open_debug_log)
+        menu_action.triggered.connect(lambda: os.startfile(DEBUG_LOG))
+        help_menu.addAction(menu_action)
+
+        menu_action = QtWidgets.QAction("Open Config file", self)
+        menu_action.triggered.connect(lambda: os.startfile(CONFIG_FILE))
         help_menu.addAction(menu_action)
 
     def set_theme(self):
@@ -101,7 +124,3 @@ class main_window(QtWidgets.QMainWindow):
         # reformat table
         self.main_widget.main_table.set_colors(self.theme_menu_action.isChecked())
         self.main_widget.main_table.resize()
-
-    def open_debug_log(self):
-        """Open the debug log in the default application."""
-        os.startfile(DEBUG_LOG)

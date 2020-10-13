@@ -2,6 +2,6 @@
     "app_name": "MSFS Mod Manager",
     "author": "Nathan Vaughn",
     "main_module": "src/main/python/main.py",
-    "hidden_imports": ["patoolib.programs", "patoolib.programs.p7zip", "patoolib.programs.unrar", "patoolib.programs.unzip", "patoolib.programs.tar"],
+    "hidden_imports": ["patoolib.programs", "patoolib.programs.p7zip", "patoolib.programs.rar", "patoolib.programs.unrar", "patoolib.programs.zip", "patoolib.programs.unzip", "patoolib.programs.tar"],
     "version": "0.4.3"
 }

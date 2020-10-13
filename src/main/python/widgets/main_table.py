@@ -19,6 +19,7 @@ class main_table(base_table):
             "Type",
             "Creator",
             "Version",
+            "Minimum Game Version",
             "Enabled",
             "Last Modified",
         ]
@@ -29,8 +30,9 @@ class main_table(base_table):
             "content_type": 2,
             "creator": 3,
             "version": 4,
-            "enabled": 5,
-            "time_mod": 6,
+            "minimum_game_version": 5,
+            "enabled": 6,
+            "time_mod": 7,
         }
 
     def set_colors(self, dark):

@@ -16,6 +16,7 @@ from widgets.info_widget import info_widget
 from widgets.main_table import main_table
 from widgets.progress_widget import progress_widget
 from widgets.version_check_widget import version_check_widget
+from widgets.versions_widget import versions_widget
 
 ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
 
@@ -191,9 +192,29 @@ class main_widget(QtWidgets.QWidget):
             elif remember:
                 config.set_key_value(config.NEVER_VER_CHEK_KEY, True)
 
+    def select_mod_cache(self):
+        """Allow user to select new mod cache folder"""
+        selection = QtWidgets.QFileDialog.getExistingDirectory(
+            parent=self,
+            caption="Select disabled mod folder",
+            dir=files.get_mod_cache_folder(),
+        )
+
+        if selection:
+            config.set_key_value(config.MOD_CACHE_FOLDER_KEY, selection)
+            QtWidgets.QMessageBox().information(
+                self,
+                "Info",
+                "The disabled mod folder has been set to {}".format(selection),
+            )
+
     def about(self):
         """Launch the about widget."""
         about_widget(self, self.appctxt).exec_()
+
+    def versions(self):
+        """Launch the versions widget."""
+        versions_widget(self.sim_folder, self, self.appctxt).exec_()
 
     def info(self):
         """Open dialog to view mod info."""

@@ -9,7 +9,6 @@ import lib.config as config
 TEMP_FOLDER = os.path.abspath(
     os.path.join(os.getenv("LOCALAPPDATA"), "Temp", "MSFS Mod Manager")
 )
-MOD_CACHE_FOLDER = os.path.abspath(os.path.join(config.BASE_FOLDER, "modCache"))
 
 if not os.path.exists(config.BASE_FOLDER):
     os.makedirs(config.BASE_FOLDER)
@@ -43,12 +42,12 @@ def listdir_dirs(folder):
     """Returns a list of directories inside of a directory."""
     # logger.debug("Listing directories of {}".format(folder))
     if os.path.isdir(folder):
-        dirs = []
-        for item in os.listdir(folder):
-            if os.path.isdir(os.path.join(folder, item)):
-                dirs.append(item)
+        return [
+            item
+            for item in os.listdir(folder)
+            if os.path.isdir(os.path.join(folder, item))
+        ]
 
-        return dirs
     else:
         logger.warning("Folder {} does not exist".format(folder))
         return []
@@ -157,6 +156,41 @@ def move_folder(src, dest, update_func=None):
     delete_folder(src, update_func=update_func)
 
 
+def splitall(path):
+    """Splits a path into all its parts."""
+    # https://www.oreilly.com/library/view/python-cookbook/0596001673/ch04s16.html
+    pieces = []
+    while 1:
+        parts = os.path.split(path)
+        if parts[0] == path:  # sentinel for absolute paths
+            pieces.insert(0, parts[0])
+            break
+        elif parts[1] == path:  # sentinel for relative paths
+            pieces.insert(0, parts[1])
+            break
+        else:
+            path = parts[0]
+            pieces.insert(0, parts[1])
+    return pieces
+
+
+def resolve_symlink(folder):
+    """Resolves symlinks in a directory path.
+    Basically a quick  and dirty reimplementation of os.path.realpath for Python
+    before 3.8."""
+
+    parts = splitall(folder)
+    new_path = ""
+
+    # resolve links at every step
+    for part in parts:
+        new_path = os.path.join(new_path, part)
+        if os.path.islink(new_path):
+            new_path = os.path.readlink(new_path)
+
+    return new_path
+
+
 def create_tmp_folder(update_func=None):
     """Deletes existing temp folder if it exists and creates a new one."""
     delete_folder(TEMP_FOLDER, update_func=update_func)
@@ -164,8 +198,20 @@ def create_tmp_folder(update_func=None):
     os.makedirs(TEMP_FOLDER)
 
 
+def get_mod_cache_folder():
+    """Gets the current mod cache folder value from the config file."""
+    succeeded, value = config.get_key_value(config.MOD_CACHE_FOLDER_KEY)
+    if not succeeded:
+        # if mod cache folder could not be loaded from config
+        value = os.path.abspath(os.path.join(config.BASE_FOLDER, "modCache"))
+        config.set_key_value(config.MOD_CACHE_FOLDER_KEY, value)
+
+    return value
+
+
 def create_mod_cache_folder():
     """Creates mod cache folder if it does not exist."""
-    if not os.path.exists(MOD_CACHE_FOLDER):
-        logger.debug("Creating mod cache folder {}".format(MOD_CACHE_FOLDER))
-        os.makedirs(MOD_CACHE_FOLDER)
+    mod_cache_folder = get_mod_cache_folder()
+    if not os.path.exists(mod_cache_folder):
+        logger.debug("Creating mod cache folder {}".format(mod_cache_folder))
+        os.makedirs(mod_cache_folder)

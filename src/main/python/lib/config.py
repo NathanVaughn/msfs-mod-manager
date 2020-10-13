@@ -8,13 +8,15 @@ DEBUG_LOG = os.path.join(BASE_FOLDER, "debug.log")
 
 CONFIG_FILE = os.path.abspath(os.path.join(BASE_FOLDER, "config.ini"))
 SECTION_KEY = "settings"
+
 SIM_FOLDER_KEY = "sim_folder"
+MOD_CACHE_FOLDER_KEY = "mod_cache_folder"
 LAST_VER_CHECK_KEY = "last_version_check"
 NEVER_VER_CHEK_KEY = "never_version_check"
 THEME_KEY = "theme"
 
 
-def get_key_value(key):
+def get_key_value(key, default=None):
     """Attempts to load value from key in the config file.
     Returns a tuple of if the value was found, and if so, what the contents where."""
     logger.debug(
@@ -35,7 +37,7 @@ def get_key_value(key):
             return (True, config[SECTION_KEY][key])
 
     logger.debug("Unable to find key '{}' in config file".format(key))
-    return (False, None)
+    return (False, default)
 
 
 def set_key_value(key, value):
