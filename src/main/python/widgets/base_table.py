@@ -78,6 +78,10 @@ class base_table(QtWidgets.QTableWidget):
         # this HAS to come second for some reason
         self.resizeRowsToContents()
 
+    def get_selected_rows(self):
+        """Returns a list of selected row indexes."""
+        return list({index.row() for index in self.selectedIndexes()})
+
     def get_row_strings(self):
         """Returns list of row data as strings."""
         return [
@@ -94,3 +98,21 @@ class base_table(QtWidgets.QTableWidget):
         """Shows all rows."""
         [self.showRow(r) for r in range(self.rowCount())]
         self.resize()
+
+    def search(self, term):
+        """Searches the table for a term, and hdides row that do not match."""
+        if not term:
+            self.show_all_rows()
+            return
+
+        # prep data
+        data = self.get_row_strings()
+        data = [row.lower() for row in data]
+
+        # search rows
+        rows_to_hide = [r for r, row in enumerate(data) if term not in row]
+
+        # reset rows
+        self.show_all_rows()
+        # hide rows
+        self.hide_rows(rows_to_hide)

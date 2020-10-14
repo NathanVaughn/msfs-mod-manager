@@ -42,7 +42,9 @@ class install_mods_thread(thread.base_thread):
         """Initialize the mod installer thread."""
         logger.debug("Initialzing mod installer thread")
         function = lambda: install_mods(
-            sim_folder, extracted_archive, update_func=self.activity_update.emit,
+            sim_folder,
+            extracted_archive,
+            update_func=self.activity_update.emit,
         )
         thread.base_thread.__init__(self, function)
 
@@ -66,7 +68,10 @@ class uninstall_mod_thread(thread.base_thread):
         """Initialize the mod uninstaller thread."""
         logger.debug("Initialzing mod uninstaller thread")
         function = lambda: uninstall_mod(
-            sim_folder, mod_folder, enabled, update_func=self.activity_update.emit,
+            sim_folder,
+            mod_folder,
+            enabled,
+            update_func=self.activity_update.emit,
         )
         thread.base_thread.__init__(self, function)
 
@@ -247,7 +252,11 @@ def find_sim_folder():
     # last ditch steam detection #2
     logger.debug("Trying to find simulator path from last-ditch Steam install #2")
     steam_folder = os.path.join(
-        os.getenv("PROGRAMFILES(x86)"), "Steam", "steamapps", "common", "Chucky",
+        os.getenv("PROGRAMFILES(x86)"),
+        "Steam",
+        "steamapps",
+        "common",
+        "Chucky",
     )
     if is_sim_folder(steam_folder):
         steam_packages_folder = os.path.join(parse_user_cfg(sim_folder=steam_folder))
@@ -491,8 +500,8 @@ def install_mods(sim_folder, extracted_archive, update_func=None):
         base_mod_folder = os.path.basename(mod_folder)
         dest_folder = os.path.join(sim_mod_folder(sim_folder), base_mod_folder)
 
-        # move mod to sim
-        files.move_folder(mod_folder, dest_folder, update_func=update_func)
+        # copy mod to sim
+        files.copy_folder(mod_folder, dest_folder, update_func=update_func)
 
         installed_mods.append(base_mod_folder)
 
