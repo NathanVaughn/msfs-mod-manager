@@ -25,7 +25,5 @@ def mods_installed(parent, mods):
 
 def disabled_mods_folder(parent, folder):
     QMessageBox().information(
-        parent,
-        TITLE,
-        "The disabled mod folder has been set to {}".format(folder),
+        parent, TITLE, "The disabled mod folder has been set to {}".format(folder),
     )

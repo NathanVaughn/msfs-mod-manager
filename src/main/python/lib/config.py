@@ -11,8 +11,11 @@ SECTION_KEY = "settings"
 
 SIM_FOLDER_KEY = "sim_folder"
 MOD_CACHE_FOLDER_KEY = "mod_cache_folder"
+LAST_OPEN_FOLDER_KEY = "last_open_folder"
+
 LAST_VER_CHECK_KEY = "last_version_check"
 NEVER_VER_CHEK_KEY = "never_version_check"
+
 THEME_KEY = "theme"
 
 
