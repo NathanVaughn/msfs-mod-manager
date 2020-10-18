@@ -73,10 +73,6 @@ class info_widget(QtWidgets.QWidget):
 
         self.open_folder_button.clicked.connect(self.open_folder)
 
-    def get_selected_rows(self):
-        """Returns a list of row indexes that are currently selected."""
-        return list({index.row() for index in self.files_table.selectedIndexes()})
-
     def set_data(self, mod_data, files_data):
         """Loads all the data for the widget."""
         self.setWindowTitle("{} - Info".format(mod_data["folder_name"]))
@@ -122,7 +118,7 @@ class info_widget(QtWidgets.QWidget):
 
     def open_file_folder(self):
         """Opens the folder for a selected file."""
-        selected = self.get_selected_rows()
+        selected = self.files_table.get_selected_rows()
 
         if selected:
             file_path = self.files_table.get_basic_info(selected[0])

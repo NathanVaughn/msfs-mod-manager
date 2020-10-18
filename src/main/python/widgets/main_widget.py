@@ -110,7 +110,10 @@ class main_widget(QtWidgets.QWidget):
                 user_selection()
 
         # try to automatically find the sim
-        (success, self.sim_folder,) = flight_sim.find_sim_folder()
+        (
+            success,
+            self.sim_folder,
+        ) = flight_sim.find_sim_folder()
 
         if not self.sim_folder:
             # show error
@@ -295,7 +298,9 @@ class main_widget(QtWidgets.QWidget):
                     }
 
                     self.base_fail(
-                        error, mapping, "Failed to install mod archive",
+                        error,
+                        mapping,
+                        "Failed to install mod archive",
                     )
 
                 # setup installer thread
@@ -315,7 +320,10 @@ class main_widget(QtWidgets.QWidget):
                     installer.start()
 
         self.base_action(
-            core, button=self.install_button, empty_check=True, empty_val=mod_archives,
+            core,
+            button=self.install_button,
+            empty_check=True,
+            empty_val=mod_archives,
         )
 
         if succeeded:
@@ -329,7 +337,9 @@ class main_widget(QtWidgets.QWidget):
 
         # first, let user select a folder
         mod_folder = QtWidgets.QFileDialog.getExistingDirectory(
-            parent=self, caption="Select mod folder", dir=files.get_last_open_folder(),
+            parent=self,
+            caption="Select mod folder",
+            dir=files.get_last_open_folder(),
         )
 
         succeeded = []
@@ -354,7 +364,9 @@ class main_widget(QtWidgets.QWidget):
                 }
 
                 self.base_fail(
-                    error, mapping, "Failed to install mod folder",
+                    error,
+                    mapping,
+                    "Failed to install mod folder",
                 )
 
             # setup installer thread
@@ -372,7 +384,10 @@ class main_widget(QtWidgets.QWidget):
                 installer.start()
 
         self.base_action(
-            core, button=self.install_button, empty_check=True, empty_val=mod_folder,
+            core,
+            button=self.install_button,
+            empty_check=True,
+            empty_val=mod_folder,
         )
 
         if succeeded:
@@ -515,7 +530,9 @@ class main_widget(QtWidgets.QWidget):
                 }
 
                 self.base_fail(
-                    error, mapping, "Failed to create backup",
+                    error,
+                    mapping,
+                    "Failed to create backup",
                 )
 
             # start the thread, with extra 20 min timeout
@@ -529,7 +546,9 @@ class main_widget(QtWidgets.QWidget):
                 backuper.start()
 
         self.base_action(
-            core, empty_check=True, empty_val=archive,
+            core,
+            empty_check=True,
+            empty_val=archive,
         )
 
         if succeeded:
@@ -542,6 +561,9 @@ class main_widget(QtWidgets.QWidget):
 
     def refresh(self, first=False):
         """Refreshes all mod data."""
+        # temporarily clear search so that header resizing doesn't get borked
+        self.search(override="")
+
         self.refresh_button.setEnabled(False)
 
         # build list of mods
@@ -558,13 +580,20 @@ class main_widget(QtWidgets.QWidget):
         if all_errors:
             warning_dialogs.mod_parsing(self, all_errors)
 
-        self.search()
         self.refresh_button.setEnabled(True)
 
-    def search(self):
+        # put the search back to how it was
+        self.search()
+
+    def search(self, override=None):
         """Filter rows to match search term."""
-        # strip and lowercase
-        term = self.search_field.text().strip().lower()
+        # strip
+        term = self.search_field.text().strip()
+        # override
+        if override is not None:
+            term = override
+
+        # search
         self.main_table.search(term)
 
     def clear_search(self):

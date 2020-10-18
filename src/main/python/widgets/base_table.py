@@ -1,75 +1,98 @@
+import PySide2.QtGui as QtGui
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-import lib.types as types
 
-
-class base_table(QtWidgets.QTableWidget):
+class base_table(QtWidgets.QTableView):
     """Base table widget."""
 
     def __init__(self, parent=None):
         """Initialize table widget."""
         super().__init__(parent)
         self.parent = None
-        self.headers = []
-        self.LOOKUP = {}
+        # needs to be set by inherited class
+        # self.headers = []
+        # self.LOOKUP = {}
 
         self.setSortingEnabled(True)
         self.setAlternatingRowColors(True)
+        self.setWordWrap(False)
+        self.setEditTriggers(
+            QtWidgets.QAbstractItemView.NoEditTriggers
+        )  # disable editing
+
         # set the correct size adjust policy to get the proper size hint
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.horizontalHeader().setStretchLastSection(True)
 
+        # create data model
+        self.base_model = QtGui.QStandardItemModel(0, len(self.LOOKUP))
+        # set model headers
+        for i, header in enumerate(self.headers):
+            self.base_model.setHeaderData(i, QtCore.Qt.Horizontal, header)
+
+        # proxy model
+        # self.proxy_model = MyProxy()
+        self.proxy_model = QtCore.QSortFilterProxyModel()
+        self.proxy_model.setSourceModel(self.base_model)
+        self.proxy_model.setDynamicSortFilter(True)
+        self.proxy_model.setFilterKeyColumn(-1)  # all columns
+        # proxy model sort settings
+        self.proxy_model.setSortCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+
+        # set table model
+        self.setModel(self.proxy_model)
+
+    def set_row(self, row_data):
+        """Set a row's data."""
+        self.base_model.insertRow(0)
+
+        for col in row_data:
+            # skip items not in lookup list
+            if col in self.LOOKUP:
+                item = row_data[col]
+
+                # if it's a boolean, convert to string so capitalization
+                # is preserved, which oddly Qt does not do
+                if isinstance(item, bool):
+                    item = str(item)
+
+                self.base_model.setData(
+                    self.base_model.index(0, self.LOOKUP[col]), item
+                )
+
     def set_data(self, data, first=False):
-        """Puts mod data into table."""
-        # workaround for data disappearing
-        self.setSortingEnabled(False)
-        # clear all data
+        """Set the table data."""
+        # clear
         self.clear()
-        self.horizontalHeader().reset()
 
-        if data:
-            # the row and column count based on the data size
-            self.setColumnCount(len(self.LOOKUP))
-            self.setRowCount(len(data))
+        # set data
+        for row in data:
+            self.set_row(row)
 
-            # create each item
-            for r, row in enumerate(data):
-
-                # turn the dictionary into a list of elements using the lookup table
-                items = [None] * len(row)
-                for key in row:
-                    if key in self.LOOKUP:
-                        items[self.LOOKUP[key]] = row[key]
-
-                # put elements into the table
-                for c, col in enumerate(items):
-                    # leave ints as ints, but convert all else to strings
-                    if not types.is_int(col):
-                        col = str(col)
-
-                    # if it's a boolean, convert to string so capitalization
-                    # is preserved, which oddly Qt does not do
-                    if isinstance(col, bool):
-                        col = str(col)
-
-                    item = QtWidgets.QTableWidgetItem()
-                    item.setData(QtCore.Qt.EditRole, col)
-                    item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
-                    self.setItem(r, c, item)
-
-            # sort packages alphabetically
-            if first:
-                self.sortItems(0)
-
-        # set the horizontal headers
-        self.setHorizontalHeaderLabels(self.headers)
-
-        # re-enable sorting
-        self.setSortingEnabled(True)
+        # finish
+        if first:
+            self.sortByColumn(0, QtCore.Qt.AscendingOrder)
 
         self.resize()
+
+    def clear(self):
+        """Clears the source table model."""
+        self.base_model.removeRows(0, self.base_model.rowCount())
+
+    def get_item(self, r, c):
+        """Convience function to get table item."""
+        return self.base_model.item(r, c)
+
+    def rowCount(self):
+        """Convience proxy function for rowCount like QTableWidget."""
+        return self.base_model.rowCount()
+
+    def columnCount(self):
+        """Convience proxy function for columnCount like QTableWidget."""
+        return self.base_model.columnCount()
 
     def resize(self):
         """Resize the rows and columns."""
@@ -80,39 +103,17 @@ class base_table(QtWidgets.QTableWidget):
 
     def get_selected_rows(self):
         """Returns a list of selected row indexes."""
-        return list({index.row() for index in self.selectedIndexes()})
-
-    def get_row_strings(self):
-        """Returns list of row data as strings."""
+        # this gets the list of model indexes from the table, then maps them
+        # to the source data via the proxy model, and returns the row elements
         return [
-            ", ".join([self.item(r, c).text() for c in range(self.columnCount())])
-            for r in range(self.rowCount())
+            y.row()
+            for y in [
+                self.proxy_model.mapToSource(x)
+                for x in self.selectionModel().selectedRows()
+            ]
         ]
 
-    def hide_rows(self, rows):
-        """Hides given row indexes."""
-        [self.hideRow(r) for r in rows]
-        self.resize()
-
-    def show_all_rows(self):
-        """Shows all rows."""
-        [self.showRow(r) for r in range(self.rowCount())]
-        self.resize()
-
     def search(self, term):
-        """Searches the table for a term, and hdides row that do not match."""
-        if not term:
-            self.show_all_rows()
-            return
-
-        # prep data
-        data = self.get_row_strings()
-        data = [row.lower() for row in data]
-
-        # search rows
-        rows_to_hide = [r for r, row in enumerate(data) if term not in row]
-
-        # reset rows
-        self.show_all_rows()
-        # hide rows
-        self.hide_rows(rows_to_hide)
+        """Filters the proxy model with wildcard expression."""
+        self.proxy_model.setFilterWildcard(term)
+        self.resizeRowsToContents()

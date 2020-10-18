@@ -5,7 +5,9 @@ TITLE = "Error"
 
 def general(parent, typ, message):
     QMessageBox().critical(
-        parent, TITLE, "Something went terribly wrong.\n{}: {}".format(typ, message),
+        parent,
+        TITLE,
+        "Something went terribly wrong.\n{}: {}".format(typ, message),
     )
 
 

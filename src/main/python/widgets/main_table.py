@@ -10,9 +10,6 @@ class main_table(base_table):
 
     def __init__(self, parent=None):
         """Initialize table widget."""
-        super().__init__(parent)
-        self.parent = parent
-
         self.headers = [
             "Title",
             "Folder Name",
@@ -35,6 +32,9 @@ class main_table(base_table):
             "time_mod": 7,
         }
 
+        super().__init__(parent)
+        self.parent = parent
+
     def set_colors(self, dark):
         """Set the colors for the rows, based on being a dark theme or not."""
         for r in range(self.rowCount()):
@@ -50,13 +50,13 @@ class main_table(base_table):
                 color = QtGui.QColor(0, 0, 0)
 
             for c in range(self.columnCount()):
-                self.item(r, c).setForeground(color)
+                self.get_item(r, c).setForeground(color)
 
     def get_basic_info(self, row_id):
         """Returns folder name and enabled status of a given row index."""
         return (
-            self.item(row_id, self.LOOKUP["folder_name"]).text(),
-            types.str2bool(self.item(row_id, self.LOOKUP["enabled"]).text()),
+            self.get_item(row_id, self.LOOKUP["folder_name"]).text(),
+            types.str2bool(self.get_item(row_id, self.LOOKUP["enabled"]).text()),
         )
 
     def contextMenuEvent(self, event):

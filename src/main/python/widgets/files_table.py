@@ -9,9 +9,6 @@ class files_table(base_table):
 
     def __init__(self, parent=None):
         """Initialize table widget."""
-        super().__init__(parent)
-        self.parent = parent
-
         self.headers = [
             "Path",
             "Size (Bytes)",
@@ -22,9 +19,12 @@ class files_table(base_table):
             "size": 1,
         }
 
+        super().__init__(parent)
+        self.parent = parent
+
     def get_basic_info(self, row_id):
         """Returns path of a given row index."""
-        return self.item(row_id, self.LOOKUP["path"]).text()
+        return self.get_item(row_id, self.LOOKUP["path"]).text()
 
     def contextMenuEvent(self, event):
         """Override default context menu event to provide right-click menu."""
