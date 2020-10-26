@@ -94,6 +94,13 @@ class base_table(QtWidgets.QTableView):
         """Convience proxy function for columnCount like QTableWidget."""
         return self.base_model.columnCount()
 
+    def sizeHint(self):
+        """Reimplements sizeHint function to increase the width."""
+        # I have no idea why by default the width size hint is too small, but it is
+        old_size = super().sizeHint()
+        # add a magic 25 pixels to eliminate the scroll bar by default
+        return QtCore.QSize(old_size.width() + 0, old_size.height())
+
     def resize(self):
         """Resize the rows and columns."""
         # resize rows and columns

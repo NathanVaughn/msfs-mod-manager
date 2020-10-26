@@ -112,3 +112,9 @@ To run the program, use `fbs run`.
 To build the program, use `fbs freeze` and optionally `fbs installer` to create an
 NSIS installer
 (will need to install [NSIS](https://nsis.sourceforge.io/Main_Page) seperately).
+
+## Disclaimer
+
+I have not affiliated with Asobo Studios or Microsoft,
+I am just a college student that is working on this in my free time.
+I may not be very fast in bugfixes or adding new features.
