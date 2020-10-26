@@ -119,4 +119,4 @@ I have not affiliated with Asobo Studios or Microsoft,
 I am just a college student that is working on this in my free time.
 I may not be very fast in bugfixes or adding new features.
 
-Do not resdistribute without permission.
+Do not redistribute without permission.
