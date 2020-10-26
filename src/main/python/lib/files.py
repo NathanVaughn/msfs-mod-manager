@@ -198,6 +198,17 @@ def create_tmp_folder(update_func=None):
     os.makedirs(TEMP_FOLDER)
 
 
+def get_last_open_folder():
+    """Gets the last opened directory from the config file."""
+    succeeded, value = config.get_key_value(config.LAST_OPEN_FOLDER_KEY)
+    if not succeeded or not os.path.isdir(value):
+        # if mod cache folder could not be loaded from config
+        value = os.path.abspath(os.path.join(os.path.expanduser("~"), "Downloads"))
+        config.set_key_value(config.LAST_OPEN_FOLDER_KEY, value)
+
+    return value
+
+
 def get_mod_cache_folder():
     """Gets the current mod cache folder value from the config file."""
     succeeded, value = config.get_key_value(config.MOD_CACHE_FOLDER_KEY)

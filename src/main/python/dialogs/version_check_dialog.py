@@ -1,7 +1,7 @@
 import PySide2.QtWidgets as QtWidgets
 
 
-class version_check_widget:
+class version_check_dialog:
     def __init__(self, parent=None, installed=False):
         """Version check widget."""
         self.parent = parent
@@ -29,4 +29,7 @@ class version_check_widget:
     def exec_(self):
         """Executes the widget.
         Returns selected button and if the remember option was selected."""
-        return (self.msgbox.exec_(), bool(self.chkbox.checkState()))
+        return (
+            self.msgbox.exec_() == QtWidgets.QMessageBox.Yes,
+            bool(self.chkbox.checkState()),
+        )

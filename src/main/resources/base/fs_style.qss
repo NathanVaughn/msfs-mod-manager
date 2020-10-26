@@ -102,29 +102,29 @@ QScrollBar::add-line:vertlical {
 
 /* QTableWidget */
 
-QTableWidget {
+QTableView {
     background-color: #191A1B;
     alternate-background-color: #27282B;
     gridline-color: #626463;
     border: 0px;
 }
 
-QTableWidget::item {
+QTableView::item {
     /*color: #FFFFFF;*/
     border: 1px solid #626463;
 }
 
-QTableWidget[accessibleName="info_files"]::item {
+QTableView[accessibleName="info_files"]::item {
     color: #FFFFFF;
 }
 
-QTableWidget::item:hover {
+QTableView::item:hover {
     color: #000000;
     background-color: #FFFFFF;
     font-weight: bold;
 }
 
-QTableWidget::item:selected {
+QTableView::item:selected {
     color: #00B4FF;
     background-color: #FFFFFF;
     font-weight: bold;

@@ -15,7 +15,7 @@
   - Application Version: `v0.0.0`
   - MSFS Edition: (Steam, MS Store, Boxed)
 
-## Debug Log Contents
+## Debug Log Contents (only if reporting a bug)
 
 This file is found at `%APPDATA%\MSFS Mod Manager\debug.log`
 
