@@ -45,14 +45,14 @@ class about_widget(QtWidgets.QDialog):
         self.layout.addWidget(self.author)
 
         self.license = QtWidgets.QLabel(
-            "Copyright 2020 - Licensed under the GPL License", self
+            "Copyright 2020 - Licensed under the GPLv3 License", self
         )
         self.license.setFont(self.small_font)
         self.license.setAlignment(QtCore.Qt.AlignCenter)
         self.layout.addWidget(self.license)
 
         self.no_redistrib = QtWidgets.QLabel(
-            "Do not redistribute without permission", self
+            "Please do not redistribute without permission", self
         )
         self.no_redistrib.setFont(self.small_font)
         self.no_redistrib.setAlignment(QtCore.Qt.AlignCenter)

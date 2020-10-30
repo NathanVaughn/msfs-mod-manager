@@ -7,6 +7,7 @@ import PySide2.QtWidgets as QtWidgets
 from lib.config import DEBUG_LOG, CONFIG_FILE
 from lib.theme import get_theme, set_theme
 from lib.version import get_version
+import lib.files as files
 from widgets.main_widget import main_widget
 
 
@@ -89,19 +90,25 @@ class main_window(QtWidgets.QMainWindow):
         menu_action.triggered.connect(self.main_widget.info)
         info_menu.addAction(menu_action)
 
-        info_menu.addSeparator()
+        help_menu = main_menu.addMenu("Help")
 
         menu_action = QtWidgets.QAction("About", self)
         menu_action.triggered.connect(self.main_widget.about)
-        info_menu.addAction(menu_action)
+        help_menu.addAction(menu_action)
 
         menu_action = QtWidgets.QAction("Versions", self)
         menu_action.triggered.connect(self.main_widget.versions)
-        info_menu.addAction(menu_action)
+        help_menu.addAction(menu_action)
 
-        help_menu = main_menu.addMenu("Help")
+        help_menu.addSeparator()
 
-        menu_action = QtWidgets.QAction("Issues/Suggestions", self)
+        menu_action = QtWidgets.QAction("Open Official Website", self)
+        menu_action.triggered.connect(
+            lambda: webbrowser.open("https://github.com/NathanVaughn/msfs-mod-manager/")
+        )
+        help_menu.addAction(menu_action)
+
+        menu_action = QtWidgets.QAction("Open Issues/Suggestions", self)
         menu_action.triggered.connect(
             lambda: webbrowser.open(
                 "https://github.com/NathanVaughn/msfs-mod-manager/issues/"
@@ -109,12 +116,28 @@ class main_window(QtWidgets.QMainWindow):
         )
         help_menu.addAction(menu_action)
 
+        help_menu.addSeparator()
+
         menu_action = QtWidgets.QAction("Open Debug Log", self)
         menu_action.triggered.connect(lambda: os.startfile(DEBUG_LOG))
         help_menu.addAction(menu_action)
 
-        menu_action = QtWidgets.QAction("Open Config file", self)
+        menu_action = QtWidgets.QAction("Open Config File", self)
         menu_action.triggered.connect(lambda: os.startfile(CONFIG_FILE))
+        help_menu.addAction(menu_action)
+
+        help_menu.addSeparator()
+
+        menu_action = QtWidgets.QAction("Open Community Folder", self)
+        menu_action.triggered.connect(
+            lambda: os.startfile(self.main_widget.flight_sim.get_sim_mod_folder())
+        )
+        help_menu.addAction(menu_action)
+
+        menu_action = QtWidgets.QAction("Open Disabled Mod Folder", self)
+        menu_action.triggered.connect(
+            lambda: os.startfile(files.get_mod_cache_folder())
+        )
         help_menu.addAction(menu_action)
 
     def set_theme(self):

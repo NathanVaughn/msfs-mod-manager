@@ -38,16 +38,20 @@ def fix_permissions(folder, update_func=None):
             os.chmod(os.path.join(root, f), stat.S_IWUSR)
 
 
-def listdir_dirs(folder):
+def listdir_dirs(folder, full_paths=False):
     """Returns a list of directories inside of a directory."""
     # logger.debug("Listing directories of {}".format(folder))
     if os.path.isdir(folder):
-        return [
+        result = [
             item
             for item in os.listdir(folder)
             if os.path.isdir(os.path.join(folder, item))
         ]
 
+        if full_paths:
+            result = [os.path.join(folder, item) for item in result]
+
+        return result
     else:
         logger.warning("Folder {} does not exist".format(folder))
         return []

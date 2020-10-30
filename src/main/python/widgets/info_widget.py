@@ -4,15 +4,15 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 import lib.files as files
-import lib.flight_sim as flight_sim
 import lib.resize as resize
 from widgets.files_table import files_table
 
 
 class info_widget(QtWidgets.QWidget):
-    def __init__(self, parent=None, appctxt=None):
+    def __init__(self, flight_sim, parent=None, appctxt=None):
         """Info widget/dialog for displaying mod info."""
         QtWidgets.QWidget.__init__(self)
+        self.flight_sim = flight_sim
         self.parent = parent
         self.appctxt = appctxt
 
@@ -94,27 +94,16 @@ class info_widget(QtWidgets.QWidget):
         )
 
         # misc data to hold onto
-        self.mod_folder = mod_data["folder_name"]
-        self.enabled = mod_data["enabled"]
+        self.mod_path = mod_data["full_path"]
 
         self.total_size_field.setText(
-            files.human_readable_size(
-                files.get_folder_size(
-                    flight_sim.get_mod_folder(
-                        self.parent.sim_folder, self.mod_folder, self.enabled
-                    )
-                )
-            )
+            files.human_readable_size(files.get_folder_size(self.mod_path))
         )
 
     def open_folder(self):
         """Opens the folder for the mod."""
         # this will always be opening a folder and therefore is safe
-        os.startfile(  # nosec
-            flight_sim.get_mod_folder(
-                self.parent.sim_folder, self.mod_folder, self.enabled
-            ),
-        )
+        os.startfile(self.mod_path)  # nosec
 
     def open_file_folder(self):
         """Opens the folder for a selected file."""
@@ -123,9 +112,7 @@ class info_widget(QtWidgets.QWidget):
         if selected:
             file_path = self.files_table.get_basic_info(selected[0])
             full_path = os.path.join(
-                flight_sim.get_mod_folder(
-                    self.parent.sim_folder, self.mod_folder, self.enabled
-                ),
+                self.mod_path,
                 file_path,
             )
             # this takes off the filename

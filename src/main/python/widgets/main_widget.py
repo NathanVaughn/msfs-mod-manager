@@ -31,7 +31,6 @@ class main_widget(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self)
         self.parent = parent
         self.appctxt = appctxt
-        self.sim_folder = ""
 
     def build(self):
         """Build layout."""
@@ -84,24 +83,46 @@ class main_widget(QtWidgets.QWidget):
         self.clear_button.clicked.connect(self.clear_search)
         self.search_field.textChanged.connect(self.search)
 
+        # handle to data
+        self.flight_sim = flight_sim.flight_sim()
+
+    # ======================
+    # Sim Functions
+    # ======================
+
     def find_sim(self):
         """Sets the path to the simulator root folder."""
 
         def user_selection():
             """Function to keep user in a loop until they select correct folder."""
             # prompt user to select
-            self.sim_folder = QtWidgets.QFileDialog.getExistingDirectory(
-                parent=self,
-                caption="Select the root Microsoft Flight Simulator directory",
-                dir=os.getenv("APPDATA"),
+            self.flight_sim.sim_packages_folder = (
+                QtWidgets.QFileDialog.getExistingDirectory(
+                    parent=self,
+                    caption="Select the root Microsoft Flight Simulator directory",
+                    dir=os.getenv("APPDATA"),
+                )
             )
 
-            if not self.sim_folder.strip():
+            if not self.flight_sim.sim_packages_folder.strip():
                 sys.exit()
 
-            elif flight_sim.is_sim_packages_folder(self.sim_folder):
+            elif self.flight_sim.is_sim_packages_folder(
+                self.flight_sim.sim_packages_folder
+            ):
                 # save the config file
-                config.set_key_value(config.SIM_FOLDER_KEY, self.sim_folder)
+                config.set_key_value(
+                    config.SIM_FOLDER_KEY, self.flight_sim.sim_packages_folder
+                )
+
+            elif self.flight_sim.is_sim_packages_folder(
+                os.path.join(self.flight_sim.sim_packages_folder, "Packages")
+            ):
+                # save the config file
+                config.set_key_value(
+                    config.SIM_FOLDER_KEY,
+                    os.path.join(self.flight_sim.sim_packages_folder, "Packages"),
+                )
 
             else:
                 # show error
@@ -112,10 +133,10 @@ class main_widget(QtWidgets.QWidget):
         # try to automatically find the sim
         (
             success,
-            self.sim_folder,
-        ) = flight_sim.find_sim_folder()
+            self.flight_sim.sim_packages_folder,
+        ) = self.flight_sim.find_sim_packages_folder()
 
-        if not self.sim_folder:
+        if not self.flight_sim.sim_packages_folder:
             # show error
             warning_dialogs.sim_not_detected(self)
             # let user select folder
@@ -123,9 +144,28 @@ class main_widget(QtWidgets.QWidget):
 
         elif not success:
             # save the config file
-            config.set_key_value(config.SIM_FOLDER_KEY, self.sim_folder)
+            config.set_key_value(
+                config.SIM_FOLDER_KEY, self.flight_sim.sim_packages_folder
+            )
             # notify user
-            information_dialogs.sim_detected(self, self.sim_folder)
+            information_dialogs.sim_detected(self, self.flight_sim.sim_packages_folder)
+
+    def select_mod_cache(self):
+        """Allow user to select new mod cache folder"""
+        selection = QtWidgets.QFileDialog.getExistingDirectory(
+            parent=self,
+            caption="Select disabled mod folder",
+            dir=files.get_mod_cache_folder(),
+        )
+
+        if selection:
+            config.set_key_value(config.MOD_CACHE_FOLDER_KEY, selection)
+            information_dialogs.disabled_mods_folder(self, selection)
+            self.refresh()
+
+    # ======================
+    # Version Check
+    # ======================
 
     def check_version(self):
         """Checks the application version and allows user to open browser to update."""
@@ -170,44 +210,9 @@ class main_widget(QtWidgets.QWidget):
             elif remember:
                 config.set_key_value(config.NEVER_VER_CHEK_KEY, True)
 
-    def select_mod_cache(self):
-        """Allow user to select new mod cache folder"""
-        selection = QtWidgets.QFileDialog.getExistingDirectory(
-            parent=self,
-            caption="Select disabled mod folder",
-            dir=files.get_mod_cache_folder(),
-        )
-
-        if selection:
-            config.set_key_value(config.MOD_CACHE_FOLDER_KEY, selection)
-            information_dialogs.disabled_mods_folder(self, selection)
-            self.refresh()
-
-    def about(self):
-        """Launch the about widget."""
-        about_widget(self, self.appctxt).exec_()
-
-    def versions(self):
-        """Launch the versions widget."""
-        versions_widget(self.sim_folder, self, self.appctxt).exec_()
-
-    def info(self):
-        """Open dialog to view mod info."""
-        # self.info_button.setEnabled(False)
-
-        selected = self.main_table.get_selected_rows()
-
-        if selected:
-            (mod_folder, enabled) = self.main_table.get_basic_info(selected[0])
-
-            wid = info_widget(self, self.appctxt)
-            wid.set_data(
-                flight_sim.parse_mod_manifest(self.sim_folder, mod_folder, enabled),
-                flight_sim.parse_mod_files(self.sim_folder, mod_folder, enabled),
-            )
-            wid.show()
-
-        # self.info_button.setEnabled(True)
+    # ======================
+    # Inherited Functions
+    # ======================
 
     def base_fail(self, error, mapping, fallback_text):
         """Base thread failure function."""
@@ -215,7 +220,8 @@ class main_widget(QtWidgets.QWidget):
         message = error
 
         if typ not in mapping:
-            logger.exception(fallback_text)
+            logger.error(fallback_text)
+            logger.error("{}: {}", typ, message)
             error_dialogs.general(self, typ, message)
         else:
             func = mapping[typ]
@@ -258,6 +264,10 @@ class main_widget(QtWidgets.QWidget):
         progress.close()
         if button:
             button.setEnabled(True)
+
+    # ======================
+    # Data Operations
+    # ======================
 
     def install_archive(self):
         """Installs selected mod archives."""
@@ -305,7 +315,7 @@ class main_widget(QtWidgets.QWidget):
 
                 # setup installer thread
                 installer = flight_sim.install_mod_archive_thread(
-                    self.sim_folder, mod_archive
+                    self.flight_sim, mod_archive
                 )
                 installer.activity_update.connect(progress.set_activity)
 
@@ -316,6 +326,7 @@ class main_widget(QtWidgets.QWidget):
                     failed_signal=installer.failed,
                     failed_func=failed,
                     update_signal=installer.activity_update,
+                    timeout=1200000,
                 ):
                     installer.start()
 
@@ -370,7 +381,7 @@ class main_widget(QtWidgets.QWidget):
                 )
 
             # setup installer thread
-            installer = flight_sim.install_mods_thread(self.sim_folder, mod_folder)
+            installer = flight_sim.install_mods_thread(self.flight_sim, mod_folder)
             installer.activity_update.connect(progress.set_activity)
 
             # start the thread
@@ -403,11 +414,12 @@ class main_widget(QtWidgets.QWidget):
         def core(progress):
             for _id in selected:
                 # first, get the mod name and enabled status
-                (mod_folder, enabled) = self.main_table.get_basic_info(_id)
+                (folder, enabled) = self.main_table.get_basic_info(_id)
+                mod_folder = self.flight_sim.get_mod_folder(folder, enabled)
 
                 # setup uninstaller thread
                 uninstaller = flight_sim.uninstall_mod_thread(
-                    self.sim_folder, mod_folder, enabled
+                    self.flight_sim, mod_folder
                 )
                 uninstaller.activity_update.connect(progress.set_activity)
 
@@ -438,13 +450,13 @@ class main_widget(QtWidgets.QWidget):
         def core(progress):
             for _id in selected:
                 # first, get the mod name and enabled status
-                (mod_folder, enabled) = self.main_table.get_basic_info(_id)
+                (folder, enabled) = self.main_table.get_basic_info(_id)
 
                 if enabled:
                     continue
 
                 # setup enabler thread
-                enabler = flight_sim.enable_mod_thread(self.sim_folder, mod_folder)
+                enabler = flight_sim.enable_mod_thread(self.flight_sim, folder)
                 enabler.activity_update.connect(progress.set_activity)
 
                 def failed(error):
@@ -470,13 +482,13 @@ class main_widget(QtWidgets.QWidget):
         def core(progress):
             for _id in selected:
                 # first, get the mod name and disable status
-                (mod_folder, enabled) = self.main_table.get_basic_info(_id)
+                (folder, enabled) = self.main_table.get_basic_info(_id)
 
                 if not enabled:
                     continue
 
                 # setup disabler thread
-                disabler = flight_sim.disable_mod_thread(self.sim_folder, mod_folder)
+                disabler = flight_sim.disable_mod_thread(self.flight_sim, folder)
                 disabler.activity_update.connect(progress.set_activity)
 
                 def failed(error):
@@ -514,7 +526,7 @@ class main_widget(QtWidgets.QWidget):
 
         def core(progress):
             # setup backuper thread
-            backuper = flight_sim.create_backup_thread(self.sim_folder, archive)
+            backuper = flight_sim.create_backup_thread(self.flight_sim, archive)
             backuper.activity_update.connect(progress.set_activity)
 
             def finish(result):
@@ -524,7 +536,7 @@ class main_widget(QtWidgets.QWidget):
 
             def failed(error):
                 mapping = {
-                    flight_sim.ExtractionError: lambda: error_dialogs.archive_create(
+                    self.flight_sim.ExtractionError: lambda: error_dialogs.archive_create(
                         self, archive
                     )
                 }
@@ -539,6 +551,7 @@ class main_widget(QtWidgets.QWidget):
             with thread.thread_wait(
                 backuper.finished,
                 timeout=1200000,
+                finish_func=finish,
                 failed_signal=backuper.failed,
                 failed_func=failed,
                 update_signal=backuper.activity_update,
@@ -567,8 +580,8 @@ class main_widget(QtWidgets.QWidget):
         self.refresh_button.setEnabled(False)
 
         # build list of mods
-        enabled_mods, enabled_errors = flight_sim.get_enabled_mods(self.sim_folder)
-        disabled_mods, disabled_errors = flight_sim.get_disabled_mods(self.sim_folder)
+        enabled_mods, enabled_errors = self.flight_sim.get_enabled_mods()
+        disabled_mods, disabled_errors = self.flight_sim.get_disabled_mods()
 
         all_errors = enabled_errors + disabled_errors
 
@@ -584,6 +597,41 @@ class main_widget(QtWidgets.QWidget):
 
         # put the search back to how it was
         self.search()
+
+    # ======================
+    # Child Widgets
+    # ======================
+
+    def info(self):
+        """Open dialog to view mod info."""
+        # self.info_button.setEnabled(False)
+
+        selected = self.main_table.get_selected_rows()
+
+        if selected:
+            (folder, enabled) = self.main_table.get_basic_info(selected[0])
+            mod_folder = self.flight_sim.get_mod_folder(folder, enabled)
+
+            wid = info_widget(self.flight_sim, self, self.appctxt)
+            wid.set_data(
+                self.flight_sim.parse_mod_manifest(mod_folder),
+                self.flight_sim.parse_mod_files(mod_folder),
+            )
+            wid.show()
+
+        # self.info_button.setEnabled(True)
+
+    def about(self):
+        """Launch the about widget."""
+        about_widget(self, self.appctxt).exec_()
+
+    def versions(self):
+        """Launch the versions widget."""
+        versions_widget(self.flight_sim, self, self.appctxt).exec_()
+
+    # ======================
+    # Search
+    # ======================
 
     def search(self, override=None):
         """Filter rows to match search term."""
