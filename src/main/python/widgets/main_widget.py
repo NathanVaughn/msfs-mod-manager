@@ -178,14 +178,14 @@ class main_widget(QtWidgets.QWidget):
                 if installed:
                     # progress bar
                     progress = progress_widget(self, self.appctxt)
-                    progress.set_percent()
+                    progress.set_mode(progress.PERCENT)
                     progress.set_activity(
                         "Downloading latest version ({})".format(return_url)
                     )
 
                     # setup downloader thread
                     downloader = version.download_new_version_thread(return_url)
-                    downloader.activity_update.connect(progress.set_percentage)
+                    downloader.activity_update.connect(progress.set_percent)
 
                     def failed(err):
                         typ = type(err)
@@ -234,6 +234,7 @@ class main_widget(QtWidgets.QWidget):
         sanity_dialog=None,
         empty_check=False,
         empty_val=None,
+        refresh=True,
     ):
         """Base function for GUI actions."""
         if empty_check and not empty_val:
@@ -252,16 +253,17 @@ class main_widget(QtWidgets.QWidget):
 
         # build progress widget
         progress = progress_widget(self, self.appctxt)
-        progress.set_infinite()
+        progress.set_mode(progress.INFINITE)
 
         # execute the core function
         core_func(progress)
+        progress.close()
 
         # refresh the data
-        self.refresh()
+        if refresh:
+            self.refresh()
 
         # cleanup
-        progress.close()
         if button:
             button.setEnabled(True)
 
@@ -574,29 +576,51 @@ class main_widget(QtWidgets.QWidget):
 
     def refresh(self, first=False):
         """Refreshes all mod data."""
-        # temporarily clear search so that header resizing doesn't get borked
-        self.search(override="")
 
-        self.refresh_button.setEnabled(False)
+        """This is not a separate thread, as the time it takes to parse each manifest
+        is so low, that the GUI will easily stay responsive, even running in
+        the foreground thread. I believe Windows gives applications around
+        4 seconds to respond to incoming events before being marked as unresponsive,
+        which should never happen in the process of parsing manifest.json files"""
 
-        # build list of mods
-        enabled_mods, enabled_errors = self.flight_sim.get_enabled_mods()
-        disabled_mods, disabled_errors = self.flight_sim.get_disabled_mods()
+        def core(progress):
+            # temporarily clear search so that header resizing doesn't get borked
+            self.search(override="")
 
-        all_errors = enabled_errors + disabled_errors
+            progress.set_mode(progress.PERCENT)
 
-        # set data
-        self.main_table.set_data(enabled_mods + disabled_mods, first=first)
-        self.main_table.set_colors(self.parent.theme_menu_action.isChecked())
+            def update(message, percent):
+                progress.set_activity(message)
+                progress.set_percent(percent)
+                # make sure the progress bar gets updated.
+                self.appctxt.app.processEvents()
 
-        # display errors
-        if all_errors:
-            warning_dialogs.mod_parsing(self, all_errors)
+            # build list of mods
+            enabled_mods, enabled_errors = self.flight_sim.get_enabled_mods(
+                update_func=update
+            )
+            disabled_mods, disabled_errors = self.flight_sim.get_disabled_mods(
+                update_func=update
+            )
 
-        self.refresh_button.setEnabled(True)
+            all_errors = enabled_errors + disabled_errors
 
-        # put the search back to how it was
-        self.search()
+            # set data
+            self.main_table.set_data(enabled_mods + disabled_mods, first=first)
+            self.main_table.set_colors(self.parent.theme_menu_action.isChecked())
+
+            # display errors
+            if all_errors:
+                warning_dialogs.mod_parsing(self, all_errors)
+
+            # put the search back to how it was
+            self.search()
+
+        self.base_action(
+            core,
+            button=self.refresh_button,
+            refresh=False,
+        )
 
     # ======================
     # Child Widgets

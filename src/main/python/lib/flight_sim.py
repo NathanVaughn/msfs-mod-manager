@@ -384,13 +384,21 @@ class flight_sim:
         logger.debug("Game version: {}".format(version))
         return version
 
-    def get_enabled_mods(self):
+    def get_enabled_mods(self, update_func=None):
         """Returns data for the enabled mods."""
         logger.debug("Retrieving list of enabled mods")
         enabled_mods = []
         errors = []
 
-        for folder in files.listdir_dirs(self.get_sim_mod_folder(), full_paths=True):
+        all_folders = files.listdir_dirs(self.get_sim_mod_folder(), full_paths=True)
+
+        for i, folder in enumerate(all_folders):
+            if update_func:
+                update_func(
+                    "Loading enabled mods: {}".format(folder),
+                    (i + 1) / len(all_folders),
+                )
+
             # parse each mod
             try:
                 enabled_mods.append(self.parse_mod_manifest(folder, enabled=True))
@@ -399,7 +407,7 @@ class flight_sim:
 
         return enabled_mods, errors
 
-    def get_disabled_mods(self):
+    def get_disabled_mods(self, update_func=None):
         """Returns data for the disabled mods."""
         logger.debug("Retrieving list of disabled mods")
         # ensure cache folder already exists
@@ -408,7 +416,15 @@ class flight_sim:
         disabled_mods = []
         errors = []
 
-        for folder in files.listdir_dirs(files.get_mod_cache_folder(), full_paths=True):
+        all_folders = files.listdir_dirs(files.get_mod_cache_folder(), full_paths=True)
+
+        for i, folder in enumerate(all_folders):
+            if update_func:
+                update_func(
+                    "Loading disabled mods: {}".format(folder),
+                    (i + 1) / len(all_folders),
+                )
+
             # parse each mod
             try:
                 disabled_mods.append(self.parse_mod_manifest(folder, enabled=False))

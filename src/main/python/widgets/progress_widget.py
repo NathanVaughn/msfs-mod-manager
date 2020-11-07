@@ -9,6 +9,10 @@ class progress_widget(QtWidgets.QDialog):
         self.parent = parent
         self.appctxt = appctxt
 
+        # enum types
+        self.INFINITE = 0
+        self.PERCENT = 1
+
         self.setWindowTitle("Progress")
         self.setWindowFlags(
             QtCore.Qt.WindowSystemMenuHint
@@ -31,22 +35,24 @@ class progress_widget(QtWidgets.QDialog):
         self.show()
         self.setFixedSize(500, 100)
 
-    def set_infinite(self):
-        """Set the progress bar to be infinite."""
-        self.bar.setMaximum(0)
-        self.bar.setMinimum(0)
-        self.bar.setValue(0)
+    def set_mode(self, mode):
+        """Sets the mode of the progress bar."""
 
-    def set_percent(self):
-        """Set the progress bar to be percentage."""
-        self.bar.setMaximum(100)
-        self.bar.setMinimum(0)
-        self.bar.setValue(0)
+        if mode == self.INFINITE:
+            # Set the progress bar to be infinite
+            self.bar.setMaximum(0)
+            self.bar.setMinimum(0)
+            self.bar.setValue(0)
+        elif mode == self.PERCENT:
+            # Set the progress bar to be percentage
+            self.bar.setMaximum(100)
+            self.bar.setMinimum(0)
+            self.bar.setValue(0)
 
     def set_activity(self, message):
         """Update the displayed message."""
         self.activity.setText(message)
 
-    def set_percentage(self, percent):
+    def set_percent(self, percent):
         """Update the progress percent."""
         self.bar.setValue(percent)

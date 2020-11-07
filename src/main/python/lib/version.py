@@ -169,6 +169,7 @@ def download_new_version(asset_url, update_func=None):
     try:
         logger.debug("Attempting to download url {}".format(asset_url))
         if update_func:
+            # this update function is for a percentage
             urllib.request.urlretrieve(asset_url, download_path, request_hook)  # nosec
         else:
             urllib.request.urlretrieve(asset_url, download_path)  # nosec
