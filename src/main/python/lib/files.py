@@ -87,9 +87,13 @@ def human_readable_size(size, decimal_places=2):
         size /= 1024.0
     return f"{size:.{decimal_places}f} {unit}"
 
+
 def check_same_path(path1, path2):
     """Tests if two paths resolve to the same location."""
-    return resolve_symlink(os.path.abspath(path1)) == resolve_symlink(os.path.abspath(path2))
+    return resolve_symlink(os.path.abspath(path1)) == resolve_symlink(
+        os.path.abspath(path2)
+    )
+
 
 def get_folder_size(folder):
     """Return the size in bytes of a folder, recursively."""
@@ -166,7 +170,9 @@ def copy_folder(src, dest, update_func=None):
         return
 
     if check_same_path(src, dest):
-        logger.warning("Source folder {} is same as destination folder {}".format(src, dest))
+        logger.warning(
+            "Source folder {} is same as destination folder {}".format(src, dest)
+        )
         return
 
     delete_folder(dest, update_func=update_func)
@@ -180,10 +186,13 @@ def copy_folder(src, dest, update_func=None):
         )
     shutil.copytree(src, dest)
 
+
 def move_folder(src, dest, update_func=None):
     """Copies a folder and deletes the original."""
     if check_same_path(src, dest):
-        logger.warning("Source folder {} is same as destination folder {}".format(src, dest))
+        logger.warning(
+            "Source folder {} is same as destination folder {}".format(src, dest)
+        )
         return
 
     logger.debug("Moving folder {} to {}".format(src, dest))

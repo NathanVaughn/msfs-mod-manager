@@ -255,9 +255,7 @@ class main_widget(QtWidgets.QWidget):
 
         def core(progress):
             progress.set_mode(progress.PERCENT)
-            progress.set_activity(
-                "Downloading latest version ({})".format(return_url)
-            )
+            progress.set_activity("Downloading latest version ({})".format(return_url))
 
             # setup downloader thread
             downloader = version.download_new_version_thread(return_url)
@@ -284,7 +282,7 @@ class main_widget(QtWidgets.QWidget):
             result, remember = version_check_dialog(self, installed).exec_()
             if result:
                 if installed:
-                    self.base_action(core,refresh=False)
+                    self.base_action(core, refresh=False)
                 else:
                     webbrowser.open(return_url)
             elif remember:
