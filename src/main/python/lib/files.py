@@ -2,9 +2,14 @@ import os
 import shutil
 import stat
 
+import patoolib
 from loguru import logger
 
 import lib.config as config
+import lib.thread as thread
+
+ARCHIVE_VERBOSITY = -1
+ARCHIVE_INTERACTIVE = False
 
 TEMP_FOLDER = os.path.abspath(
     os.path.join(os.getenv("LOCALAPPDATA"), "Temp", "MSFS Mod Manager")
@@ -14,8 +19,23 @@ if not os.path.exists(config.BASE_FOLDER):
     os.makedirs(config.BASE_FOLDER)
 
 
+class ExtractionError(Exception):
+    """Raised when an archive cannot be extracted.
+    Usually due to a missing appropriate extractor program."""
+
+
 class AccessError(Exception):
     """Raised after an uncorrectable permission error."""
+
+
+class move_folder_thread(thread.base_thread):
+    """Setup a thread to move a folder and not block the main thread."""
+
+    def __init__(self, src, dest):
+        """Initialize the folder mover thread."""
+        logger.debug("Initialzing folder mover thread")
+        function = lambda: move_folder(src, dest, update_func=self.activity_update.emit)
+        thread.base_thread.__init__(self, function)
 
 
 def fix_permissions(folder, update_func=None):
@@ -67,6 +87,9 @@ def human_readable_size(size, decimal_places=2):
         size /= 1024.0
     return f"{size:.{decimal_places}f} {unit}"
 
+def check_same_path(path1, path2):
+    """Tests if two paths resolve to the same location."""
+    return resolve_symlink(os.path.abspath(path1)) == resolve_symlink(os.path.abspath(path2))
 
 def get_folder_size(folder):
     """Return the size in bytes of a folder, recursively."""
@@ -138,23 +161,31 @@ def copy_folder(src, dest, update_func=None):
     """Copies a folder if it exists."""
     logger.debug("Copying folder {} to {}".format(src, dest))
     # check if it exists
-    if os.path.isdir(src):
-        delete_folder(dest, update_func=update_func)
-
-        # copy the directory
-        if update_func:
-            update_func(
-                "Copying {} to {} ({})".format(
-                    src, dest, human_readable_size(get_folder_size(src))
-                )
-            )
-        shutil.copytree(src, dest)
-    else:
+    if not os.path.isdir(src):
         logger.warning("Source folder {} does not exist".format(src))
+        return
 
+    if check_same_path(src, dest):
+        logger.warning("Source folder {} is same as destination folder {}".format(src, dest))
+        return
+
+    delete_folder(dest, update_func=update_func)
+
+    # copy the directory
+    if update_func:
+        update_func(
+            "Copying {} to {} ({})".format(
+                src, dest, human_readable_size(get_folder_size(src))
+            )
+        )
+    shutil.copytree(src, dest)
 
 def move_folder(src, dest, update_func=None):
     """Copies a folder and deletes the original."""
+    if check_same_path(src, dest):
+        logger.warning("Source folder {} is same as destination folder {}".format(src, dest))
+        return
+
     logger.debug("Moving folder {} to {}".format(src, dest))
     copy_folder(src, dest, update_func=update_func)
     delete_folder(src, update_func=update_func)
@@ -180,8 +211,8 @@ def splitall(path):
 
 def resolve_symlink(folder):
     """Resolves symlinks in a directory path.
-    Basically a quick  and dirty reimplementation of os.path.realpath for Python
-    before 3.8."""
+    Basically a quick and dirty reimplementation of os.path.realpath for
+    Python versions prior to 3.8."""
 
     parts = splitall(folder)
     new_path = ""
@@ -230,3 +261,61 @@ def create_mod_cache_folder():
     if not os.path.exists(mod_cache_folder):
         logger.debug("Creating mod cache folder {}".format(mod_cache_folder))
         os.makedirs(mod_cache_folder)
+
+
+def extract_archive(archive, folder, update_func=None):
+    """Extracts an archive file and returns the output path."""
+    if update_func:
+        update_func(
+            "Extracting archive {} ({})".format(
+                archive, human_readable_size(os.path.getsize(archive))
+            )
+        )
+
+    logger.debug("Extracting archive {} to {}".format(archive, folder))
+
+    try:
+        patoolib.extract_archive(
+            archive,
+            outdir=folder,
+            verbosity=ARCHIVE_VERBOSITY,
+            interactive=ARCHIVE_INTERACTIVE,
+        )
+
+    except patoolib.util.PatoolError as e:
+        logger.exception("Unable to extract archive")
+        raise ExtractionError(str(e))
+
+    return folder
+
+
+def create_archive(folder, archive, update_func=None):
+    """Creates an archive file and returns the new path."""
+    uncomp_size = human_readable_size(get_folder_size(folder))
+
+    if update_func:
+        update_func(
+            "Creating archive {} ({} uncompressed).\n This will almost certainly take a while.".format(
+                archive, uncomp_size
+            )
+        )
+
+    # delete the archive if it already exists,
+    # as patoolib will refuse to overwrite an existing archive
+    delete_file(archive, update_func=update_func)
+
+    logger.debug("Creating archive {}".format(archive))
+    # create the archive
+    try:
+        # this expects files/folders in a list
+        patoolib.create_archive(
+            archive,
+            (folder,),
+            verbosity=ARCHIVE_VERBOSITY,
+            interactive=ARCHIVE_INTERACTIVE,
+        )
+    except patoolib.util.PatoolError as e:
+        logger.exception("Unable to create archive")
+        raise ExtractionError(str(e))
+
+    return archive

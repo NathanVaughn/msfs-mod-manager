@@ -151,64 +151,41 @@ class main_widget(QtWidgets.QWidget):
             information_dialogs.sim_detected(self, self.flight_sim.sim_packages_folder)
 
     def select_mod_cache(self):
-        """Allow user to select new mod cache folder"""
-        selection = QtWidgets.QFileDialog.getExistingDirectory(
+        """Allow user to select new mod cache folder."""
+        old_cache = files.get_mod_cache_folder()
+
+        new_cache = QtWidgets.QFileDialog.getExistingDirectory(
             parent=self,
             caption="Select disabled mod folder",
-            dir=files.get_mod_cache_folder(),
+            dir=os.path.dirname(old_cache),
         )
 
-        if selection:
-            config.set_key_value(config.MOD_CACHE_FOLDER_KEY, selection)
-            information_dialogs.disabled_mods_folder(self, selection)
-            self.refresh()
+        def core(progress):
+            # setup mover thread
+            mover = files.move_folder_thread(old_cache, new_cache)
+            mover.activity_update.connect(progress.set_activity)
 
-    # ======================
-    # Version Check
-    # ======================
+            def failed(err):
+                typ = type(err)
+                message = err
 
-    def check_version(self):
-        """Checks the application version and allows user to open browser to update."""
-        installed = version.is_installed()
-        return_url = version.check_version(self.appctxt, installed)
+                logger.exception("Failed to move folder")
+                error_dialogs.general(self, typ, message)
 
-        if return_url:
-            result, remember = version_check_dialog(self, installed).exec_()
-            if result:
-                if installed:
-                    # progress bar
-                    progress = progress_widget(self, self.appctxt)
-                    progress.set_mode(progress.PERCENT)
-                    progress.set_activity(
-                        "Downloading latest version ({})".format(return_url)
-                    )
+            # start the thread
+            with thread.thread_wait(
+                mover.finished,
+                failed_signal=mover.failed,
+                failed_func=failed,
+                update_signal=mover.activity_update,
+            ):
+                mover.start()
 
-                    # setup downloader thread
-                    downloader = version.download_new_version_thread(return_url)
-                    downloader.activity_update.connect(progress.set_percent)
+            config.set_key_value(config.MOD_CACHE_FOLDER_KEY, new_cache)
+            information_dialogs.disabled_mods_folder(self, new_cache)
 
-                    def failed(err):
-                        typ = type(err)
-                        message = err
-
-                        logger.exception("Failed to download new version")
-                        error_dialogs.general(self, typ, message)
-
-                    # start the thread
-                    with thread.thread_wait(
-                        downloader.finished,
-                        finish_func=version.install_new_version,
-                        failed_signal=downloader.failed,
-                        failed_func=failed,
-                        update_signal=downloader.activity_update,
-                    ):
-                        downloader.start()
-
-                    progress.close()
-                else:
-                    webbrowser.open(return_url)
-            elif remember:
-                config.set_key_value(config.NEVER_VER_CHEK_KEY, True)
+        if new_cache and not files.check_same_path(old_cache, new_cache):
+            self.base_action(core)
 
     # ======================
     # Inherited Functions
@@ -268,6 +245,52 @@ class main_widget(QtWidgets.QWidget):
             button.setEnabled(True)
 
     # ======================
+    # Version Check
+    # ======================
+
+    def check_version(self):
+        """Checks the application version and allows user to open browser to update."""
+        installed = version.is_installed()
+        return_url = version.check_version(self.appctxt, installed)
+
+        def core(progress):
+            progress.set_mode(progress.PERCENT)
+            progress.set_activity(
+                "Downloading latest version ({})".format(return_url)
+            )
+
+            # setup downloader thread
+            downloader = version.download_new_version_thread(return_url)
+            downloader.activity_update.connect(progress.set_percent)
+
+            def failed(err):
+                typ = type(err)
+                message = err
+
+                logger.exception("Failed to download new version")
+                error_dialogs.general(self, typ, message)
+
+            # start the thread
+            with thread.thread_wait(
+                downloader.finished,
+                finish_func=version.install_new_version,
+                failed_signal=downloader.failed,
+                failed_func=failed,
+                update_signal=downloader.activity_update,
+            ):
+                downloader.start()
+
+        if return_url:
+            result, remember = version_check_dialog(self, installed).exec_()
+            if result:
+                if installed:
+                    self.base_action(core,refresh=False)
+                else:
+                    webbrowser.open(return_url)
+            elif remember:
+                config.set_key_value(config.NEVER_VER_CHEK_KEY, True)
+
+    # ======================
     # Data Operations
     # ======================
 
@@ -295,8 +318,8 @@ class main_widget(QtWidgets.QWidget):
 
                 def failed(error):
                     mapping = {
-                        flight_sim.ExtractionError: lambda: error_dialogs.archive_extract(
-                            self, mod_archive
+                        files.ExtractionError: lambda: error_dialogs.archive_extract(
+                            self, mod_archive, error
                         ),
                         flight_sim.NoManifestError: lambda: warning_dialogs.mod_parsing(
                             self, [mod_archive]
@@ -538,8 +561,8 @@ class main_widget(QtWidgets.QWidget):
 
             def failed(error):
                 mapping = {
-                    self.flight_sim.ExtractionError: lambda: error_dialogs.archive_create(
-                        self, archive
+                    files.ExtractionError: lambda: error_dialogs.archive_create(
+                        self, archive, error
                     )
                 }
 

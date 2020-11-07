@@ -2,17 +2,11 @@ import datetime
 import json
 import os
 
-import patoolib
 from loguru import logger
 
 import lib.config as config
 import lib.files as files
 import lib.thread as thread
-
-
-class ExtractionError(Exception):
-    """Raised when an archive cannot be extracted.
-    Usually due to a missing appropriate extractor program."""
 
 
 class LayoutError(Exception):
@@ -396,7 +390,7 @@ class flight_sim:
             if update_func:
                 update_func(
                     "Loading enabled mods: {}".format(folder),
-                    (i + 1) / len(all_folders),
+                    (i + 1) / len(all_folders) * 100,
                 )
 
             # parse each mod
@@ -422,7 +416,7 @@ class flight_sim:
             if update_func:
                 update_func(
                     "Loading disabled mods: {}".format(folder),
-                    (i + 1) / len(all_folders),
+                    (i + 1) / len(all_folders) * 100,
                 )
 
             # parse each mod
@@ -433,33 +427,7 @@ class flight_sim:
 
         return disabled_mods, errors
 
-    def create_archive(self, folder, archive, update_func=None):
-        """Creates an archive file and returns the new path."""
-        uncomp_size = files.human_readable_size(files.get_folder_size(folder))
-
-        if update_func:
-            update_func(
-                "Creating archive {} ({} uncompressed).\n This will almost certainly take a while.".format(
-                    archive, uncomp_size
-                )
-            )
-
-        # delete the archive if it already exists,
-        # as patoolib will refuse to overwrite an existing archive
-        files.delete_file(archive, update_func=update_func)
-
-        logger.debug("Creating archive {}".format(archive))
-        # create the archive
-        try:
-            # this expects files/folders in a list
-            patoolib.create_archive(archive, (folder,), verbosity=-1, interactive=False)
-        except patoolib.util.PatoolError:
-            logger.exception("Unable to create archive")
-            raise ExtractionError(archive)
-
-        return archive
-
-    def extract_archive(self, archive, update_func=None):
+    def extract_mod_archive(self, archive, update_func=None):
         """Extracts an archive file into a temp directory and returns the new path."""
         logger.debug("Extracting archive {}".format(archive))
         # create a temp directory if it does not exist
@@ -469,26 +437,9 @@ class flight_sim:
 
         # extract the archive
         extracted_archive = os.path.join(files.TEMP_FOLDER, basefilename)
-        try:
-            if update_func:
-                update_func(
-                    "Extracting archive {} ({})".format(
-                        archive, files.human_readable_size(os.path.getsize(archive))
-                    )
-                )
-
-            logger.debug(
-                "Extracting archive {} to {}".format(archive, extracted_archive)
-            )
-
-            patoolib.extract_archive(
-                archive, outdir=extracted_archive, verbosity=-1, interactive=False
-            )
-
-            return extracted_archive
-        except patoolib.util.PatoolError:
-            logger.exception("Unable to extract archive")
-            raise ExtractionError(archive)
+        return files.extract_archive(
+            archive, extracted_archive, update_func=update_func
+        )
 
     def determine_mod_folders(self, folder, update_func=None):
         """Walks a directory to find the folder(s) with a manifest.json file in them."""
@@ -516,14 +467,12 @@ class flight_sim:
 
         return mod_folders
 
-    def install_mods(self, extracted_archive, update_func=None, delete=False):
+    def install_mods(self, folder, update_func=None, delete=False):
         """Extracts and installs a new mod."""
-        logger.debug("Installing mod {}".format(extracted_archive))
+        logger.debug("Installing mod {}".format(folder))
 
         # determine the mods inside the extracted archive
-        mod_folders = self.determine_mod_folders(
-            extracted_archive, update_func=update_func
-        )
+        mod_folders = self.determine_mod_folders(folder, update_func=update_func)
 
         installed_mods = []
 
@@ -547,7 +496,9 @@ class flight_sim:
         """Extracts and installs a new mod."""
         logger.debug("Installing mod {}".format(mod_archive))
         # extract the archive
-        extracted_archive = self.extract_archive(mod_archive, update_func=update_func)
+        extracted_archive = self.extract_mod_archive(
+            mod_archive, update_func=update_func
+        )
 
         return self.install_mods(
             extracted_archive, update_func=update_func, delete=True
@@ -584,6 +535,6 @@ class flight_sim:
 
     def create_backup(self, archive, update_func=None):
         """Creates a backup of all enabled mods."""
-        return self.create_archive(
+        return files.create_archive(
             self.get_sim_mod_folder(), archive, update_func=update_func
         )

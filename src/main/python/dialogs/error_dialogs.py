@@ -11,22 +11,22 @@ def general(parent, typ, message):
     )
 
 
-def _archive(parent, archive, action):
+def _archive(parent, archive, action, message):
     QMessageBox().critical(
         parent,
         TITLE,
-        "Unable to {action} archive {archive}. You need to install a program which can {action} this, such as 7zip or WinRar.".format(
-            archive=archive, action=action
+        "Unable to {action} archive {archive}. You may need to install a program which can {action} this, such as 7zip or WinRar.\n{message}".format(
+            archive=archive, action=action, message=message
         ),
     )
 
 
-def archive_create(parent, archive):
-    return _archive(parent, archive, "create")
+def archive_create(parent, archive, message):
+    return _archive(parent, archive, "create", message)
 
 
-def archive_extract(parent, archive):
-    return _archive(parent, archive, "extract")
+def archive_extract(parent, archive, message):
+    return _archive(parent, archive, "extract", message)
 
 
 def no_mods(parent, original_object):
