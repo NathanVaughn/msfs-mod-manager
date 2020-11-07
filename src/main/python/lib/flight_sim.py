@@ -300,14 +300,14 @@ class flight_sim:
 
         if not os.path.isfile(os.path.join(mod_folder, "layout.json")):
             logger.error("No layout.json found")
-            raise self.NoLayoutError(mod_folder)
+            raise NoLayoutError(mod_folder)
 
         with open(os.path.join(mod_folder, "layout.json"), "r", encoding="utf8") as f:
             try:
                 data = json.load(f)
             except Exception as e:
                 logger.exception("layout.json could not be parsed")
-                raise self.LayoutError(e)
+                raise LayoutError(e)
 
         return data["content"]
 
@@ -336,14 +336,14 @@ class flight_sim:
 
         if not os.path.isfile(manifest_path):
             logger.error("No manifest.json found")
-            raise self.NoManifestError(mod_folder)
+            raise NoManifestError(mod_folder)
 
         with open(manifest_path, "r", encoding="utf8") as f:
             try:
                 data = json.load(f)
             except Exception as e:
                 logger.exception("manifest.json could not be parsed")
-                raise self.ManifestError(e)
+                raise ManifestError(e)
 
         # manifest data
         mod_data["content_type"] = data.get("content_type", "")
@@ -394,7 +394,7 @@ class flight_sim:
             # parse each mod
             try:
                 enabled_mods.append(self.parse_mod_manifest(folder, enabled=True))
-            except (self.NoManifestError, self.ManifestError):
+            except (NoManifestError, ManifestError):
                 errors.append(folder)
 
         return enabled_mods, errors
@@ -412,7 +412,7 @@ class flight_sim:
             # parse each mod
             try:
                 disabled_mods.append(self.parse_mod_manifest(folder, enabled=False))
-            except (self.NoManifestError, self.ManifestError):
+            except (NoManifestError, ManifestError):
                 errors.append(folder)
 
         return disabled_mods, errors
@@ -439,7 +439,7 @@ class flight_sim:
             patoolib.create_archive(archive, (folder,), verbosity=-1, interactive=False)
         except patoolib.util.PatoolError:
             logger.exception("Unable to create archive")
-            raise self.ExtractionError(archive)
+            raise ExtractionError(archive)
 
         return archive
 
@@ -472,7 +472,7 @@ class flight_sim:
             return extracted_archive
         except patoolib.util.PatoolError:
             logger.exception("Unable to extract archive")
-            raise self.ExtractionError(archive)
+            raise ExtractionError(archive)
 
     def determine_mod_folders(self, folder, update_func=None):
         """Walks a directory to find the folder(s) with a manifest.json file in them."""
@@ -496,7 +496,7 @@ class flight_sim:
 
         if not mod_folders:
             logger.error("No mods found")
-            raise self.NoModsError(folder)
+            raise NoModsError(folder)
 
         return mod_folders
 
