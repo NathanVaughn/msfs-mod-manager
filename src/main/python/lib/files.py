@@ -1,6 +1,7 @@
 import os
 import shutil
 import stat
+import time
 
 import patoolib
 from loguru import logger
@@ -160,6 +161,8 @@ def delete_folder(folder, first=True, update_func=None):
         except FileNotFoundError:
             # https://bugs.python.org/issue29699
             logger.info("Encountered race condition")
+            # this may help to mitigate the race condition
+            time.sleep(0.1)
             # try again
             delete_folder(folder, first=first, update_func=update_func)
     else:
