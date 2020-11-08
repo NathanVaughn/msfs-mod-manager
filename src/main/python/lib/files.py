@@ -157,6 +157,11 @@ def delete_folder(folder, first=True, update_func=None):
                 # otherwise, try to fix permissions and try again
                 fix_permissions(folder, update_func=update_func)
                 delete_folder(folder, first=False, update_func=update_func)
+        except FileNotFoundError:
+            # https://bugs.python.org/issue29699
+            logger.info("Encountered race condition")
+            # try again
+            delete_folder(folder, first=first, update_func=update_func)
     else:
         logger.debug("Folder {} does not exist".format(folder))
 
