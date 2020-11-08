@@ -33,6 +33,8 @@ class progress_widget(QtWidgets.QDialog):
         self.setLayout(self.layout)
 
         self.show()
+        self.raise_()
+
         self.setFixedSize(500, 100)
 
     def set_mode(self, mode):
