@@ -44,6 +44,9 @@ jobs:
         env:
           PIPENV_VENV_IN_PROJECT: "1"
 
+      - name: Copy Build Settings
+        run: cp src\build\settings\base.json src\main\resources\base\base.json
+
       - name: Build
         run: pipenv run fbs freeze
 
