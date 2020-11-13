@@ -45,7 +45,7 @@ jobs:
           PIPENV_VENV_IN_PROJECT: "1"
 
       - name: Build
-        run: ./build.ps1 --installer
+        run: ./build.ps1 -installer
 
       - name: Zip Build
         run: Compress-Archive -Path "./target/MSFS Mod Manager" -DestinationPath "./target/MSFSModManagerPortable"

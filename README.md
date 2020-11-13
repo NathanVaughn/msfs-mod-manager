@@ -131,13 +131,13 @@ To build a portable version of the program, run
 ./build.ps1
 ```
 
-If you want a debug version of an `.exe`, add the `--debug` flag.
+If you want a debug version of an `.exe`, add the `-debug` flag.
 
 To build an installer version of the program, you first need to install
 [NSIS](https://nsis.sourceforge.io/Main_Page).
-Now, run the same build script with the `--installer` flag:
+Now, run the same build script with the `-installer` flag:
 ```bash
-./build.ps1 --installer
+./build.ps1 -installer
 ```
 
 ## Disclaimer
