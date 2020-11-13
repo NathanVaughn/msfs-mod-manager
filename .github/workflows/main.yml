@@ -44,14 +44,8 @@ jobs:
         env:
           PIPENV_VENV_IN_PROJECT: "1"
 
-      - name: Copy Build Settings
-        run: cp src\build\settings\base.json src\main\resources\base\base.json
-
       - name: Build
-        run: pipenv run fbs freeze
-
-      - name: Build Installer
-        run: pipenv run fbs installer
+        run: ./build.ps1 --installer
 
       - name: Zip Build
         run: Compress-Archive -Path "./target/MSFS Mod Manager" -DestinationPath "./target/MSFSModManagerPortable"

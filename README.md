@@ -97,7 +97,11 @@ it yourself if you wanted, and the provided pre-built binaries are all created
 
 ## Running/Building From Source
 
-To run the program from source, first install [Python 3.6](https://www.python.org/downloads/release/python-368/). Python 3.7 and Python 3.8 are not fully supported yet.
+### Dependencies
+
+First, install [Python 3.6](https://www.python.org/downloads/release/python-368/).
+Python 3.7 and Python 3.8 are not fully supported yet.
+
 Next, install the dependencies with `pipenv`:
 
 ```bash
@@ -105,17 +109,40 @@ python -m pip install pipenv
 pipenv install
 ```
 
-Activate the newly created virtual environment with `pipenv shell`.
+### Running
 
-To run the program, use `fbs run`.
+To actually run the program, use
+```bash
+pipenv run fbs run
+```
 
-To build the program, use `fbs freeze` and optionally `fbs installer` to create an
-NSIS installer
-(will need to install [NSIS](https://nsis.sourceforge.io/Main_Page) seperately).
+or
+```bash
+pipenv shell
+fbs run
+```
+
+### Building
+
+Building is done with the `build.ps1` script.
+
+To build a portable version of the program, run
+```bash
+./build.ps1
+```
+
+If you want a debug version of an `.exe`, add the `--debug` flag.
+
+To build an installer version of the program, you first need to install
+[NSIS](https://nsis.sourceforge.io/Main_Page).
+Now, run the same build script with the `--installer` flag:
+```bash
+./build.ps1 --installer
+```
 
 ## Disclaimer
 
-I have not affiliated with Asobo Studios or Microsoft,
+I am not affiliated with Asobo Studios or Microsoft,
 I am just a college student that is working on this in my free time.
 I may not be very fast in bugfixes or adding new features.
 

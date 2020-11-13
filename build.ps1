@@ -1,14 +1,17 @@
 param (
-    [switch]$debug = $false
+    [switch]$debug = $false,
+    [switch]$installer = $false
 )
 
-fbs clean
+pipenv run fbs clean
 cp src\build\settings\base.json src\main\resources\base\base.json
 
 if ($debug) {
-    fbs freeze --debug
+    pipenv run fbs freeze --debug
 } else {
-    fbs freeze
+    pipenv run fbs freeze
 }
 
-fbs installer
+if ($installer) {
+    pipenv run fbs installer
+}
