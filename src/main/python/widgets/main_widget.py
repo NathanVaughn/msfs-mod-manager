@@ -483,7 +483,7 @@ class main_widget(QtWidgets.QWidget):
         selected = self.main_table.get_selected_rows()
 
         def core(progress):
-            for _id in selected:
+            for i, _id in enumerate(selected):
                 # first, get the mod name and enabled status
                 (folder, enabled) = self.main_table.get_basic_info(_id)
 
@@ -506,6 +506,8 @@ class main_widget(QtWidgets.QWidget):
                 ):
                     enabler.start()
 
+                progress.set_percent(i, total=len(selected) - 1)
+
         self.base_action(
             core, button=self.enable_button, empty_check=True, empty_val=selected
         )
@@ -515,7 +517,7 @@ class main_widget(QtWidgets.QWidget):
         selected = self.main_table.get_selected_rows()
 
         def core(progress):
-            for _id in selected:
+            for i, _id in enumerate(selected):
                 # first, get the mod name and disable status
                 (folder, enabled) = self.main_table.get_basic_info(_id)
 
@@ -537,6 +539,8 @@ class main_widget(QtWidgets.QWidget):
                     update_signal=disabler.activity_update,
                 ):
                     disabler.start()
+
+                progress.set_percent(i, total=len(selected) - 1)
 
         self.base_action(
             core, button=self.disable_button, empty_check=True, empty_val=selected
