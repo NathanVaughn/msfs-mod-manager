@@ -22,7 +22,7 @@ class download_new_version_thread(thread.base_thread):
         """Initialize the version downloader thread."""
         logger.debug("Initialzing version downloader thread")
         function = lambda: download_new_version(
-            asset_url, update_func=self.activity_update.emit
+            asset_url, percent_func=self.percent_update.emit
         )
         thread.base_thread.__init__(self, function)
 
@@ -152,7 +152,7 @@ def check_version(appctxt, installed=False):
         return False
 
 
-def download_new_version(asset_url, update_func=None):
+def download_new_version(asset_url, percent_func=None):
     """Downloads new installer version."""
     download_path = os.path.join(os.path.expanduser("~"), "Downloads", INSTALLER)
 
@@ -163,12 +163,12 @@ def download_new_version(asset_url, update_func=None):
         if total_size > 0:
             readsofar = block_num * block_size
             percent = readsofar * 100 / total_size
-            update_func(percent)
+            percent_func(percent)
 
     # download file
     try:
         logger.debug("Attempting to download url {}".format(asset_url))
-        if update_func:
+        if percent_func:
             # this update function is for a percentage
             urllib.request.urlretrieve(asset_url, download_path, request_hook)  # nosec
         else:

@@ -6,6 +6,7 @@ from loguru import logger
 
 import lib.config as config
 import lib.files as files
+from lib.files import write_hash
 import lib.thread as thread
 
 
@@ -49,7 +50,9 @@ class install_mod_archive_thread(thread.base_thread):
         """Initialize the mod archive installer thread."""
         logger.debug("Initialzing mod archive installer thread")
         function = lambda: flight_sim.install_mod_archive(
-            mod_archive, update_func=self.activity_update.emit
+            mod_archive,
+            update_func=self.activity_update.emit,
+            percent_func=self.percent_update.emit,
         )
         thread.base_thread.__init__(self, function)
 
@@ -378,7 +381,7 @@ class flight_sim:
         logger.debug("Game version: {}".format(version))
         return version
 
-    def get_enabled_mods(self, update_func=None):
+    def get_enabled_mods(self, progress_func=None):
         """Returns data for the enabled mods."""
         logger.debug("Retrieving list of enabled mods")
         enabled_mods = []
@@ -387,10 +390,11 @@ class flight_sim:
         all_folders = files.listdir_dirs(self.get_sim_mod_folder(), full_paths=True)
 
         for i, folder in enumerate(all_folders):
-            if update_func:
-                update_func(
+            if progress_func:
+                progress_func(
                     "Loading enabled mods: {}".format(folder),
-                    (i + 1) / len(all_folders) * 100,
+                    i,
+                    len(all_folders) - 1,
                 )
 
             # parse each mod
@@ -401,7 +405,7 @@ class flight_sim:
 
         return enabled_mods, errors
 
-    def get_disabled_mods(self, update_func=None):
+    def get_disabled_mods(self, progress_func=None):
         """Returns data for the disabled mods."""
         logger.debug("Retrieving list of disabled mods")
         # ensure cache folder already exists
@@ -413,10 +417,11 @@ class flight_sim:
         all_folders = files.listdir_dirs(files.get_mod_cache_folder(), full_paths=True)
 
         for i, folder in enumerate(all_folders):
-            if update_func:
-                update_func(
+            if progress_func:
+                progress_func(
                     "Loading disabled mods: {}".format(folder),
-                    (i + 1) / len(all_folders) * 100,
+                    i,
+                    len(all_folders) - 1,
                 )
 
             # parse each mod
@@ -429,17 +434,33 @@ class flight_sim:
 
     def extract_mod_archive(self, archive, update_func=None):
         """Extracts an archive file into a temp directory and returns the new path."""
-        logger.debug("Extracting archive {}".format(archive))
-        # create a temp directory if it does not exist
-        files.create_tmp_folder(update_func=update_func)
         # determine the base name of the archive
         basefilename = os.path.splitext(os.path.basename(archive))[0]
 
-        # extract the archive
+        # build the name of the extracted folder
         extracted_archive = os.path.join(files.TEMP_FOLDER, basefilename)
-        return files.extract_archive(
-            archive, extracted_archive, update_func=update_func
-        )
+
+        # hash the archive
+        archive_hash = files.hash_file(archive, update_func=update_func)
+
+        # check hash of archive versus a possible existing extracted copy
+        if archive_hash == files.read_hash(extracted_archive):
+            logger.debug("Hashes match, using already extracted copy")
+            return extracted_archive
+
+        logger.debug("Hash mismatch, extracting")
+
+        # create a temp directory if it does not exist
+        files.create_tmp_folder(update_func=update_func)
+
+        # extract archive
+        files.extract_archive(archive, extracted_archive, update_func=update_func)
+
+        # write the hash
+        write_hash(extracted_archive, archive_hash)
+
+        # return
+        return extracted_archive
 
     def determine_mod_folders(self, folder, update_func=None):
         """Walks a directory to find the folder(s) with a manifest.json file in them."""
@@ -467,7 +488,7 @@ class flight_sim:
 
         return mod_folders
 
-    def install_mods(self, folder, update_func=None, delete=False):
+    def install_mods(self, folder, update_func=None, delete=False, percent_func=None):
         """Extracts and installs a new mod."""
         logger.debug("Installing mod {}".format(folder))
 
@@ -476,7 +497,7 @@ class flight_sim:
 
         installed_mods = []
 
-        for mod_folder in mod_folders:
+        for i, mod_folder in enumerate(mod_folders):
             # get the base folder name
             base_mod_folder = os.path.basename(mod_folder)
             dest_folder = os.path.join(self.get_sim_mod_folder(), base_mod_folder)
@@ -487,12 +508,15 @@ class flight_sim:
             else:
                 files.copy_folder(mod_folder, dest_folder, update_func=update_func)
 
+            if percent_func:
+                percent_func((i, len(mod_folders)))
+
             installed_mods.append(base_mod_folder)
 
         # return installed mods list
         return installed_mods
 
-    def install_mod_archive(self, mod_archive, update_func=None):
+    def install_mod_archive(self, mod_archive, update_func=None, percent_func=None):
         """Extracts and installs a new mod."""
         logger.debug("Installing mod {}".format(mod_archive))
         # extract the archive
@@ -501,7 +525,10 @@ class flight_sim:
         )
 
         return self.install_mods(
-            extracted_archive, update_func=update_func, delete=True
+            extracted_archive,
+            update_func=update_func,
+            delete=False,
+            percent_func=percent_func,
         )
 
     def uninstall_mod(self, folder, update_func=None):

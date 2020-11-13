@@ -259,7 +259,7 @@ class main_widget(QtWidgets.QWidget):
 
             # setup downloader thread
             downloader = version.download_new_version_thread(return_url)
-            downloader.activity_update.connect(progress.set_percent)
+            downloader.percent_update.connect(progress.set_percent)
 
             def failed(err):
                 typ = type(err)
@@ -274,7 +274,7 @@ class main_widget(QtWidgets.QWidget):
                 finish_func=version.install_new_version,
                 failed_signal=downloader.failed,
                 failed_func=failed,
-                update_signal=downloader.activity_update,
+                update_signal=downloader.percent_update,
             ):
                 downloader.start()
 
@@ -341,6 +341,7 @@ class main_widget(QtWidgets.QWidget):
                     self.flight_sim, mod_archive
                 )
                 installer.activity_update.connect(progress.set_activity)
+                installer.percent_update.connect(progress.set_percent)
 
                 # start the thread
                 with thread.thread_wait(
@@ -435,7 +436,7 @@ class main_widget(QtWidgets.QWidget):
         selected = self.main_table.get_selected_rows()
 
         def core(progress):
-            for _id in selected:
+            for i, _id in enumerate(selected):
                 # first, get the mod name and enabled status
                 (folder, enabled) = self.main_table.get_basic_info(_id)
                 mod_folder = self.flight_sim.get_mod_folder(folder, enabled)
@@ -457,6 +458,8 @@ class main_widget(QtWidgets.QWidget):
                     update_signal=uninstaller.activity_update,
                 ):
                     uninstaller.start()
+
+                progress.set_percent(i, total=len(selected) - 1)
 
         self.base_action(
             core,
@@ -610,18 +613,18 @@ class main_widget(QtWidgets.QWidget):
 
             progress.set_mode(progress.PERCENT)
 
-            def update(message, percent):
+            def update(message, percent, total):
                 progress.set_activity(message)
-                progress.set_percent(percent)
+                progress.set_percent(percent, total)
                 # make sure the progress bar gets updated.
                 self.appctxt.app.processEvents()
 
             # build list of mods
             enabled_mods, enabled_errors = self.flight_sim.get_enabled_mods(
-                update_func=update
+                progress_func=update
             )
             disabled_mods, disabled_errors = self.flight_sim.get_disabled_mods(
-                update_func=update
+                progress_func=update
             )
 
             all_errors = enabled_errors + disabled_errors

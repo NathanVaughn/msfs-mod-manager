@@ -13,6 +13,8 @@ class progress_widget(QtWidgets.QDialog):
         self.INFINITE = 0
         self.PERCENT = 1
 
+        self.mode = self.INFINITE
+
         self.setWindowTitle("Progress")
         self.setWindowFlags(
             QtCore.Qt.WindowSystemMenuHint
@@ -55,6 +57,16 @@ class progress_widget(QtWidgets.QDialog):
         """Update the displayed message."""
         self.activity.setText(message)
 
-    def set_percent(self, percent):
+    def set_percent(self, percent, total=None):
         """Update the progress percent."""
-        self.bar.setValue(percent)
+        if self.mode != self.PERCENT:
+            self.set_mode(self.PERCENT)
+
+        if total:
+            self.bar.setMaximum(total)
+
+        if isinstance(percent, tuple):
+            self.bar.setMaximum(percent[1])
+            self.bar.setValue(percent[0])
+        else:
+            self.bar.setValue(percent)

@@ -1,6 +1,7 @@
 import os
 import shutil
 import stat
+import hashlib
 import time
 
 import patoolib
@@ -11,6 +12,7 @@ import lib.thread as thread
 
 ARCHIVE_VERBOSITY = -1
 ARCHIVE_INTERACTIVE = False
+HASH_FILE = "sha256.txt"
 
 TEMP_FOLDER = os.path.abspath(
     os.path.join(os.getenv("LOCALAPPDATA"), "Temp", "MSFS Mod Manager")
@@ -98,75 +100,78 @@ def check_same_path(path1, path2):
 
 def get_folder_size(folder):
     """Return the size in bytes of a folder, recursively."""
-    logger.debug("Returning size of {} recursively".format(folder))
-    if os.path.isdir(folder):
-        return sum(
-            os.path.getsize(os.path.join(dirpath, filename))
-            for dirpath, _, filenames in os.walk(folder)
-            for filename in filenames
-        )
-    else:
+    # logger.debug("Returning size of {} recursively".format(folder))
+
+    if not os.path.isdir(folder):
         logger.warning("Folder {} does not exist".format(folder))
         return 0
+
+    return sum(
+        os.path.getsize(os.path.join(dirpath, filename))
+        for dirpath, _, filenames in os.walk(folder)
+        for filename in filenames
+    )
 
 
 def delete_file(file, first=True, update_func=None):
     """Deletes a file if it exists."""
     # check if it exists
-    if os.path.isfile(file):
-        try:
-            logger.debug("Attempting to delete file {}".format(file))
-            # try to delete it
-            if update_func:
-                update_func("Deleting file {}".format(file))
-            os.remove(file)
-        except PermissionError:
-            logger.debug("File deletion failed")
-            # if there is a permission error
-            if not first:
-                logger.error("Not first attempt, raising exception")
-                # if not the first attempt, raise error
-                raise AccessError(file)
-            else:
-                logger.debug("Attempting to fix permissions")
-                # otherwise, try to fix permissions and try again
-                fix_permissions(os.path.dirname(file), update_func=update_func)
-                delete_file(file, first=False, update_func=update_func)
-    else:
+    if not os.path.isfile(file):
         logger.debug("File {} does not exist".format(file))
+        return
+
+    try:
+        logger.debug("Attempting to delete file {}".format(file))
+        # try to delete it
+        if update_func:
+            update_func("Deleting file {}".format(file))
+        os.remove(file)
+    except PermissionError:
+        logger.debug("File deletion failed")
+        # if there is a permission error
+        if not first:
+            logger.error("Not first attempt, raising exception")
+            # if not the first attempt, raise error
+            raise AccessError(file)
+        else:
+            logger.debug("Attempting to fix permissions")
+            # otherwise, try to fix permissions and try again
+            fix_permissions(os.path.dirname(file), update_func=update_func)
+            delete_file(file, first=False, update_func=update_func)
 
 
 def delete_folder(folder, first=True, update_func=None):
     """Deletes a folder if it exists."""
     # check if it exists
-    if os.path.isdir(folder):
-        try:
-            logger.debug("Attempting to delete folder {}".format(folder))
-            # try to delete it
-            if update_func:
-                update_func("Deleting folder {}".format(folder))
-            shutil.rmtree(folder)
-        except PermissionError:
-            logger.debug("Folder deletion failed")
-            # if there is a permission error
-            if not first:
-                logger.error("Not first attempt, raising exception")
-                # if not the first attempt, raise error
-                raise AccessError(folder)
-            else:
-                logger.debug("Attempting to fix permissions")
-                # otherwise, try to fix permissions and try again
-                fix_permissions(folder, update_func=update_func)
-                delete_folder(folder, first=False, update_func=update_func)
-        except FileNotFoundError:
-            # https://bugs.python.org/issue29699
-            logger.info("Encountered race condition")
-            # this may help to mitigate the race condition
-            time.sleep(0.1)
-            # try again
-            delete_folder(folder, first=first, update_func=update_func)
-    else:
+    if not os.path.isdir(folder):
         logger.debug("Folder {} does not exist".format(folder))
+        return
+
+    try:
+        logger.debug("Attempting to delete folder {}".format(folder))
+        # try to delete it
+        if update_func:
+            update_func("Deleting folder {}".format(folder))
+        shutil.rmtree(folder, ignore_errors=False)
+    except PermissionError:
+        logger.info("Folder deletion failed")
+        # if there is a permission error
+        if not first:
+            logger.error("Not first attempt, raising exception")
+            # if not the first attempt, raise error
+            raise AccessError(folder)
+        else:
+            logger.debug("Attempting to fix permissions")
+            # otherwise, try to fix permissions and try again
+            fix_permissions(folder, update_func=update_func)
+            delete_folder(folder, first=False, update_func=update_func)
+    except FileNotFoundError:
+        # https://bugs.python.org/issue29699
+        logger.warning("Encountered race condition")
+        # this may help to mitigate the race condition
+        time.sleep(0.1)
+        # try again
+        delete_folder(folder, first=first, update_func=update_func)
 
 
 def copy_folder(src, dest, update_func=None):
@@ -336,3 +341,38 @@ def create_archive(folder, archive, update_func=None):
         raise ExtractionError(str(e))
 
     return archive
+
+
+def hash_file(filename, update_func=None):
+    """Returns the hash of a file."""
+    # https://stackoverflow.com/questions/22058048/hashing-a-file-in-python
+    logger.debug("Hashing {}".format(filename))
+
+    if update_func:
+        update_func("Hashing {}".format(filename))
+
+    h = hashlib.sha256()
+    with open(filename, "rb", buffering=0) as f:
+        b = bytearray(128 * 1024)
+        mv = memoryview(b)
+        for n in iter(lambda: f.readinto(mv), 0):
+            h.update(mv[:n])
+    return h.hexdigest()
+
+
+def write_hash(folder, h):
+    """Writes the hash of a file to the given folder."""
+    filename = os.path.join(folder, HASH_FILE)
+    with open(filename, "w") as f:
+        f.write(h)
+
+
+def read_hash(folder):
+    """Reads the hash of the given folder."""
+    filename = os.path.join(folder, HASH_FILE)
+    if not os.path.isfile(filename):
+        logger.debug("No hash found")
+        return None
+
+    with open(filename, "r") as f:
+        return f.read()

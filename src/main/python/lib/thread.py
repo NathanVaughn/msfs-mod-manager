@@ -8,6 +8,7 @@ class base_thread(QtCore.QThread):
     """Base thread class."""
 
     activity_update = QtCore.Signal(object)
+    percent_update = QtCore.Signal(object)
     finished = QtCore.Signal(object)
     failed = QtCore.Signal(Exception)
 
