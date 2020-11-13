@@ -3,6 +3,8 @@ import os
 import sys
 import webbrowser
 
+import PySide2.QtCore as QtCore
+import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 from loguru import logger
 
@@ -72,6 +74,7 @@ class main_widget(QtWidgets.QWidget):
 
         self.setLayout(self.layout)
 
+        # buttons
         self.install_button.clicked.connect(self.install_archive)
         self.uninstall_button.clicked.connect(self.uninstall)
         self.enable_button.clicked.connect(self.enable)
@@ -82,6 +85,12 @@ class main_widget(QtWidgets.QWidget):
 
         self.clear_button.clicked.connect(self.clear_search)
         self.search_field.textChanged.connect(self.search)
+
+        # shortcuts
+        self.shortcut_delete = QtWidgets.QShortcut(
+            QtGui.QKeySequence(QtCore.Qt.Key_Delete), self
+        )
+        self.shortcut_delete.activated.connect(self.uninstall)
 
         # handle to data
         self.flight_sim = flight_sim.flight_sim()
