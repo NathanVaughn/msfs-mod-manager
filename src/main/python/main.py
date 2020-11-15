@@ -45,5 +45,7 @@ if __name__ == "__main__":
         # execute the application
         sys.exit(app.exec_())
     except Exception as e:
-        if not isinstance(e, SystemExit):
+        if isinstance(e, SystemExit):
+            logger.info("System exit requested")
+        else:
             logger.exception("Uncaught exception")

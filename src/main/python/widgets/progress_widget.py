@@ -47,11 +47,13 @@ class progress_widget(QtWidgets.QDialog):
             self.bar.setMaximum(0)
             self.bar.setMinimum(0)
             self.bar.setValue(0)
+            self.mode = self.INFINITE
         elif mode == self.PERCENT:
             # Set the progress bar to be percentage
             self.bar.setMaximum(100)
             self.bar.setMinimum(0)
             self.bar.setValue(0)
+            self.mode = self.PERCENT
 
     def set_activity(self, message):
         """Update the displayed message."""

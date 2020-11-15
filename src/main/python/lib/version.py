@@ -177,11 +177,20 @@ def download_new_version(asset_url, percent_func=None):
         logger.exception("Downloading url {} failed".format(asset_url))
         return False
 
+    logger.debug("Download succeeded")
     return download_path
 
 
 def install_new_version(installer_path):
     """Runs the new installer and causes a UAC prompt."""
     # https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecutew
+    logger.debug("ShellExecuteW {}".format(installer_path))
     ctypes.windll.shell32.ShellExecuteW(None, "runas", installer_path, "", None, 1)
+
+    # https://stackoverflow.com/questions/2129935/pyinstaller-exes-not-dying-after-sys-exit
+    logger.debug("Exiting")
     sys.exit()
+
+    # insurance if above fails
+    logger.debug("REALLY exiting")
+    os._exit()
