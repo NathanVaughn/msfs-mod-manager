@@ -37,7 +37,7 @@ jobs:
           key: pipenv-${{ hashFiles('**/Pipfile.lock') }}
 
       - name: Install Pipenv
-        run: python -m pip install wheel setuptools pipenv pypiwin32
+        run: python -m pip install wheel setuptools pipenv pypiwin32 pywin32
 
       - name: Setup Dependencies
         run: pipenv install
