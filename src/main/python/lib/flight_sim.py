@@ -6,7 +6,6 @@ from loguru import logger
 
 import lib.config as config
 import lib.files as files
-from lib.files import write_hash
 import lib.thread as thread
 
 
@@ -441,14 +440,14 @@ class flight_sim:
         extracted_archive = os.path.join(files.TEMP_FOLDER, basefilename)
 
         # hash the archive
-        archive_hash = files.hash_file(archive, update_func=update_func)
+        # archive_hash = files.hash_file(archive, update_func=update_func)
 
         # check hash of archive versus a possible existing extracted copy
-        if archive_hash == files.read_hash(extracted_archive):
-            logger.debug("Hashes match, using already extracted copy")
-            return extracted_archive
+        # if archive_hash == files.read_hash(extracted_archive):
+        #    logger.debug("Hashes match, using already extracted copy")
+        #    return extracted_archive
 
-        logger.debug("Hash mismatch, extracting")
+        # logger.debug("Hash mismatch, extracting")
 
         # create a temp directory if it does not exist
         files.create_tmp_folder(update_func=update_func)
@@ -457,7 +456,7 @@ class flight_sim:
         files.extract_archive(archive, extracted_archive, update_func=update_func)
 
         # write the hash
-        write_hash(extracted_archive, archive_hash)
+        # write_hash(extracted_archive, archive_hash)
 
         # return
         return extracted_archive
