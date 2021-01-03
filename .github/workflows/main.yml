@@ -37,10 +37,10 @@ jobs:
           key: pipenv-${{ hashFiles('**/Pipfile.lock') }}
 
       - name: Install Pipenv
-        run: python -m pip install wheel setuptools pipenv pypiwin32 pywin32 pywin32-ctypes cffi
+        run: python -m pip install wheel setuptools pipenv
 
       - name: Setup Dependencies
-        run: pipenv install
+        run: pipenv sync
         env:
           PIPENV_VENV_IN_PROJECT: "1"
 

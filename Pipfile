@@ -16,8 +16,7 @@ pyside2 = "*"
 fbs = "*"
 loguru = "*"
 pywin32 = "*"
-pypiwin32 = "*"
-cffi = "*"
+pywin32-ctypes = "*"
 
 [requires]
 python_version = "3.6"
