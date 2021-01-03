@@ -2,7 +2,6 @@ import os
 import shutil
 import stat
 import hashlib
-import time
 
 import patoolib
 from loguru import logger
@@ -41,8 +40,30 @@ class move_folder_thread(thread.base_thread):
         thread.base_thread.__init__(self, function)
 
 
-def fix_permissions(folder, update_func=None):
+def fix_path(path):
+    """Prepends magic prefix for a path name that is too long"""
+    # https://stackoverflow.com/a/50924863
+    # this is truly voodoo magic
+    return "\\\\?\\" + path
+
+
+def fix_permissions(path):
+    """Fixes the permissions of a folder or file so that it can be deleted."""
+    if not os.path.exists(path):
+        logger.warning("Path {} does not exist".format(path))
+        return
+
+    # logger.debug("Applying stat.S_IWUSR permission to {}".format(path))
+    # fix deletion permission https://blog.nathanv.me/posts/python-permission-issue/
+    os.chmod(path, stat.S_IWUSR)
+
+
+def fix_permissions_recursive(folder, update_func=None):
     """Recursively fixes the permissions of a folder so that it can be deleted."""
+    if not os.path.exists(folder):
+        logger.warning("Folder {} does not exist".format(folder))
+        return
+
     if update_func:
         update_func("Fixing permissions for {}".format(folder))
 
@@ -50,34 +71,26 @@ def fix_permissions(folder, update_func=None):
 
     for root, dirs, files in os.walk(folder):
         for d in dirs:
-            logger.debug(
-                "Applying stat.S_IWUSR permission to {}".format(os.path.join(root, d))
-            )
-            os.chmod(os.path.join(root, d), stat.S_IWUSR)
+            fix_permissions(os.path.join(root, d))
         for f in files:
-            logger.debug(
-                "Applying stat.S_IWUSR permission to {}".format(os.path.join(root, f))
-            )
-            os.chmod(os.path.join(root, f), stat.S_IWUSR)
+            fix_permissions(os.path.join(root, f))
 
 
 def listdir_dirs(folder, full_paths=False):
     """Returns a list of directories inside of a directory."""
     # logger.debug("Listing directories of {}".format(folder))
-    if os.path.isdir(folder):
-        result = [
-            item
-            for item in os.listdir(folder)
-            if os.path.isdir(os.path.join(folder, item))
-        ]
-
-        if full_paths:
-            result = [os.path.join(folder, item) for item in result]
-
-        return result
-    else:
+    if not os.path.isdir(folder):
         logger.warning("Folder {} does not exist".format(folder))
         return []
+
+    result = [
+        item for item in os.listdir(folder) if os.path.isdir(os.path.join(folder, item))
+    ]
+
+    if full_paths:
+        result = [os.path.join(folder, item) for item in result]
+
+    return result
 
 
 def human_readable_size(size, decimal_places=2):
@@ -115,6 +128,8 @@ def get_folder_size(folder):
 
 def delete_file(file, first=True, update_func=None):
     """Deletes a file if it exists."""
+    file = fix_path(file)
+
     # check if it exists
     if not os.path.isfile(file):
         logger.debug("File {} does not exist".format(file))
@@ -136,12 +151,18 @@ def delete_file(file, first=True, update_func=None):
         else:
             logger.debug("Attempting to fix permissions")
             # otherwise, try to fix permissions and try again
-            fix_permissions(os.path.dirname(file), update_func=update_func)
+            fix_permissions(file, update_func=update_func)
             delete_file(file, first=False, update_func=update_func)
+    except FileNotFoundError as e:
+        logger.exception(e)
+        # try again
+        delete_file(file, first=False, update_func=update_func)
 
 
 def delete_folder(folder, first=True, update_func=None):
     """Deletes a folder if it exists."""
+    folder = fix_path(folder)
+
     # check if it exists
     if not os.path.isdir(folder):
         logger.debug("Folder {} does not exist".format(folder))
@@ -163,19 +184,19 @@ def delete_folder(folder, first=True, update_func=None):
         else:
             logger.debug("Attempting to fix permissions")
             # otherwise, try to fix permissions and try again
-            fix_permissions(folder, update_func=update_func)
+            fix_permissions_recursive(folder, update_func=update_func)
             delete_folder(folder, first=False, update_func=update_func)
-    except (FileNotFoundError, shutil.Error):
-        # https://bugs.python.org/issue29699
-        logger.warning("Encountered race condition")
-        # this may help to mitigate the race condition
-        time.sleep(0.1)
+    except FileNotFoundError as e:
+        logger.exception(e)
         # try again
-        delete_folder(folder, first=first, update_func=update_func)
+        delete_folder(folder, first=False, update_func=update_func)
 
 
 def copy_folder(src, dest, update_func=None):
     """Copies a folder if it exists."""
+    src = fix_path(src)
+    dest = fix_path(dest)
+
     logger.debug("Copying folder {} to {}".format(src, dest))
     # check if it exists
     if not os.path.isdir(src):
@@ -197,11 +218,16 @@ def copy_folder(src, dest, update_func=None):
                 src, dest, human_readable_size(get_folder_size(src))
             )
         )
-    shutil.copytree(src, dest)
+
+    logger.debug("Attempting to copy folder {} to {}".format(src, dest))
+    shutil.copytree(src, dest, symlinks=True)
 
 
 def move_folder(src, dest, update_func=None):
     """Copies a folder and deletes the original."""
+    src = fix_path(src)
+    dest = fix_path(dest)
+
     if check_same_path(src, dest):
         logger.warning(
             "Source folder {} is same as destination folder {}".format(src, dest)
