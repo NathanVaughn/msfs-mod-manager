@@ -44,7 +44,11 @@ def fix_path(path):
     """Prepends magic prefix for a path name that is too long"""
     # https://stackoverflow.com/a/50924863
     # this is truly voodoo magic
-    return "\\\\?\\" + path
+    if os.name == 'nt':
+        # some semblance of OS-compatibility for those Linux Proton folks
+        return "\\\\?\\" + path
+    else:
+        return path
 
 
 def fix_permissions(path):
