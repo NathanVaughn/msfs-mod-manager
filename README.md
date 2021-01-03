@@ -140,10 +140,17 @@ Now, run the same build script with the `-installer` flag:
 ./build.ps1 -installer
 ```
 
+### Creating a Release
+
+1. Create a commit modifying the version number of `src/build/settings/base.json`.
+2. In this commit, add the release notes to the commit body.
+3. Tag this commit with the version number in the form of `v#.#.#`.
+4. Push tag and commit to origin.
+
 ## Disclaimer
 
 I am not affiliated with Asobo Studios or Microsoft,
-I am just a college student that is working on this in my free time.
+I am just a college ~~student~~ graduate that is working on this in my free time.
 I may not be very fast in bugfixes or adding new features.
 
 Please do not redistribute without permission.
