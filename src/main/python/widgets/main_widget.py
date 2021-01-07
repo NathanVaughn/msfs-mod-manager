@@ -8,21 +8,21 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 from loguru import logger
 
+import dialogs.error_dialogs as error_dialogs
+import dialogs.information_dialogs as information_dialogs
+import dialogs.question_dialogs as question_dialogs
+import dialogs.warning_dialogs as warning_dialogs
 import lib.config as config
 import lib.files as files
 import lib.flight_sim as flight_sim
 import lib.thread as thread
 import lib.version as version
+from dialogs.version_check_dialog import version_check_dialog
 from widgets.about_widget import about_widget
 from widgets.info_widget import info_widget
 from widgets.main_table import main_table
 from widgets.progress_widget import progress_widget
 from widgets.versions_widget import versions_widget
-import dialogs.error_dialogs as error_dialogs
-import dialogs.warning_dialogs as warning_dialogs
-import dialogs.question_dialogs as question_dialogs
-import dialogs.information_dialogs as information_dialogs
-from dialogs.version_check_dialog import version_check_dialog
 
 ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
 
@@ -121,7 +121,9 @@ class main_widget(QtWidgets.QWidget):
             ):
                 # save the config file
                 config.set_key_value(
-                    config.SIM_FOLDER_KEY, self.flight_sim.sim_packages_folder
+                    config.SIM_FOLDER_KEY,
+                    self.flight_sim.sim_packages_folder,
+                    path=True,
                 )
 
             elif self.flight_sim.is_sim_packages_folder(
@@ -131,6 +133,7 @@ class main_widget(QtWidgets.QWidget):
                 config.set_key_value(
                     config.SIM_FOLDER_KEY,
                     os.path.join(self.flight_sim.sim_packages_folder, "Packages"),
+                    path=True,
                 )
 
             else:
@@ -154,7 +157,7 @@ class main_widget(QtWidgets.QWidget):
         elif not success:
             # save the config file
             config.set_key_value(
-                config.SIM_FOLDER_KEY, self.flight_sim.sim_packages_folder
+                config.SIM_FOLDER_KEY, self.flight_sim.sim_packages_folder, path=True
             )
             # notify user
             information_dialogs.sim_detected(self, self.flight_sim.sim_packages_folder)
@@ -190,7 +193,7 @@ class main_widget(QtWidgets.QWidget):
             ):
                 mover.start()
 
-            config.set_key_value(config.MOD_CACHE_FOLDER_KEY, new_cache)
+            config.set_key_value(config.MOD_CACHE_FOLDER_KEY, new_cache, path=True)
             information_dialogs.disabled_mods_folder(self, new_cache)
 
         if new_cache and not files.check_same_path(old_cache, new_cache):
@@ -372,7 +375,7 @@ class main_widget(QtWidgets.QWidget):
 
         if succeeded:
             config.set_key_value(
-                config.LAST_OPEN_FOLDER_KEY, os.path.dirname(mod_archives[0])
+                config.LAST_OPEN_FOLDER_KEY, os.path.dirname(mod_archives[0]), path=True
             )
             information_dialogs.mods_installed(self, succeeded)
 
@@ -436,7 +439,7 @@ class main_widget(QtWidgets.QWidget):
 
         if succeeded:
             config.set_key_value(
-                config.LAST_OPEN_FOLDER_KEY, os.path.dirname(mod_folder)
+                config.LAST_OPEN_FOLDER_KEY, os.path.dirname(mod_folder), path=True
             )
             information_dialogs.mods_installed(self, succeeded)
 

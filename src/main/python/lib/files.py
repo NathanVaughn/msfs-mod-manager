@@ -1,7 +1,7 @@
+import hashlib
 import os
 import shutil
 import stat
-import hashlib
 
 import patoolib
 from loguru import logger
@@ -44,9 +44,12 @@ def fix_path(path):
     """Prepends magic prefix for a path name that is too long"""
     # https://stackoverflow.com/a/50924863
     # this is truly voodoo magic
-    if os.name == 'nt':
-        # some semblance of OS-compatibility for those Linux Proton folks
-        return "\\\\?\\" + path
+    magic = "\\\\?\\"
+
+    path = os.path.normpath(path)
+    # some semblance of OS-compatibility for those Linux Proton folks
+    if os.name == "nt" and not path.startswith(magic):
+        return magic + path
     else:
         return path
 
@@ -155,7 +158,7 @@ def delete_file(file, first=True, update_func=None):
         else:
             logger.debug("Attempting to fix permissions")
             # otherwise, try to fix permissions and try again
-            fix_permissions(file, update_func=update_func)
+            fix_permissions(file)
             delete_file(file, first=False, update_func=update_func)
     except FileNotFoundError as e:
         logger.exception(e)
@@ -287,24 +290,24 @@ def create_tmp_folder(update_func=None):
 
 def get_last_open_folder():
     """Gets the last opened directory from the config file."""
-    succeeded, value = config.get_key_value(config.LAST_OPEN_FOLDER_KEY)
+    succeeded, value = config.get_key_value(config.LAST_OPEN_FOLDER_KEY, path=True)
     if not succeeded or not os.path.isdir(value):
         # if mod cache folder could not be loaded from config
         value = os.path.abspath(os.path.join(os.path.expanduser("~"), "Downloads"))
-        config.set_key_value(config.LAST_OPEN_FOLDER_KEY, value)
+        config.set_key_value(config.LAST_OPEN_FOLDER_KEY, value, path=True)
 
-    return value
+    return fix_path(value)
 
 
 def get_mod_cache_folder():
     """Gets the current mod cache folder value from the config file."""
-    succeeded, value = config.get_key_value(config.MOD_CACHE_FOLDER_KEY)
+    succeeded, value = config.get_key_value(config.MOD_CACHE_FOLDER_KEY, path=True)
     if not succeeded:
         # if mod cache folder could not be loaded from config
         value = os.path.abspath(os.path.join(config.BASE_FOLDER, "modCache"))
-        config.set_key_value(config.MOD_CACHE_FOLDER_KEY, value)
+        config.set_key_value(config.MOD_CACHE_FOLDER_KEY, value, path=True)
 
-    return value
+    return fix_path(value)
 
 
 def create_mod_cache_folder():

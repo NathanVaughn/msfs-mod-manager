@@ -177,7 +177,7 @@ class flight_sim:
 
         # first try to read from the config file
         logger.debug("Trying to find simulator path from config file")
-        succeed, value = config.get_key_value(config.SIM_FOLDER_KEY)
+        succeed, value = config.get_key_value(config.SIM_FOLDER_KEY, path=True)
         if succeed and self.is_sim_packages_folder(value):
             logger.debug("Config file sim path found and valid")
             return (True, value)
@@ -259,8 +259,8 @@ class flight_sim:
         Tries to resolve symlinks in every step of the path."""
         # logger.debug("Determining path for sim community packages folder")
 
-        return files.resolve_symlink(
-            os.path.join(self.sim_packages_folder, "Community")
+        return files.fix_path(
+            files.resolve_symlink(os.path.join(self.sim_packages_folder, "Community"))
         )
 
     def get_sim_official_folder(self):
@@ -275,7 +275,9 @@ class flight_sim:
         # choose folder inside
         store = files.listdir_dirs(official_packages)[0]
 
-        return files.resolve_symlink(os.path.join(official_packages, store))
+        return files.fix_path(
+            files.resolve_symlink(os.path.join(official_packages, store))
+        )
 
     def get_mod_folder(self, folder, enabled):
         """Returns path to mod folder given folder name and enabled status."""
@@ -288,7 +290,7 @@ class flight_sim:
 
         # logger.debug("Final mod path: {}".format(mod_folder))
 
-        return mod_folder
+        return files.fix_path(mod_folder)
 
     def parse_mod_layout(self, mod_folder):
         """Builds the mod files info as a dictionary. Parsed from the layout.json."""

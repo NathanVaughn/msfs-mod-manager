@@ -19,7 +19,7 @@ NEVER_VER_CHEK_KEY = "never_version_check"
 THEME_KEY = "theme"
 
 
-def get_key_value(key, default=None):
+def get_key_value(key, default=None, path=False):
     """Attempts to load value from key in the config file.
     Returns a tuple of if the value was found, and if so, what the contents where."""
     logger.debug(
@@ -35,15 +35,20 @@ def get_key_value(key, default=None):
     if SECTION_KEY in config:
         logger.debug("Section key '{}' found in config file".format(SECTION_KEY))
         if key in config[SECTION_KEY]:
+            value = config[SECTION_KEY][key]
+            if path:
+                value = os.path.normpath(value)
+
             logger.debug("Key '{}' found in section".format(key))
-            logger.debug("Key '{}' value: {}".format(key, config[SECTION_KEY][key]))
-            return (True, config[SECTION_KEY][key])
+            logger.debug("Key '{}' value: {}".format(key, value))
+
+            return (True, value)
 
     logger.debug("Unable to find key '{}' in config file".format(key))
     return (False, default)
 
 
-def set_key_value(key, value):
+def set_key_value(key, value, path=False):
     """Writes a key and value to the config file."""
     value = str(value)
 
@@ -62,6 +67,8 @@ def set_key_value(key, value):
         )
         config.add_section(SECTION_KEY)
 
+    if path:
+        value = os.path.normpath(value)
     config[SECTION_KEY][key] = value
 
     logger.debug("Writing out config file")

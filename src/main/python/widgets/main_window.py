@@ -4,10 +4,10 @@ import webbrowser
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from lib.config import DEBUG_LOG, CONFIG_FILE
+import lib.files as files
+from lib.config import CONFIG_FILE, DEBUG_LOG
 from lib.theme import get_theme, set_theme
 from lib.version import get_version
-import lib.files as files
 from widgets.main_widget import main_widget
 
 
