@@ -296,21 +296,23 @@ class flight_sim:
         """Builds the mod files info as a dictionary. Parsed from the layout.json."""
         logger.debug("Parsing layout for {}".format(mod_folder))
 
-        if not os.path.isfile(os.path.join(mod_folder, "layout.json")):
+        layout_path = files.resolve_symlink(os.path.join(mod_folder, "layout.json"))
+
+        if not os.path.isfile(layout_path):
             logger.error("No layout.json found")
             raise NoLayoutError(mod_folder)
 
-        with open(os.path.join(mod_folder, "layout.json"), "r", encoding="utf8") as f:
-            try:
+        try:
+            with open(layout_path, "r", encoding="utf8") as f:
                 data = json.load(f)
-            except Exception as e:
-                logger.exception("layout.json could not be parsed")
-                raise LayoutError(e)
+        except Exception as e:
+            logger.exception("layout.json could not be parsed")
+            raise LayoutError(e)
 
         return data["content"]
 
     def parse_mod_files(self, mod_folder):
-        """Builds the mod files info as a dictionary. Parsed from the layout.json."""
+        """Builds the mod files info as a dictionary. Parsed from the fielsystem."""
         logger.debug("Parsing all mod files for {}".format(mod_folder))
 
         data = []
@@ -330,7 +332,7 @@ class flight_sim:
         logger.debug("Parsing manifest for {}".format(mod_folder))
 
         mod_data = {"folder_name": os.path.basename(mod_folder)}
-        manifest_path = os.path.join(mod_folder, "manifest.json")
+        manifest_path = files.resolve_symlink(os.path.join(mod_folder, "manifest.json"))
 
         if not os.path.isfile(manifest_path):
             logger.error("No manifest.json found")
