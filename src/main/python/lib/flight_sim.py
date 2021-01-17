@@ -336,12 +336,12 @@ class flight_sim:
             logger.error("No manifest.json found")
             raise NoManifestError(mod_folder)
 
-        with open(manifest_path, "r", encoding="utf8") as f:
-            try:
+        try:
+            with open(manifest_path, "r", encoding="utf8") as f:
                 data = json.load(f)
-            except Exception as e:
-                logger.exception("manifest.json could not be parsed")
-                raise ManifestError(e)
+        except Exception as e:
+            logger.exception("manifest.json could not be opened/parsed")
+            raise ManifestError(e)
 
         # manifest data
         mod_data["content_type"] = data.get("content_type", "")
@@ -352,13 +352,13 @@ class flight_sim:
         mod_data["minimum_game_version"] = data.get("minimum_game_version", "")
 
         # manifest metadata
-        # Windows considering moving/copying a file 'creating' it again, and not modifying
-        # contents
+        # Windows considering moving/copying a file 'creating' it again,
+        # and not modifying contents
         mod_data["time_mod"] = datetime.datetime.fromtimestamp(
             os.path.getctime(manifest_path)
         ).strftime("%Y-%m-%d %H:%M:%S")
 
-        # convience, often helps to just have this included in the returned resu;t
+        # convience, often helps to just have this included in the returned result
         # and its easier to to do here
         mod_data["enabled"] = enabled
         mod_data["full_path"] = os.path.abspath(mod_folder)
