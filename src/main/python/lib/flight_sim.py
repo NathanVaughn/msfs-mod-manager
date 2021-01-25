@@ -306,6 +306,8 @@ class flight_sim:
             with open(layout_path, "r", encoding="utf8") as f:
                 data = json.load(f)
         except Exception as e:
+            if hasattr(e, "winerror"):
+                logger.exception("WinError: {}".format(e.winerror))
             logger.exception("layout.json could not be parsed")
             raise LayoutError(e)
 
@@ -342,6 +344,8 @@ class flight_sim:
             with open(manifest_path, "r", encoding="utf8") as f:
                 data = json.load(f)
         except Exception as e:
+            if hasattr(e, "winerror"):
+                logger.exception("WinError: {}".format(e.winerror))
             logger.exception("manifest.json could not be opened/parsed")
             raise ManifestError(e)
 
