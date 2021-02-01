@@ -132,6 +132,10 @@ def is_symlink(path):
     # http://www.flexhex.com/docs/articles/hard-links.phtml
     if sys.platform != "win32" or sys.getwindowsversion()[0] < 6:
         return os.path.islink(path)
+
+    if os.path.islink(path):
+        return True
+
     return bool(
         os.path.exists(path)
         and win32file.GetFileAttributes(path) & FILE_ATTRIBUTE_REPARSE_POINT
@@ -330,39 +334,13 @@ def move_folder(src, dest, update_func=None):
     delete_folder(src, update_func=update_func)
 
 
-def splitall(path):
-    """Splits a path into all its parts."""
-    # https://www.oreilly.com/library/view/python-cookbook/0596001673/ch04s16.html
-    pieces = []
-    while 1:
-        parts = os.path.split(path)
-        if parts[0] == path:  # sentinel for absolute paths
-            pieces.insert(0, parts[0])
-            break
-        elif parts[1] == path:  # sentinel for relative paths
-            pieces.insert(0, parts[1])
-            break
-        else:
-            path = parts[0]
-            pieces.insert(0, parts[1])
-    return pieces
+def resolve_symlink(path):
+    """Resolves symlinks in a directory path."""
 
-
-def resolve_symlink(folder):
-    """Resolves symlinks in a directory path.
-    Basically a quick and dirty reimplementation of os.path.realpath for
-    Python versions prior to 3.8."""
-
-    parts = splitall(folder)
-    new_path = ""
-
-    # resolve links at every step
-    for part in parts:
-        new_path = os.path.join(new_path, part)
-        if is_symlink(new_path):
-            new_path = read_symlink(new_path)
-
-    return new_path
+    if is_symlink(path):
+        return read_symlink(path)
+    else:
+        return path
 
 
 def create_tmp_folder(update_func=None):
