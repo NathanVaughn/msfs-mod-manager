@@ -45,7 +45,7 @@ class about_widget(QtWidgets.QDialog):
         self.layout.addWidget(self.author)
 
         self.license = QtWidgets.QLabel(
-            "Copyright 2020 - Licensed under the GPLv3 License", self
+            "Copyright 2021 - Licensed under the GPLv3 License", self
         )
         self.license.setFont(self.small_font)
         self.license.setAlignment(QtCore.Qt.AlignCenter)
