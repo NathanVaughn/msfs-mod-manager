@@ -77,7 +77,7 @@ class main_window(QtWidgets.QMainWindow):
         edit_menu.addSeparator()
 
         menu_action = QtWidgets.QAction("Change Disabled Mod Folder", self)
-        menu_action.triggered.connect(self.main_widget.select_mod_cache)
+        menu_action.triggered.connect(self.main_widget.select_mod_install)
         edit_menu.addAction(menu_action)
 
         info_menu = main_menu.addMenu("Info")
@@ -134,9 +134,9 @@ class main_window(QtWidgets.QMainWindow):
         )
         help_menu.addAction(menu_action)
 
-        menu_action = QtWidgets.QAction("Open Disabled Mod Folder", self)
+        menu_action = QtWidgets.QAction("Open Mod Install Folder", self)
         menu_action.triggered.connect(
-            lambda: os.startfile(files.get_mod_cache_folder())
+            lambda: os.startfile(files.get_mod_install_folder())
         )
         help_menu.addAction(menu_action)
 

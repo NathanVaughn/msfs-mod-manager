@@ -162,19 +162,19 @@ class main_widget(QtWidgets.QWidget):
             # notify user
             information_dialogs.sim_detected(self, self.flight_sim.sim_packages_folder)
 
-    def select_mod_cache(self):
-        """Allow user to select new mod cache folder."""
-        old_cache = files.get_mod_cache_folder()
+    def select_mod_install(self):
+        """Allow user to select new mod install folder."""
+        old_install = files.get_mod_install_folder()
 
-        new_cache = QtWidgets.QFileDialog.getExistingDirectory(
+        new_install = QtWidgets.QFileDialog.getExistingDirectory(
             parent=self,
-            caption="Select disabled mod folder",
-            dir=os.path.dirname(old_cache),
+            caption="Select mod install folder",
+            dir=os.path.dirname(old_install),
         )
 
         def core(progress):
             # setup mover thread
-            mover = files.move_folder_thread(old_cache, new_cache)
+            mover = files.move_folder_thread(old_install, new_install)
             mover.activity_update.connect(progress.set_activity)
 
             def failed(err):
@@ -193,10 +193,10 @@ class main_widget(QtWidgets.QWidget):
             ):
                 mover.start()
 
-            config.set_key_value(config.MOD_CACHE_FOLDER_KEY, new_cache, path=True)
-            information_dialogs.disabled_mods_folder(self, new_cache)
+            config.set_key_value(config.MOD_INSTALL_FOLDER_KEY, new_install, path=True)
+            information_dialogs.disabled_mods_folder(self, new_install)
 
-        if new_cache and not files.check_same_path(old_cache, new_cache):
+        if new_install and not files.check_same_path(old_install, new_install):
             self.base_action(core)
 
     # ======================
@@ -250,7 +250,7 @@ class main_widget(QtWidgets.QWidget):
 
         # refresh the data
         if refresh:
-            self.refresh()
+            self.refresh(automated=True)
 
         # cleanup
         if button:
@@ -589,10 +589,10 @@ class main_widget(QtWidgets.QWidget):
                     "Failed to create backup",
                 )
 
-            # start the thread, with extra 20 min timeout
+            # start the thread, with no timeout
             with thread.thread_wait(
                 backuper.finished,
-                timeout=1200000,
+                timeout=None,
                 finish_func=finish,
                 failed_signal=backuper.failed,
                 failed_func=failed,
@@ -614,7 +614,7 @@ class main_widget(QtWidgets.QWidget):
                 # this will always be opening a folder and therefore is safe
                 os.startfile(os.path.dirname(archive))  # nosec
 
-    def refresh(self, first=False):
+    def refresh(self, first=False, automated=False):
         """Refreshes all mod data."""
 
         """This is not a separate thread, as the time it takes to parse each manifest
@@ -635,23 +635,22 @@ class main_widget(QtWidgets.QWidget):
                 # make sure the progress bar gets updated.
                 self.appctxt.app.processEvents()
 
-            # build list of mods
-            enabled_mods, enabled_errors = self.flight_sim.get_enabled_mods(
-                progress_func=update
-            )
-            disabled_mods, disabled_errors = self.flight_sim.get_disabled_mods(
-                progress_func=update
-            )
+            # clear mod cache if a human clicked the button
+            if not automated:
+                self.flight_sim.clear_mod_cache()
 
-            all_errors = enabled_errors + disabled_errors
+            # build list of mods
+            all_mods_data, all_mods_errors = self.flight_sim.get_all_mods(
+                progress_func=update
+            )
 
             # set data
-            self.main_table.set_data(enabled_mods + disabled_mods, first=first)
+            self.main_table.set_data(all_mods_data, first=first)
             self.main_table.set_colors(self.parent.theme_menu_action.isChecked())
 
             # display errors
-            if all_errors:
-                warning_dialogs.mod_parsing(self, all_errors)
+            if all_mods_errors:
+                warning_dialogs.mod_parsing(self, all_mods_errors)
 
             # put the search back to how it was
             self.search()

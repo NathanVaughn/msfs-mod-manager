@@ -1,13 +1,21 @@
 import hashlib
 import os
+import re
 import shutil
 import stat
+import subprocess
+import sys
 
 import patoolib
 from loguru import logger
 
 import lib.config as config
 import lib.thread as thread
+
+if sys.platform == "win32":
+    import win32file
+
+FILE_ATTRIBUTE_REPARSE_POINT = 1024
 
 ARCHIVE_VERBOSITY = -1
 ARCHIVE_INTERACTIVE = False
@@ -116,6 +124,82 @@ def check_same_path(path1, path2):
     return resolve_symlink(os.path.abspath(path1)) == resolve_symlink(
         os.path.abspath(path2)
     )
+
+
+def is_symlink(path):
+    """Tests if a path is a symlink."""
+    # https://stackoverflow.com/a/52859239
+    # http://www.flexhex.com/docs/articles/hard-links.phtml
+    if sys.platform != "win32" or sys.getwindowsversion()[0] < 6:
+        return os.path.islink(path)
+    return bool(
+        os.path.exists(path)
+        and win32file.GetFileAttributes(path) & FILE_ATTRIBUTE_REPARSE_POINT
+        == FILE_ATTRIBUTE_REPARSE_POINT
+    )
+
+
+def read_symlink(path):
+    """Returns the original path of a symlink."""
+    if os.path.islink(path):
+        return os.path.readlink(path)
+
+    # Pretty slow, avoid if possible
+    # TODO, reimplement with Win32
+    process = subprocess.run(
+        ["cmd", "/c", "fsutil", "reparsepoint", "query", path],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+    )
+    output = process.stdout.decode("utf-8")
+    # https://regex101.com/r/8hc7yq/1
+    return re.search("Print Name:\\s+(.+)\\s+Reparse Data", output, re.MULTILINE).group(
+        1
+    )
+
+
+def create_symlink(src, dest, update_func=None):
+    """Creates a symlink between two directories."""
+    if update_func:
+        update_func("Creating symlink between {} and {}".format(src, dest))
+
+    # os.symlink(src, dest)
+    # TODO, reimplement with Win32
+
+    # delete an existing destination
+    if os.path.exists(dest):
+        if is_symlink(dest):
+            delete_symlink(dest)
+        else:
+            delete_folder(dest)
+
+    # create the link
+    subprocess.run(
+        ["cmd", "/c", "mklink", "/J", dest, src],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def delete_symlink(path, update_func=None):
+    """Deletes a symlink without removing the directory it is linked to."""
+    if update_func:
+        update_func("Deleting symlink {} ".format(path))
+
+    # os.unlink(path)
+    # TODO, reimplement with Win32
+
+    # remove the link
+    subprocess.run(
+        ["cmd", "/c", "fsutil", "reparsepoint", "delete", path],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    # delete the empty folder
+    delete_folder(path)
 
 
 def get_folder_size(folder):
@@ -275,8 +359,8 @@ def resolve_symlink(folder):
     # resolve links at every step
     for part in parts:
         new_path = os.path.join(new_path, part)
-        if os.path.islink(new_path):
-            new_path = os.path.readlink(new_path)
+        if is_symlink(new_path):
+            new_path = read_symlink(new_path)
 
     return new_path
 
@@ -292,30 +376,28 @@ def get_last_open_folder():
     """Gets the last opened directory from the config file."""
     succeeded, value = config.get_key_value(config.LAST_OPEN_FOLDER_KEY, path=True)
     if not succeeded or not os.path.isdir(value):
-        # if mod cache folder could not be loaded from config
+        # if mod install folder could not be loaded from config
         value = os.path.abspath(os.path.join(os.path.expanduser("~"), "Downloads"))
         config.set_key_value(config.LAST_OPEN_FOLDER_KEY, value, path=True)
 
     return fix_path(value)
 
 
-def get_mod_cache_folder():
-    """Gets the current mod cache folder value from the config file."""
-    succeeded, value = config.get_key_value(config.MOD_CACHE_FOLDER_KEY, path=True)
+def get_mod_install_folder():
+    """Gets the current mod install folder value from the config file."""
+    succeeded, value = config.get_key_value(config.MOD_INSTALL_FOLDER_KEY, path=True)
     if not succeeded:
-        # if mod cache folder could not be loaded from config
+        # if mod install folder could not be loaded from config
         value = os.path.abspath(os.path.join(config.BASE_FOLDER, "modCache"))
-        config.set_key_value(config.MOD_CACHE_FOLDER_KEY, value, path=True)
+        config.set_key_value(config.MOD_INSTALL_FOLDER_KEY, value, path=True)
 
-    return fix_path(value)
+    mod_install_folder = fix_path(value)
 
+    if not os.path.exists(mod_install_folder):
+        logger.debug("Creating mod install folder {}".format(mod_install_folder))
+        os.makedirs(mod_install_folder)
 
-def create_mod_cache_folder():
-    """Creates mod cache folder if it does not exist."""
-    mod_cache_folder = get_mod_cache_folder()
-    if not os.path.exists(mod_cache_folder):
-        logger.debug("Creating mod cache folder {}".format(mod_cache_folder))
-        os.makedirs(mod_cache_folder)
+    return mod_install_folder
 
 
 def extract_archive(archive, folder, update_func=None):

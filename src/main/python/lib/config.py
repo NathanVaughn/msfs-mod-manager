@@ -1,4 +1,5 @@
 import configparser
+import functools
 import os
 
 from loguru import logger
@@ -10,7 +11,8 @@ CONFIG_FILE = os.path.abspath(os.path.join(BASE_FOLDER, "config.ini"))
 SECTION_KEY = "settings"
 
 SIM_FOLDER_KEY = "sim_folder"
-MOD_CACHE_FOLDER_KEY = "mod_cache_folder"
+# this key is kept as-is for legacy purposes
+MOD_INSTALL_FOLDER_KEY = "mod_cache_folder"
 LAST_OPEN_FOLDER_KEY = "last_open_folder"
 
 LAST_VER_CHECK_KEY = "last_version_check"
@@ -19,6 +21,7 @@ NEVER_VER_CHEK_KEY = "never_version_check"
 THEME_KEY = "theme"
 
 
+@functools.lru_cache()
 def get_key_value(key, default=None, path=False):
     """Attempts to load value from key in the config file.
     Returns a tuple of if the value was found, and if so, what the contents where."""
@@ -67,6 +70,7 @@ def set_key_value(key, value, path=False):
         )
         config.add_section(SECTION_KEY)
 
+    # if it's a path. normalize it
     if path:
         value = os.path.normpath(value)
     config[SECTION_KEY][key] = value
@@ -74,3 +78,6 @@ def set_key_value(key, value, path=False):
     logger.debug("Writing out config file")
     with open(CONFIG_FILE, "w") as f:
         config.write(f)
+
+    # clear the cache
+    get_key_value.cache_clear()
