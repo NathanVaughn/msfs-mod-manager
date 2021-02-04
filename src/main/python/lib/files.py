@@ -390,6 +390,9 @@ def extract_archive(archive, folder, update_func=None):
     logger.debug("Extracting archive {} to {}".format(archive, folder))
 
     try:
+        # rar archives will not work without this
+        os.makedirs(folder, exist_ok=True)
+        # run the extraction program
         patoolib.extract_archive(
             archive,
             outdir=folder,

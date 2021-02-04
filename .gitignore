@@ -10,5 +10,4 @@ pythonenv*/*
 
 *.pyc
 
-config.ini
 src/main/resources/base/base.json
