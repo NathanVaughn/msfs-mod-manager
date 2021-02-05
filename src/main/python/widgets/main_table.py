@@ -18,6 +18,7 @@ class main_table(base_table):
             "Version",
             "Minimum Game Version",
             "Enabled",
+            "Total size",
             "Last Modified",
         ]
 
@@ -29,7 +30,8 @@ class main_table(base_table):
             "version": 4,
             "minimum_game_version": 5,
             "enabled": 6,
-            "time_mod": 7,
+            "Total size: 7,
+            "time_mod": 8,
         }
 
         super().__init__(parent)
