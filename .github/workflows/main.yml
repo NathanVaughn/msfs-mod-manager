@@ -23,14 +23,14 @@ jobs:
           python-version: 3.6
 
       - name: Cache Pip
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.4
         id: cache-pip
         with:
           path: ~\AppData\Local\pip\Cache
           key: pip-${{ hashFiles('**/Pipfile.lock') }}
 
       - name: Cache Pipenv Environment
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.4
         id: cache-pipenv
         with:
           path: .venv
