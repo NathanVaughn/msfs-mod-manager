@@ -1,4 +1,4 @@
-def is_int(str_):
+def is_int(str_: str) -> bool:
     """Return if string is an integer"""
     try:
         int(str_)
@@ -7,7 +7,7 @@ def is_int(str_):
         return False
 
 
-def is_bool(str_):
+def is_bool(str_: str) -> bool:
     """Return if string is a boolean"""
     try:
         str2bool(str_)
@@ -16,7 +16,7 @@ def is_bool(str_):
         return False
 
 
-def str2bool(str_):
+def str2bool(str_: str) -> bool:
     """Converts string to boolean"""
     if not isinstance(str_, str):
         raise TypeError("Type {} is not a string".format(type(str_)))
