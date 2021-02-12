@@ -1,13 +1,14 @@
 import configparser
 import functools
 import os
+from typing import Any, Tuple
 
 from loguru import logger
 
 BASE_FOLDER = os.path.abspath(os.path.join(os.getenv("APPDATA"), "MSFS Mod Manager"))
 DEBUG_LOG = os.path.join(BASE_FOLDER, "debug.log")
 
-CONFIG_FILE = os.path.abspath(os.path.join(BASE_FOLDER, "config.ini"))
+CONFIG_FILE = os.path.join(BASE_FOLDER, "config.ini")
 SECTION_KEY = "settings"
 
 SIM_FOLDER_KEY = "sim_folder"
@@ -22,7 +23,7 @@ THEME_KEY = "theme"
 
 
 @functools.lru_cache()
-def get_key_value(key, default=None, path=False):
+def get_key_value(key: str, default:Any=None, path: bool = False) -> Tuple[bool, Any]:
     """Attempts to load value from key in the config file.
     Returns a tuple of if the value was found, and if so, what the contents where."""
     logger.debug(
@@ -51,7 +52,7 @@ def get_key_value(key, default=None, path=False):
     return (False, default)
 
 
-def set_key_value(key, value, path=False):
+def set_key_value(key: str, value:Any, path: bool = False):
     """Writes a key and value to the config file."""
     value = str(value)
 
@@ -70,7 +71,7 @@ def set_key_value(key, value, path=False):
         )
         config.add_section(SECTION_KEY)
 
-    # if it's a path. normalize it
+    # if it's a path, normalize it
     if path:
         value = os.path.normpath(value)
     config[SECTION_KEY][key] = value

@@ -5,6 +5,9 @@ import shutil
 import stat
 import subprocess
 import sys
+from typing import Callable, Any, Union
+
+Num = Union[int, float]
 
 import patoolib
 from loguru import logger
@@ -41,14 +44,14 @@ class AccessError(Exception):
 class move_folder_thread(thread.base_thread):
     """Setup a thread to move a folder and not block the main thread."""
 
-    def __init__(self, src, dest):
+    def __init__(self, src: str, dest: str):
         """Initialize the folder mover thread."""
         logger.debug("Initialzing folder mover thread")
         function = lambda: move_folder(src, dest, update_func=self.activity_update.emit)
         thread.base_thread.__init__(self, function)
 
 
-def fix_path(path):
+def fix_path(path: str) -> str:
     """Prepends magic prefix for a path name that is too long"""
     # https://stackoverflow.com/a/50924863
     # this is truly voodoo magic
@@ -62,7 +65,7 @@ def fix_path(path):
         return path
 
 
-def fix_permissions(path):
+def fix_permissions(path: str):
     """Fixes the permissions of a folder or file so that it can be deleted."""
     if not os.path.exists(path):
         logger.warning("Path {} does not exist".format(path))
@@ -73,7 +76,7 @@ def fix_permissions(path):
     os.chmod(path, stat.S_IWUSR)
 
 
-def fix_permissions_recursive(folder, update_func=None):
+def fix_permissions_recursive(folder: str, update_func: Callable = None):
     """Recursively fixes the permissions of a folder so that it can be deleted."""
     if not os.path.exists(folder):
         logger.warning("Folder {} does not exist".format(folder))
@@ -91,7 +94,7 @@ def fix_permissions_recursive(folder, update_func=None):
             fix_permissions(os.path.join(root, f))
 
 
-def listdir_dirs(folder, full_paths=False):
+def listdir_dirs(folder: str, full_paths: bool = False) -> list:
     """Returns a list of directories inside of a directory."""
     # logger.debug("Listing directories of {}".format(folder))
     if not os.path.isdir(folder):
@@ -108,7 +111,7 @@ def listdir_dirs(folder, full_paths=False):
     return result
 
 
-def human_readable_size(size, decimal_places=2):
+def human_readable_size(size: Num, decimal_places: int = 2) -> str:
     """Convert number of bytes into human readable value."""
     # https://stackoverflow.com/a/43690506/9944427
     # logger.debug("Converting {} bytes to human readable format".format(size))
@@ -119,14 +122,14 @@ def human_readable_size(size, decimal_places=2):
     return f"{size:.{decimal_places}f} {unit}"
 
 
-def check_same_path(path1, path2):
+def check_same_path(path1: str, path2: str) -> bool:
     """Tests if two paths resolve to the same location."""
     return resolve_symlink(os.path.abspath(path1)) == resolve_symlink(
         os.path.abspath(path2)
     )
 
 
-def is_symlink(path):
+def is_symlink(path: str) -> bool:
     """Tests if a path is a symlink."""
     # https://stackoverflow.com/a/52859239
     # http://www.flexhex.com/docs/articles/hard-links.phtml
@@ -143,7 +146,7 @@ def is_symlink(path):
     )
 
 
-def read_symlink(path):
+def read_symlink(path: str) -> str:
     """Returns the original path of a symlink."""
     if os.path.islink(path):
         return os.path.readlink(path)
@@ -163,7 +166,7 @@ def read_symlink(path):
     )
 
 
-def create_symlink(src, dest, update_func=None):
+def create_symlink(src: str, dest: str, update_func: Callable = None):
     """Creates a symlink between two directories."""
     if update_func:
         update_func("Creating symlink between {} and {}".format(src, dest))
@@ -187,7 +190,7 @@ def create_symlink(src, dest, update_func=None):
     )
 
 
-def delete_symlink(path, update_func=None):
+def delete_symlink(path: str, update_func: Callable = None):
     """Deletes a symlink without removing the directory it is linked to."""
     if update_func:
         update_func("Deleting symlink {} ".format(path))
@@ -206,7 +209,7 @@ def delete_symlink(path, update_func=None):
     delete_folder(path)
 
 
-def get_folder_size(folder):
+def get_folder_size(folder: str) -> Num:
     """Return the size in bytes of a folder, recursively."""
     # logger.debug("Returning size of {} recursively".format(folder))
 
@@ -221,7 +224,7 @@ def get_folder_size(folder):
     )
 
 
-def delete_file(file, first=True, update_func=None):
+def delete_file(file: str, first: bool = True, update_func: Callable = None):
     """Deletes a file if it exists."""
     file = fix_path(file)
 
@@ -254,7 +257,7 @@ def delete_file(file, first=True, update_func=None):
         delete_file(file, first=False, update_func=update_func)
 
 
-def delete_folder(folder, first=True, update_func=None):
+def delete_folder(folder: str, first: bool = True, update_func: Callable = None):
     """Deletes a folder if it exists."""
     folder = fix_path(folder)
 
@@ -287,7 +290,7 @@ def delete_folder(folder, first=True, update_func=None):
         delete_folder(folder, first=False, update_func=update_func)
 
 
-def copy_folder(src, dest, update_func=None):
+def copy_folder(src: str, dest: str, update_func: Callable = None):
     """Copies a folder if it exists."""
     src = fix_path(src)
     dest = fix_path(dest)
@@ -318,7 +321,7 @@ def copy_folder(src, dest, update_func=None):
     shutil.copytree(src, dest, symlinks=True)
 
 
-def move_folder(src, dest, update_func=None):
+def move_folder(src: str, dest: str, update_func: Callable = None):
     """Copies a folder and deletes the original."""
     src = fix_path(src)
     dest = fix_path(dest)
@@ -334,7 +337,7 @@ def move_folder(src, dest, update_func=None):
     delete_folder(src, update_func=update_func)
 
 
-def resolve_symlink(path):
+def resolve_symlink(path: str) -> str:
     """Resolves symlinks in a directory path."""
 
     if is_symlink(path):
@@ -343,14 +346,14 @@ def resolve_symlink(path):
         return path
 
 
-def create_tmp_folder(update_func=None):
+def create_tmp_folder(update_func: Callable = None):
     """Deletes existing temp folder if it exists and creates a new one."""
     delete_folder(TEMP_FOLDER, update_func=update_func)
     logger.debug("Creating temp folder {}".format(TEMP_FOLDER))
     os.makedirs(TEMP_FOLDER)
 
 
-def get_last_open_folder():
+def get_last_open_folder() -> str:
     """Gets the last opened directory from the config file."""
     succeeded, value = config.get_key_value(config.LAST_OPEN_FOLDER_KEY, path=True)
     if not succeeded or not os.path.isdir(value):
@@ -361,7 +364,7 @@ def get_last_open_folder():
     return fix_path(value)
 
 
-def get_mod_install_folder():
+def get_mod_install_folder() -> str:
     """Gets the current mod install folder value from the config file."""
     succeeded, value = config.get_key_value(config.MOD_INSTALL_FOLDER_KEY, path=True)
     if not succeeded:
@@ -378,7 +381,7 @@ def get_mod_install_folder():
     return mod_install_folder
 
 
-def extract_archive(archive, folder, update_func=None):
+def extract_archive(archive: str, folder: str, update_func: Callable = None) -> str:
     """Extracts an archive file and returns the output path."""
     if update_func:
         update_func(
@@ -407,7 +410,7 @@ def extract_archive(archive, folder, update_func=None):
     return folder
 
 
-def create_archive(folder, archive, update_func=None):
+def create_archive(folder: str, archive: str, update_func: Callable = None) -> str:
     """Creates an archive file and returns the new path."""
     uncomp_size = human_readable_size(get_folder_size(folder))
 
@@ -439,7 +442,7 @@ def create_archive(folder, archive, update_func=None):
     return archive
 
 
-def hash_file(filename, update_func=None):
+def hash_file(filename: str, update_func: bool = None) -> str:
     """Returns the hash of a file."""
     # https://stackoverflow.com/questions/22058048/hashing-a-file-in-python
     logger.debug("Hashing {}".format(filename))
@@ -456,14 +459,14 @@ def hash_file(filename, update_func=None):
     return h.hexdigest()
 
 
-def write_hash(folder, h):
+def write_hash(folder: str, h: str):
     """Writes the hash of a file to the given folder."""
     filename = os.path.join(folder, HASH_FILE)
     with open(filename, "w") as f:
         f.write(h)
 
 
-def read_hash(folder):
+def read_hash(folder: str) -> Union[None, str]:
     """Reads the hash of the given folder."""
     filename = os.path.join(folder, HASH_FILE)
     if not os.path.isfile(filename):
