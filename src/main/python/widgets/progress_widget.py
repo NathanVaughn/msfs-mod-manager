@@ -1,9 +1,14 @@
+from typing import Any, Tuple, Union
+
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
+from fbs_runtime.application_context.PySide2 import ApplicationContext
 
 
 class progress_widget(QtWidgets.QDialog):
-    def __init__(self, parent=None, appctxt=None):
+    def __init__(
+        self, parent: QtWidgets.QWidget = None, appctxt: ApplicationContext = None
+    ) -> None:
         """Progress bar dialog."""
         QtWidgets.QDialog.__init__(self)
         self.parent = parent
@@ -39,7 +44,7 @@ class progress_widget(QtWidgets.QDialog):
 
         self.setFixedSize(500, 100)
 
-    def set_mode(self, mode):
+    def set_mode(self, mode: Any) -> None:
         """Sets the mode of the progress bar."""
 
         if mode == self.INFINITE:
@@ -55,11 +60,11 @@ class progress_widget(QtWidgets.QDialog):
             self.bar.setValue(0)
             self.mode = self.PERCENT
 
-    def set_activity(self, message):
+    def set_activity(self, message: str) -> None:
         """Update the displayed message."""
         self.activity.setText(message)
 
-    def set_percent(self, percent, total=None):
+    def set_percent(self, percent: Union[Tuple[int, int], int], total=None) -> None:
         """Update the progress percent."""
         if self.mode != self.PERCENT:
             self.set_mode(self.PERCENT)

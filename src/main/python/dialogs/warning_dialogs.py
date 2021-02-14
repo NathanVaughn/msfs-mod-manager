@@ -1,9 +1,11 @@
-from PySide2.QtWidgets import QMessageBox
+from typing import List
+
+from PySide2.QtWidgets import QMessageBox, QWidget
 
 TITLE = "Warning"
 
 
-def sim_not_detected(parent):
+def sim_not_detected(parent: QWidget) -> None:
     QMessageBox().warning(
         parent,
         TITLE,
@@ -13,7 +15,7 @@ def sim_not_detected(parent):
     )
 
 
-def sim_path_invalid(parent):
+def sim_path_invalid(parent: QWidget) -> None:
     QMessageBox().warning(
         parent,
         TITLE,
@@ -23,11 +25,12 @@ def sim_path_invalid(parent):
     )
 
 
-def mod_parsing(parent, mods):
+def mod_parsing(parent: QWidget, mods: List[str]) -> None:
     QMessageBox().warning(
         parent,
         TITLE,
-        "Unable to parse mod(s):\n{} \nThis is likely due to a missing or corrupt manifest.json file. See the debug log for more info.".format(
-            "\n".join(["- {}".format(mod) for mod in mods])
+        "Unable to parse mod(s):\n{} \nThis is likely due to a missing or corrupt"
+        + " manifest.json file. See the debug log for more info.".format(
+            "\n".join("- {}".format(mod) for mod in mods)
         ),
     )

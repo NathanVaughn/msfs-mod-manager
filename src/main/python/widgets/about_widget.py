@@ -3,10 +3,15 @@ import os
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
+from fbs_runtime.application_context.PySide2 import ApplicationContext
 
 
 class about_widget(QtWidgets.QDialog):
-    def __init__(self, parent=None, appctxt=None):
+    def __init__(
+        self,
+        parent: QtWidgets.QWidget = None,
+        appctxt: ApplicationContext = None,
+    ) -> None:
         """Application about widget."""
         QtWidgets.QDialog.__init__(self)
         self.parent = parent

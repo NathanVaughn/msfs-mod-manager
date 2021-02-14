@@ -4,7 +4,9 @@ import json
 import os
 import sys
 import urllib.request
+from typing import Callable, Union
 
+from fbs_runtime.application_context.PySide2 import ApplicationContext
 from loguru import logger
 
 import lib.config as config
@@ -18,7 +20,7 @@ INSTALLER = "MSFSModManagerSetup.exe"
 class download_new_version_thread(thread.base_thread):
     """Setup a thread to download the new version and not block the main thread."""
 
-    def __init__(self, asset_url):
+    def __init__(self, asset_url: str) -> None:
         """Initialize the version downloader thread."""
         logger.debug("Initialzing version downloader thread")
         function = lambda: download_new_version(
@@ -27,7 +29,7 @@ class download_new_version_thread(thread.base_thread):
         thread.base_thread.__init__(self, function)
 
 
-def get_version(appctxt):
+def get_version(appctxt: ApplicationContext) -> str:
     """Returns the version of the application."""
     logger.debug("Attemping to determine current application version")
     try:
@@ -42,12 +44,12 @@ def get_version(appctxt):
         return "v??"
 
 
-def is_installed():
+def is_installed() -> bool:
     """Returns if application is installed version"""
     return os.path.isfile(os.path.join(os.getcwd(), "uninstall.exe"))
 
 
-def check_version_config(time_format):
+def check_version_config(time_format: str) -> bool:
     """Checks config file to see if update check should proceed."""
     # first try to check if updates are supressed
     logger.debug("Trying to read never version check from config file")
@@ -58,35 +60,39 @@ def check_version_config(time_format):
     # first try to read from the config file
     logger.debug("Trying to read last version check from config file")
     succeed, value = config.get_key_value(config.LAST_VER_CHECK_KEY)
-    if succeed:
-        try:
-            # check if last successful version check was less than a day ago.
-            # If so, skip
-            logger.debug("Trying to parse value {} to datetime".format(value))
-            last_check = datetime.datetime.strptime(value, time_format)
-            now = datetime.datetime.now()
-            if last_check > (now - datetime.timedelta(days=1)):
-                logger.debug(
-                    "Current time {} is less than one day from last check {}".format(
-                        now, value
-                    )
-                )
-                return False
-            else:
-                logger.debug(
-                    "Current time {} is more than one day from last check {}".format(
-                        now, value
-                    )
-                )
-        except ValueError:
-            logger.exception("Parsing {} to datetime failed".format(value))
-    else:
+    if not succeed:
         logger.debug("Unable to read last version check from config file")
+        return True
+
+    try:
+        # check if last successful version check was less than a day ago.
+        # If so, skip
+        logger.debug("Trying to parse value {} to datetime".format(value))
+        last_check = datetime.datetime.strptime(value, time_format)
+        now = datetime.datetime.now()
+
+        if last_check > (now - datetime.timedelta(days=1)):
+            logger.debug(
+                "Current time {} is less than one day from last check {}".format(
+                    now, value
+                )
+            )
+            return False
+        else:
+            logger.debug(
+                "Current time {} is more than one day from last check {}".format(
+                    now, value
+                )
+            )
+    except ValueError:
+        logger.exception("Parsing {} to datetime failed".format(value))
 
     return True
 
 
-def check_version(appctxt, installed=False):
+def check_version(
+    appctxt: ApplicationContext, installed: bool = False
+) -> Union[bool, str]:
     """Returns the release URL if a new version is installed.
     Otherwise, returns False."""
     logger.debug("Checking if a new version is available")
@@ -130,36 +136,36 @@ def check_version(appctxt, installed=False):
     )
 
     # check if remote version is newer than local version
-    if remote_version > get_version(appctxt):
-        # if so, return release url
-        logger.debug("Remote version is newer than local version")
-        download_url = False
-
-        if installed:
-            # return setup.exe url
-            for asset in parsed_data["assets"]:
-                if asset["name"].endswith(".exe"):
-                    download_url = asset["browser_download_url"]
-                    break
-        else:
-            # return release url
-            download_url = parsed_data["html_url"]
-
-        logger.debug("New release url: {}".format(download_url))
-        return download_url
-    else:
+    if not (remote_version > get_version(appctxt)):
         logger.debug("Remote version is not newer than local version")
         return False
 
+    # if so, return release url
+    logger.debug("Remote version is newer than local version")
+    download_url = False
 
-def download_new_version(asset_url, percent_func=None):
+    if installed:
+        # return setup.exe url
+        for asset in parsed_data["assets"]:
+            if asset["name"].endswith(".exe"):
+                download_url = asset["browser_download_url"]
+                break
+    else:
+        # return release url
+        download_url = parsed_data["html_url"]
+
+    logger.debug("New release url: {}".format(download_url))
+    return download_url
+
+
+def download_new_version(asset_url: str, percent_func: Callable = None) -> str:
     """Downloads new installer version."""
     download_path = os.path.join(os.path.expanduser("~"), "Downloads", INSTALLER)
 
     # delete existing installer if it exists
     files.delete_file(download_path)
 
-    def request_hook(block_num, block_size, total_size):
+    def request_hook(block_num: int, block_size: int, total_size: int) -> None:
         if total_size > 0:
             readsofar = block_num * block_size
             percent = readsofar * 100 / total_size
@@ -181,7 +187,7 @@ def download_new_version(asset_url, percent_func=None):
     return download_path
 
 
-def install_new_version(installer_path):
+def install_new_version(installer_path: str) -> None:
     """Runs the new installer and causes a UAC prompt."""
     # https://docs.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shellexecutew
     logger.debug("ShellExecuteW {}".format(installer_path))

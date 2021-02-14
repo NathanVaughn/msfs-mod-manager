@@ -2,17 +2,24 @@ import os
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
+from fbs_runtime.application_context.PySide2 import ApplicationContext
 
 import lib.files as files
 import lib.resize as resize
+from lib.flight_sim import flight_sim
 from widgets.files_table import files_table
 
 
 class info_widget(QtWidgets.QWidget):
-    def __init__(self, flight_sim, parent=None, appctxt=None):
+    def __init__(
+        self,
+        flight_sim_handle: flight_sim,
+        parent: QtWidgets.QWidget = None,
+        appctxt: ApplicationContext = None,
+    ) -> None:
         """Info widget/dialog for displaying mod info."""
         QtWidgets.QWidget.__init__(self)
-        self.flight_sim = flight_sim
+        self.flight_sim = flight_sim_handle
         self.parent = parent
         self.appctxt = appctxt
 
@@ -73,7 +80,7 @@ class info_widget(QtWidgets.QWidget):
 
         self.open_folder_button.clicked.connect(self.open_folder)
 
-    def set_data(self, mod_data, files_data):
+    def set_data(self, mod_data: dict, files_data: dict) -> None:
         """Loads all the data for the widget."""
         self.setWindowTitle("{} - Info".format(mod_data["folder_name"]))
 
@@ -100,12 +107,12 @@ class info_widget(QtWidgets.QWidget):
             files.human_readable_size(files.get_folder_size(self.mod_path))
         )
 
-    def open_folder(self):
+    def open_folder(self) -> None:
         """Opens the folder for the mod."""
         # this will always be opening a folder and therefore is safe
         os.startfile(self.mod_path)  # nosec
 
-    def open_file_folder(self):
+    def open_file_folder(self) -> None:
         """Opens the folder for a selected file."""
         selected = self.files_table.get_selected_rows()
 

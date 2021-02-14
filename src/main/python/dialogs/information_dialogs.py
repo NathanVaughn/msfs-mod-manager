@@ -1,9 +1,11 @@
-from PySide2.QtWidgets import QMessageBox
+from typing import List
+
+from PySide2.QtWidgets import QMessageBox, QWidget
 
 TITLE = "Info"
 
 
-def sim_detected(parent, folder):
+def sim_detected(parent: QWidget, folder: str) -> None:
     QMessageBox().information(
         parent,
         "Info",
@@ -13,17 +15,17 @@ def sim_detected(parent, folder):
     )
 
 
-def mods_installed(parent, mods):
+def mods_installed(parent: QWidget, mods: List[str]) -> None:
     QMessageBox().information(
         parent,
         TITLE,
         "{} mod(s) installed!\n{}".format(
-            len(mods), "\n".join(["- {}".format(mod) for mod in mods])
+            len(mods), "\n".join("- {}".format(mod) for mod in mods)
         ),
     )
 
 
-def disabled_mods_folder(parent, folder):
+def disabled_mods_folder(parent: QWidget, folder: str) -> None:
     QMessageBox().information(
         parent,
         TITLE,

@@ -1,9 +1,9 @@
-from PySide2.QtWidgets import QMessageBox
+from PySide2.QtWidgets import QMessageBox, QWidget
 
 TITLE = "Question"
 
 
-def backup_success(parent, archive):
+def backup_success(parent: QWidget, archive) -> bool:
     result = QMessageBox().question(
         parent,
         TITLE,
@@ -16,7 +16,7 @@ def backup_success(parent, archive):
     return result == QMessageBox.Yes
 
 
-def mod_delete(parent, length):
+def mod_delete(parent: QWidget, length: int) -> bool:
     result = QMessageBox().information(
         parent,
         TITLE,

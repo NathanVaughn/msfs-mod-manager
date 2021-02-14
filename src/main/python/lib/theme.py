@@ -1,3 +1,4 @@
+from fbs_runtime.application_context.PySide2 import ApplicationContext
 from loguru import logger
 
 import lib.config as config
@@ -5,7 +6,7 @@ import lib.config as config
 FS_THEME = "fs"
 
 
-def get_theme():
+def get_theme() -> bool:
     """Returns True if FS theme is selected, otherwise returns False."""
     logger.debug("Getting application theme from config file")
     succeed, value = config.get_key_value(config.THEME_KEY)
@@ -14,7 +15,7 @@ def get_theme():
     return status
 
 
-def set_theme(appctxt, fs_theme):
+def set_theme(appctxt: ApplicationContext, fs_theme: bool) -> None:
     """Writes theme selection to config file and sets the app stylesheet."""
     logger.debug("Writing theme selection to config file")
     if fs_theme:

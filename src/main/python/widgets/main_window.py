@@ -3,6 +3,7 @@ import webbrowser
 
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
+from fbs_runtime.application_context.PySide2 import ApplicationContext
 
 import lib.files as files
 from lib.config import CONFIG_FILE, DEBUG_LOG
@@ -12,13 +13,15 @@ from widgets.main_widget import main_widget
 
 
 class main_window(QtWidgets.QMainWindow):
-    def __init__(self, parent=None, appctxt=None):
+    def __init__(
+        self, parent: QtWidgets.QWidget = None, appctxt: ApplicationContext = None
+    ) -> None:
         """Main application window."""
         QtWidgets.QMainWindow.__init__(self)
         self.parent = parent
         self.appctxt = appctxt
 
-    def build(self):
+    def build(self) -> None:
         """Build window."""
         self.setWindowTitle("MSFS Mod Manager - {}".format(get_version(self.appctxt)))
         self.setWindowIcon(
@@ -140,7 +143,7 @@ class main_window(QtWidgets.QMainWindow):
         )
         help_menu.addAction(menu_action)
 
-    def set_theme(self):
+    def set_theme(self) -> None:
         """Apply theme to the window."""
         # apply theme
         set_theme(self.appctxt, self.theme_menu_action.isChecked())

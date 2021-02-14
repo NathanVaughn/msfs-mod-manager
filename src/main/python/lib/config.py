@@ -23,7 +23,9 @@ THEME_KEY = "theme"
 
 
 @functools.lru_cache()
-def get_key_value(key: str, default:Any=None, path: bool = False) -> Tuple[bool, Any]:
+def get_key_value(
+    key: str, default: Any = None, path: bool = False
+) -> Tuple[bool, Any]:
     """Attempts to load value from key in the config file.
     Returns a tuple of if the value was found, and if so, what the contents where."""
     logger.debug(
@@ -52,7 +54,7 @@ def get_key_value(key: str, default:Any=None, path: bool = False) -> Tuple[bool,
     return (False, default)
 
 
-def set_key_value(key: str, value:Any, path: bool = False):
+def set_key_value(key: str, value: Any, path: bool = False) -> None:
     """Writes a key and value to the config file."""
     value = str(value)
 

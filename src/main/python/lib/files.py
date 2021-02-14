@@ -5,7 +5,7 @@ import shutil
 import stat
 import subprocess
 import sys
-from typing import Callable, Any, Union
+from typing import Callable, Union
 
 Num = Union[int, float]
 
@@ -65,7 +65,7 @@ def fix_path(path: str) -> str:
         return path
 
 
-def fix_permissions(path: str):
+def fix_permissions(path: str) -> None:
     """Fixes the permissions of a folder or file so that it can be deleted."""
     if not os.path.exists(path):
         logger.warning("Path {} does not exist".format(path))
@@ -76,7 +76,7 @@ def fix_permissions(path: str):
     os.chmod(path, stat.S_IWUSR)
 
 
-def fix_permissions_recursive(folder: str, update_func: Callable = None):
+def fix_permissions_recursive(folder: str, update_func: Callable = None) -> None:
     """Recursively fixes the permissions of a folder so that it can be deleted."""
     if not os.path.exists(folder):
         logger.warning("Folder {} does not exist".format(folder))
@@ -166,7 +166,7 @@ def read_symlink(path: str) -> str:
     )
 
 
-def create_symlink(src: str, dest: str, update_func: Callable = None):
+def create_symlink(src: str, dest: str, update_func: Callable = None) -> None:
     """Creates a symlink between two directories."""
     if update_func:
         update_func("Creating symlink between {} and {}".format(src, dest))
@@ -190,7 +190,7 @@ def create_symlink(src: str, dest: str, update_func: Callable = None):
     )
 
 
-def delete_symlink(path: str, update_func: Callable = None):
+def delete_symlink(path: str, update_func: Callable = None) -> None:
     """Deletes a symlink without removing the directory it is linked to."""
     if update_func:
         update_func("Deleting symlink {} ".format(path))
@@ -224,7 +224,7 @@ def get_folder_size(folder: str) -> Num:
     )
 
 
-def delete_file(file: str, first: bool = True, update_func: Callable = None):
+def delete_file(file: str, first: bool = True, update_func: Callable = None) -> None:
     """Deletes a file if it exists."""
     file = fix_path(file)
 
@@ -257,7 +257,9 @@ def delete_file(file: str, first: bool = True, update_func: Callable = None):
         delete_file(file, first=False, update_func=update_func)
 
 
-def delete_folder(folder: str, first: bool = True, update_func: Callable = None):
+def delete_folder(
+    folder: str, first: bool = True, update_func: Callable = None
+) -> None:
     """Deletes a folder if it exists."""
     folder = fix_path(folder)
 
@@ -290,7 +292,7 @@ def delete_folder(folder: str, first: bool = True, update_func: Callable = None)
         delete_folder(folder, first=False, update_func=update_func)
 
 
-def copy_folder(src: str, dest: str, update_func: Callable = None):
+def copy_folder(src: str, dest: str, update_func: Callable = None) -> None:
     """Copies a folder if it exists."""
     src = fix_path(src)
     dest = fix_path(dest)
@@ -321,7 +323,7 @@ def copy_folder(src: str, dest: str, update_func: Callable = None):
     shutil.copytree(src, dest, symlinks=True)
 
 
-def move_folder(src: str, dest: str, update_func: Callable = None):
+def move_folder(src: str, dest: str, update_func: Callable = None) -> None:
     """Copies a folder and deletes the original."""
     src = fix_path(src)
     dest = fix_path(dest)
@@ -346,7 +348,7 @@ def resolve_symlink(path: str) -> str:
         return path
 
 
-def create_tmp_folder(update_func: Callable = None):
+def create_tmp_folder(update_func: Callable = None) -> None:
     """Deletes existing temp folder if it exists and creates a new one."""
     delete_folder(TEMP_FOLDER, update_func=update_func)
     logger.debug("Creating temp folder {}".format(TEMP_FOLDER))
@@ -459,7 +461,7 @@ def hash_file(filename: str, update_func: bool = None) -> str:
     return h.hexdigest()
 
 
-def write_hash(folder: str, h: str):
+def write_hash(folder: str, h: str) -> None:
     """Writes the hash of a file to the given folder."""
     filename = os.path.join(folder, HASH_FILE)
     with open(filename, "w") as f:

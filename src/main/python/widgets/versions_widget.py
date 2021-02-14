@@ -1,14 +1,21 @@
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
+from fbs_runtime.application_context.PySide2 import ApplicationContext
 
+from lib.flight_sim import flight_sim
 from lib.version import get_version
 
 
 class versions_widget(QtWidgets.QDialog):
-    def __init__(self, flight_sim, parent=None, appctxt=None):
+    def __init__(
+        self,
+        flight_sim_handle: flight_sim,
+        parent: QtWidgets.QWidget = None,
+        appctxt: ApplicationContext = None,
+    ) -> None:
         """Game and application versions widget."""
         QtWidgets.QDialog.__init__(self)
-        self.flight_sim = flight_sim
+        self.flight_sim = flight_sim_handle
         self.parent = parent
         self.appctxt = appctxt
 
@@ -36,6 +43,6 @@ class versions_widget(QtWidgets.QDialog):
         self.show()
         self.setFixedSize(self.width(), self.height())
 
-    def get_versions(self):
+    def get_versions(self) -> None:
         self.app_version_field.setText(get_version(self.appctxt))
         self.game_version_field.setText(self.flight_sim.get_game_version())

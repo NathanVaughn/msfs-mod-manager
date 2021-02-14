@@ -1,3 +1,5 @@
+from typing import Any, Tuple
+
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
@@ -8,7 +10,7 @@ from widgets.base_table import base_table
 class main_table(base_table):
     """Primary application table widget for mod summary."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QtWidgets.QWidget = None) -> None:
         """Initialize table widget."""
         self.headers = [
             "Title",
@@ -35,7 +37,7 @@ class main_table(base_table):
         super().__init__(parent)
         self.parent = parent
 
-    def set_colors(self, dark):
+    def set_colors(self, dark: bool) -> None:
         """Set the colors for the rows, based on being a dark theme or not."""
         for r in range(self.rowCount()):
             _, enabled = self.get_basic_info(r)
@@ -52,14 +54,14 @@ class main_table(base_table):
             for c in range(self.columnCount()):
                 self.get_item(r, c).setForeground(color)
 
-    def get_basic_info(self, row_id):
+    def get_basic_info(self, row_id: int) -> Tuple[str, bool]:
         """Returns folder name and enabled status of a given row index."""
         return (
             self.get_item(row_id, self.LOOKUP["folder_name"]).text(),
             types.str2bool(self.get_item(row_id, self.LOOKUP["enabled"]).text()),
         )
 
-    def contextMenuEvent(self, event):
+    def contextMenuEvent(self, event: Any) -> None:
         """Override default context menu event to provide right-click menu."""
         right_click_menu = QtWidgets.QMenu(self)
 
