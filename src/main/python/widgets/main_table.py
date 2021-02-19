@@ -3,7 +3,7 @@ from typing import Any, Tuple
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-import lib.types as types
+import lib.type_helper as type_helper
 from widgets.base_table import base_table
 
 
@@ -58,7 +58,7 @@ class main_table(base_table):
         """Returns folder name and enabled status of a given row index."""
         return (
             self.get_item(row_id, self.LOOKUP["folder_name"]).text(),
-            types.str2bool(self.get_item(row_id, self.LOOKUP["enabled"]).text()),
+            type_helper.str2bool(self.get_item(row_id, self.LOOKUP["enabled"]).text()),
         )
 
     def contextMenuEvent(self, event: Any) -> None:

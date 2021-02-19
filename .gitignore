@@ -11,3 +11,4 @@ pythonenv*/*
 *.pyc
 
 src/main/resources/base/base.json
+scripts/files.txt
