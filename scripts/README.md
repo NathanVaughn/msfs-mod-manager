@@ -43,10 +43,17 @@ C:\Users\Nathan Vaughn\AppData\Roaming\Microsoft Flight Simulator\Packages\Offic
 ...
 ```
 
-Lastly, run `flap_lif_fix.py` by double-clicking on it or running:
+Lastly, run `flap_lift_fix.py` by double-clicking on it or running:
 
 ```bash
 python flap_lift_fix.py
 ```
 
 from the command line.
+
+## Note
+
+Running this program more than once won't do anything. When it runs the first time,
+it adds a comment not parsed by Flight Simulator to indicate that the file
+has already been fixed. It checks for this comment before making any changes,
+so running this program multiple times won't decrease your flap lift by half every time.
