@@ -3,6 +3,8 @@
 This script will help you fix the [flight dynamics bug](https://forums.flightsimulator.com/t/flight-dynamics-bug-details/368499)
 introduced in World Update 3, which Asobo decided not to fix immediately.
 
+***!!! WARNING*** Use at your our peril
+
 ## Requirements
 
 You need the following installed:
@@ -21,6 +23,8 @@ git clone https://github.com/NathanVaughn/msfs-mod-manager.git
 or by downloading a `.zip` file:
 
 [https://github.com/NathanVaughn/msfs-mod-manager/archive/master.zip](https://github.com/NathanVaughn/msfs-mod-manager/archive/master.zip)
+
+You can also just download the one script file if you wish as well: [flap_lift_fix.py](https://raw.githubusercontent.com/NathanVaughn/msfs-mod-manager/master/scripts/flap_lift_fix.py)
 
 Now, open up Everything, and search the phrase `\Official flight_model.cfg`.
 This will find all of the flight model files for the official aircraft. Unfortunately,

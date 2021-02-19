@@ -36,7 +36,7 @@ def fix_lift_scalar(file_contents: list) -> list:
 
 def add_tag(file_contents: list) -> list:
     # add fixed tag to file line list
-    file_contents.insert(0, TAG)
+    file_contents.insert(0, TAG + "\n")
     return file_contents
 
 
@@ -55,8 +55,8 @@ def fix_flight_model(filename: str) -> None:
             print("{} already fixed. Skipping...".format(filename))
             return
 
-        new_flight_model_content = fix_lift_coef_flaps(flight_model_content)
-        new_flight_model_content = fix_lift_scalar(new_flight_model_content)
+        #new_flight_model_content = fix_lift_coef_flaps(flight_model_content)
+        new_flight_model_content = fix_lift_scalar(flight_model_content)
         new_flight_model_content = add_tag(new_flight_model_content)
 
         # write it back out
@@ -74,7 +74,9 @@ def main() -> None:
     app_data = os.getenv("APPDATA")
 
     for flight_model in flight_models:
+        # strip new line
         flight_model = flight_model.strip()
+        # substitute app data
         flight_model = flight_model.replace("%APPDATA%", app_data)
 
         if not os.path.isfile(flight_model):
