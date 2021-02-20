@@ -3,7 +3,7 @@
 This script will help you fix the [flight dynamics bug](https://forums.flightsimulator.com/t/flight-dynamics-bug-details/368499)
 introduced in World Update 3, which Asobo decided not to fix immediately.
 
-***!!! WARNING*** Use at your our peril
+***!!! WARNING*** Use at your own peril
 
 ## Requirements
 
