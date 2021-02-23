@@ -61,3 +61,11 @@ Running this program more than once won't do anything. When it runs the first ti
 it adds a comment not parsed by Flight Simulator to indicate that the file
 has already been fixed. It checks for this comment before making any changes,
 so running this program multiple times won't decrease your flap lift by half every time.
+
+## Undoing
+
+If you want to undo the flap lift fix, add the `--undo` flag when running the program:
+
+```bash
+python flap_lift_fix.py --undo
+```
