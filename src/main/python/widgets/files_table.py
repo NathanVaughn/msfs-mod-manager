@@ -22,7 +22,7 @@ class files_table(base_table):
         }
 
         super().__init__(parent)
-        self.parent = parent
+        self.parent = parent # type: ignore
 
     def get_basic_info(self, row_id: int) -> str:
         """Returns path of a given row index."""
@@ -30,11 +30,11 @@ class files_table(base_table):
 
     def contextMenuEvent(self, event: Any) -> None:
         """Override default context menu event to provide right-click menu."""
-        right_click_menu = QtWidgets.QMenu(self)
+        right_click_menu = QtWidgets.QMenu(self) # type: ignore
 
         open_folder_action = QtWidgets.QAction("Open In Folder", self)
-        open_folder_action.triggered.connect(self.parent.open_file_folder)
-        right_click_menu.addAction(open_folder_action)
+        open_folder_action.triggered.connect(self.parent.open_file_folder) # type: ignore
+        right_click_menu.addAction(open_folder_action) # type: ignore
 
         # popup at cursor position
-        right_click_menu.popup(QtGui.QCursor.pos())
+        right_click_menu.popup(QtGui.QCursor.pos()) # type: ignore

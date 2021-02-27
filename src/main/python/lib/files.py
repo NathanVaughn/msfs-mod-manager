@@ -25,7 +25,7 @@ ARCHIVE_INTERACTIVE = False
 HASH_FILE = "sha256.txt"
 
 TEMP_FOLDER = os.path.abspath(
-    os.path.join(os.getenv("LOCALAPPDATA"), "Temp", "MSFS Mod Manager")
+    os.path.join(os.getenv("LOCALAPPDATA"), "Temp", "MSFS Mod Manager")  # type: ignore
 )
 
 if not os.path.exists(config.BASE_FOLDER):
@@ -47,7 +47,7 @@ class move_folder_thread(thread.base_thread):
     def __init__(self, src: str, dest: str):
         """Initialize the folder mover thread."""
         logger.debug("Initialzing folder mover thread")
-        function = lambda: move_folder(src, dest, update_func=self.activity_update.emit)
+        function = lambda: move_folder(src, dest, update_func=self.activity_update.emit) # type: ignore
         thread.base_thread.__init__(self, function)
 
 
@@ -115,6 +115,7 @@ def human_readable_size(size: Num, decimal_places: int = 2) -> str:
     """Convert number of bytes into human readable value."""
     # https://stackoverflow.com/a/43690506/9944427
     # logger.debug("Converting {} bytes to human readable format".format(size))
+    unit = ""
     for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
         if size < 1024.0 or unit == "PB":
             break
@@ -149,7 +150,7 @@ def is_symlink(path: str) -> bool:
 def read_symlink(path: str) -> str:
     """Returns the original path of a symlink."""
     if os.path.islink(path):
-        return os.path.readlink(path)
+        return os.readlink(path)
 
     # Pretty slow, avoid if possible
     # TODO, reimplement with Win32
@@ -444,7 +445,7 @@ def create_archive(folder: str, archive: str, update_func: Callable = None) -> s
     return archive
 
 
-def hash_file(filename: str, update_func: bool = None) -> str:
+def hash_file(filename: str, update_func: Callable = None) -> str:
     """Returns the hash of a file."""
     # https://stackoverflow.com/questions/22058048/hashing-a-file-in-python
     logger.debug("Hashing {}".format(filename))

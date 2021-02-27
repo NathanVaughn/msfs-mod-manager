@@ -11,7 +11,7 @@ class progress_widget(QtWidgets.QDialog):
     ) -> None:
         """Progress bar dialog."""
         QtWidgets.QDialog.__init__(self)
-        self.parent = parent
+        self.parent = parent # type: ignore
         self.appctxt = appctxt
 
         # enum types
@@ -22,15 +22,15 @@ class progress_widget(QtWidgets.QDialog):
 
         self.setWindowTitle("Progress")
         self.setWindowFlags(
-            QtCore.Qt.WindowSystemMenuHint
-            | QtCore.Qt.WindowTitleHint
+            QtCore.Qt.WindowSystemMenuHint # type: ignore
+            | QtCore.Qt.WindowTitleHint # type: ignore
             #    | QtCore.Qt.WindowCloseButtonHint
         )
-        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.setWindowModality(QtCore.Qt.ApplicationModal) # type: ignore
 
-        self.layout = QtWidgets.QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout() # type: ignore
 
-        self.activity = QtWidgets.QLabel(parent=self)
+        self.activity = QtWidgets.QLabel(parent=self) # type: ignore
         self.activity.setWordWrap(True)
         self.layout.addWidget(self.activity)
 

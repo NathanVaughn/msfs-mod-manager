@@ -35,32 +35,32 @@ class main_widget(QtWidgets.QWidget):
     ) -> None:
         """Main application widget."""
         QtWidgets.QWidget.__init__(self)
-        self.parent = parent
+        self.parent = parent # type: ignore
         self.appctxt = appctxt
 
     def build(self) -> None:
         """Build layout."""
-        self.layout = QtWidgets.QGridLayout()
+        self.layout = QtWidgets.QGridLayout() # type: ignore
 
         self.install_button = QtWidgets.QPushButton("Install", self)
-        self.layout.addWidget(self.install_button, 0, 0)
+        self.layout.addWidget(self.install_button, 0, 0) # type: ignore
 
         self.uninstall_button = QtWidgets.QPushButton("Uninstall", self)
-        self.layout.addWidget(self.uninstall_button, 0, 1)
+        self.layout.addWidget(self.uninstall_button, 0, 1) # type: ignore
 
         self.enable_button = QtWidgets.QPushButton("Enable", self)
-        self.layout.addWidget(self.enable_button, 0, 4)
+        self.layout.addWidget(self.enable_button, 0, 4) # type: ignore
 
         self.disable_button = QtWidgets.QPushButton("Disable", self)
-        self.layout.addWidget(self.disable_button, 0, 5)
+        self.layout.addWidget(self.disable_button, 0, 5) # type: ignore
 
         self.info_button = QtWidgets.QPushButton("Info", self)
-        self.layout.addWidget(self.info_button, 0, 8)
+        self.layout.addWidget(self.info_button, 0, 8) # type: ignore
 
         self.refresh_button = QtWidgets.QPushButton("Refresh", self)
-        self.layout.addWidget(self.refresh_button, 0, 9)
+        self.layout.addWidget(self.refresh_button, 0, 9) # type: ignore
 
-        self.sublayout = QtWidgets.QHBoxLayout()
+        self.sublayout = QtWidgets.QHBoxLayout() # type: ignore
 
         self.search_label = QtWidgets.QLabel("Search:", self)
         self.sublayout.addWidget(self.search_label)
@@ -74,27 +74,27 @@ class main_widget(QtWidgets.QWidget):
         self.layout.addLayout(self.sublayout, 1, 6, 1, 4)
 
         self.main_table = main_table(self)
-        self.layout.addWidget(self.main_table, 2, 0, 1, 10)
+        self.layout.addWidget(self.main_table, 2, 0, 1, 10) # type: ignore
 
         self.setLayout(self.layout)
 
         # buttons
-        self.install_button.clicked.connect(self.install_archive)
-        self.uninstall_button.clicked.connect(self.uninstall)
-        self.enable_button.clicked.connect(self.enable)
-        self.disable_button.clicked.connect(self.disable)
-        self.refresh_button.clicked.connect(self.refresh)
-        self.info_button.clicked.connect(self.info)
-        self.main_table.doubleClicked.connect(self.info)
+        self.install_button.clicked.connect(self.install_archive) # type: ignore
+        self.uninstall_button.clicked.connect(self.uninstall) # type: ignore
+        self.enable_button.clicked.connect(self.enable) # type: ignore
+        self.disable_button.clicked.connect(self.disable) # type: ignore
+        self.refresh_button.clicked.connect(self.refresh) # type: ignore
+        self.info_button.clicked.connect(self.info) # type: ignore
+        self.main_table.doubleClicked.connect(self.info) # type: ignore
 
-        self.clear_button.clicked.connect(self.clear_search)
-        self.search_field.textChanged.connect(self.search)
+        self.clear_button.clicked.connect(self.clear_search) # type: ignore
+        self.search_field.textChanged.connect(self.search) # type: ignore
 
         # shortcuts
         self.shortcut_delete = QtWidgets.QShortcut(
-            QtGui.QKeySequence(QtCore.Qt.Key_Delete), self
+            QtGui.QKeySequence(QtCore.Qt.Key_Delete), self # type: ignore
         )
-        self.shortcut_delete.activated.connect(self.uninstall)
+        self.shortcut_delete.activated.connect(self.uninstall) # type: ignore
 
         # handle to data
         self.flight_sim = flight_sim.flight_sim()
@@ -113,7 +113,7 @@ class main_widget(QtWidgets.QWidget):
                 QtWidgets.QFileDialog.getExistingDirectory(
                     parent=self,
                     caption="Select the root Microsoft Flight Simulator directory",
-                    dir=os.getenv("APPDATA"),
+                    dir=os.getenv("APPDATA"), # type: ignore
                 )
             )
 
@@ -149,7 +149,7 @@ class main_widget(QtWidgets.QWidget):
         # try to automatically find the sim
         (
             success,
-            self.flight_sim.sim_packages_folder,
+            self.flight_sim.sim_packages_folder, # type: ignore
         ) = self.flight_sim.find_sim_packages_folder()
 
         if not self.flight_sim.sim_packages_folder:
@@ -179,11 +179,11 @@ class main_widget(QtWidgets.QWidget):
         def core(progress: Callable) -> None:
             # setup mover thread
             mover = files.move_folder_thread(old_install, new_install)
-            mover.activity_update.connect(progress.set_activity)
+            mover.activity_update.connect(progress.set_activity) # type: ignore
 
             def failed(err: Exception) -> None:
                 typ = type(err)
-                message = err
+                message = str(err)
 
                 logger.exception("Failed to move folder")
                 error_dialogs.general(self, typ, message)
@@ -210,7 +210,7 @@ class main_widget(QtWidgets.QWidget):
     def base_fail(self, error: Exception, mapping: dict, fallback_text: str) -> None:
         """Base thread failure function."""
         typ = type(error)
-        message = error
+        message = str(error)
 
         if typ not in mapping:
             logger.error(fallback_text)
@@ -267,19 +267,19 @@ class main_widget(QtWidgets.QWidget):
     def check_version(self) -> None:
         """Checks the application version and allows user to open browser to update."""
         installed = version.is_installed()
-        return_url = version.check_version(self.appctxt, installed)
+        return_url = version.check_version(self.appctxt, installed) # type: ignore
 
         def core(progress: Callable) -> None:
             progress.set_mode(progress.PERCENT)
             progress.set_activity("Downloading latest version ({})".format(return_url))
 
             # setup downloader thread
-            downloader = version.download_new_version_thread(return_url)
-            downloader.percent_update.connect(progress.set_percent)
+            downloader = version.download_new_version_thread(return_url) # type: ignore
+            downloader.percent_update.connect(progress.set_percent) # type: ignore
 
             def failed(err: Exception) -> None:
                 typ = type(err)
-                message = err
+                message = str(err)
 
                 logger.exception("Failed to download new version")
                 error_dialogs.general(self, typ, message)
@@ -302,7 +302,7 @@ class main_widget(QtWidgets.QWidget):
             if installed:
                 self.base_action(core, refresh=False)
             else:
-                webbrowser.open(return_url)
+                webbrowser.open(return_url) # type: ignore
         elif remember:
             config.set_key_value(config.NEVER_VER_CHEK_KEY, True)
 
@@ -333,15 +333,17 @@ class main_widget(QtWidgets.QWidget):
                     succeeded.extend(result)
 
                 def failed(err: Exception) -> None:
+                    message = str(err)
+
                     mapping = {
                         files.ExtractionError: lambda: error_dialogs.archive_extract(
-                            self, mod_archive, err
+                            self, mod_archive, message
                         ),
                         flight_sim.NoManifestError: lambda: warning_dialogs.mod_parsing(
                             self, [mod_archive]
                         ),
                         files.AccessError: lambda: error_dialogs.permission(
-                            self, mod_archive, err
+                            self, mod_archive, message
                         ),
                         flight_sim.NoModsError: lambda: error_dialogs.no_mods(
                             self, mod_archive
@@ -358,8 +360,8 @@ class main_widget(QtWidgets.QWidget):
                 installer = flight_sim.install_mod_archive_thread(
                     self.flight_sim, mod_archive
                 )
-                installer.activity_update.connect(progress.set_activity)
-                installer.percent_update.connect(progress.set_percent)
+                installer.activity_update.connect(progress.set_activity) # type: ignore
+                installer.percent_update.connect(progress.set_percent) # type: ignore
 
                 # start the thread
                 with thread.thread_wait(
@@ -404,12 +406,14 @@ class main_widget(QtWidgets.QWidget):
                 succeeded.extend(result)
 
             def failed(err: Exception) -> None:
+                message = str(err)
+
                 mapping = {
                     flight_sim.NoManifestError: lambda: warning_dialogs.mod_parsing(
                         self, [mod_folder]
                     ),
                     files.AccessError: lambda: error_dialogs.permission(
-                        self, mod_folder, err
+                        self, mod_folder, message
                     ),
                     flight_sim.NoModsError: lambda: error_dialogs.no_mods(
                         self, mod_folder
@@ -424,7 +428,7 @@ class main_widget(QtWidgets.QWidget):
 
             # setup installer thread
             installer = flight_sim.install_mods_thread(self.flight_sim, mod_folder)
-            installer.activity_update.connect(progress.set_activity)
+            installer.activity_update.connect(progress.set_activity) # type: ignore
 
             # start the thread
             with thread.thread_wait(
@@ -463,7 +467,7 @@ class main_widget(QtWidgets.QWidget):
                 uninstaller = flight_sim.uninstall_mod_thread(
                     self.flight_sim, mod_folder
                 )
-                uninstaller.activity_update.connect(progress.set_activity)
+                uninstaller.activity_update.connect(progress.set_activity) # type: ignore
 
                 def failed(err: Exception) -> None:
                     self.base_fail(err, {}, "Failed to uninstall mod")
@@ -501,7 +505,7 @@ class main_widget(QtWidgets.QWidget):
 
                 # setup enabler thread
                 enabler = flight_sim.enable_mod_thread(self.flight_sim, folder)
-                enabler.activity_update.connect(progress.set_activity)
+                enabler.activity_update.connect(progress.set_activity) # type: ignore
 
                 def failed(err: Exception) -> None:
                     self.base_fail(err, {}, "Failed to enable mod")
@@ -535,7 +539,7 @@ class main_widget(QtWidgets.QWidget):
 
                 # setup disabler thread
                 disabler = flight_sim.disable_mod_thread(self.flight_sim, folder)
-                disabler.activity_update.connect(progress.set_activity)
+                disabler.activity_update.connect(progress.set_activity) # type: ignore
 
                 def failed(err: Exception) -> None:
                     self.base_fail(err, {}, "Failed to disable mod")
@@ -575,7 +579,7 @@ class main_widget(QtWidgets.QWidget):
         def core(progress: Callable) -> None:
             # setup backuper thread
             backuper = flight_sim.create_backup_thread(self.flight_sim, archive)
-            backuper.activity_update.connect(progress.set_activity)
+            backuper.activity_update.connect(progress.set_activity) # type: ignore
 
             def finish(result: list) -> None:
                 # this function is required as the results will be a list,
@@ -583,9 +587,11 @@ class main_widget(QtWidgets.QWidget):
                 succeeded.extend(result)
 
             def failed(err: Exception) -> None:
+                message = str(err)
+
                 mapping = {
                     files.ExtractionError: lambda: error_dialogs.archive_create(
-                        self, archive, err
+                        self, archive, message
                     )
                 }
 

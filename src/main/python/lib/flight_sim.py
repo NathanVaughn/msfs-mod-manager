@@ -2,7 +2,7 @@ import datetime
 import functools
 import json
 import os
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Union, List
 
 from loguru import logger
 
@@ -46,7 +46,7 @@ class flight_sim:
 
         installed_packages_path = ""
 
-        with open(filename, "r", encoding="utf8") as fp:
+        with open(filename, "r", encoding="utf8") as fp: # type: ignore
             for line in fp:
                 if line.startswith("InstalledPackagesPath"):
                     logger.debug("Found InstalledPackagesPath line: {}".format(line))
@@ -57,7 +57,7 @@ class flight_sim:
         # normalize the string
         installed_packages_path = installed_packages_path.strip('"').strip("'")
         # evaluate the path
-        installed_packages_path = os.path.realpath(installed_packages_path)
+        installed_packages_path = os.path.realpath(installed_packages_path) # type: ignore
 
         logger.debug("Path parsed: {}".format(installed_packages_path))
 
@@ -91,7 +91,7 @@ class flight_sim:
             logger.exception("Checking sim packages folder status failed")
             return False
 
-    def find_sim_packages_folder(self) -> Tuple[bool, str]:
+    def find_sim_packages_folder(self) -> Tuple[bool, Union[str, None]]:
         """Attempts to automatically locate the install location of FS Packages.
         Returns if reading from config file was successful, and
         returns absolute sim folder path. Otherwise, returns None if it fails."""
@@ -106,7 +106,7 @@ class flight_sim:
 
         # steam detection
         logger.debug("Trying to find simulator path from default Steam install")
-        steam_folder = os.path.join(os.getenv("APPDATA"), "Microsoft Flight Simulator")
+        steam_folder = os.path.join(os.getenv("APPDATA"), "Microsoft Flight Simulator") # type: ignore
         if self.is_sim_folder(steam_folder):
             steam_packages_folder = os.path.join(
                 self.parse_user_cfg(sim_folder=steam_folder)
@@ -122,7 +122,7 @@ class flight_sim:
             "Packages",
             "Microsoft.FlightSimulator_8wekyb3d8bbwe",
             "LocalCache",
-        )
+        ) # type: ignore
         if self.is_sim_folder(ms_store_folder):
             ms_store_packages_folder = os.path.join(
                 self.parse_user_cfg(sim_folder=ms_store_folder)
@@ -133,7 +133,7 @@ class flight_sim:
 
         # boxed edition detection
         logger.debug("Trying to find simulator path from default boxed edition install")
-        boxed_packages_folder = os.path.join(os.getenv("LOCALAPPDATA"), "MSFSPackages")
+        boxed_packages_folder = os.path.join(os.getenv("LOCALAPPDATA"), "MSFSPackages") # type: ignore
         if self.is_sim_packages_folder(boxed_packages_folder):
             logger.debug("Boxed edition sim path found and valid")
             return (False, boxed_packages_folder)
@@ -146,7 +146,7 @@ class flight_sim:
             "steamapps",
             "common",
             "MicrosoftFlightSimulator",
-        )
+        ) # type: ignore
         if self.is_sim_folder(steam_folder):
             steam_packages_folder = os.path.join(
                 self.parse_user_cfg(sim_folder=steam_folder)
@@ -163,7 +163,7 @@ class flight_sim:
             "steamapps",
             "common",
             "Chucky",
-        )
+        )# type: ignore
         if self.is_sim_folder(steam_folder):
             steam_packages_folder = os.path.join(
                 self.parse_user_cfg(sim_folder=steam_folder)
@@ -239,14 +239,14 @@ class flight_sim:
                 data = json.load(f)
         except Exception as e:
             if hasattr(e, "winerror"):
-                logger.exception("WinError: {}".format(e.winerror))
+                logger.exception("WinError: {}".format(e.winerror)) # type: ignore
             logger.exception("layout.json could not be parsed")
             raise LayoutError(e)
 
         return data["content"]
 
     @functools.lru_cache()
-    def parse_mod_files(self, mod_folder: str) -> dict:
+    def parse_mod_files(self, mod_folder: str) -> List[dict]:
         """Builds the mod files info as a dictionary. Parsed from the fielsystem."""
         logger.debug("Parsing all mod files for {}".format(mod_folder))
 
@@ -279,7 +279,7 @@ class flight_sim:
                 data = json.load(f)
         except Exception as e:
             if hasattr(e, "winerror"):
-                logger.exception("WinError: {}".format(e.winerror))
+                logger.exception("WinError: {}".format(e.winerror)) # type: ignore
             logger.exception("manifest.json could not be opened/parsed")
             raise ManifestError(e)
 
@@ -300,7 +300,7 @@ class flight_sim:
 
         # convience, often helps to just have this included in the returned result
         # and its easier to to do here
-        mod_data["enabled"] = enabled
+        mod_data["enabled"] = enabled # type: ignore
         mod_data["full_path"] = os.path.abspath(mod_folder)
 
         return mod_data
@@ -560,7 +560,7 @@ class install_mods_thread(thread.base_thread):
         logger.debug("Initialzing mod installer thread")
         function = lambda: flight_sim_handle.install_mods(
             extracted_archive,
-            update_func=self.activity_update.emit,
+            update_func=self.activity_update.emit, # type: ignore
         )
         thread.base_thread.__init__(self, function)
 
@@ -573,8 +573,8 @@ class install_mod_archive_thread(thread.base_thread):
         logger.debug("Initialzing mod archive installer thread")
         function = lambda: flight_sim_handle.install_mod_archive(
             mod_archive,
-            update_func=self.activity_update.emit,
-            percent_func=self.percent_update.emit,
+            update_func=self.activity_update.emit,# type: ignore
+            percent_func=self.percent_update.emit,# type: ignore
         )
         thread.base_thread.__init__(self, function)
 
@@ -591,7 +591,7 @@ class uninstall_mod_thread(thread.base_thread):
         logger.debug("Initialzing mod uninstaller thread")
         function = lambda: flight_sim_handle.uninstall_mod(
             folder,
-            update_func=self.activity_update.emit,
+            update_func=self.activity_update.emit,# type: ignore
         )
         thread.base_thread.__init__(self, function)
 
@@ -603,7 +603,7 @@ class enable_mod_thread(thread.base_thread):
         """Initialize the mod enabler thread."""
         logger.debug("Initialzing mod enabler thread")
         function = lambda: flight_sim_handle.enable_mod(
-            folder, update_func=self.activity_update.emit
+            folder, update_func=self.activity_update.emit# type: ignore
         )
         thread.base_thread.__init__(self, function)
 
@@ -615,7 +615,7 @@ class disable_mod_thread(thread.base_thread):
         """Initialize the mod disabler thread."""
         logger.debug("Initialzing mod disabler thread")
         function = lambda: flight_sim_handle.disable_mod(
-            archive, update_func=self.activity_update.emit
+            archive, update_func=self.activity_update.emit# type: ignore
         )
         thread.base_thread.__init__(self, function)
 
@@ -627,6 +627,6 @@ class create_backup_thread(thread.base_thread):
         """Initialize the backup creator thread."""
         logger.debug("Initialzing backup creator thread")
         function = lambda: flight_sim_handle.create_backup(
-            archive, update_func=self.activity_update.emit
+            archive, update_func=self.activity_update.emit# type: ignore
         )
         thread.base_thread.__init__(self, function)

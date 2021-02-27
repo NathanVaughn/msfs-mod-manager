@@ -24,7 +24,7 @@ class download_new_version_thread(thread.base_thread):
         """Initialize the version downloader thread."""
         logger.debug("Initialzing version downloader thread")
         function = lambda: download_new_version(
-            asset_url, percent_func=self.percent_update.emit
+            asset_url, percent_func=self.percent_update.emit # type: ignore
         )
         thread.base_thread.__init__(self, function)
 
@@ -158,8 +158,8 @@ def check_version(
     return download_url
 
 
-def download_new_version(asset_url: str, percent_func: Callable = None) -> str:
-    """Downloads new installer version."""
+def download_new_version(asset_url: str, percent_func: Callable = None) -> Union[str, bool]:
+    """Downloads new installer version. Returns False if download failed."""
     download_path = os.path.join(os.path.expanduser("~"), "Downloads", INSTALLER)
 
     # delete existing installer if it exists
@@ -199,4 +199,4 @@ def install_new_version(installer_path: str) -> None:
 
     # insurance if above fails
     logger.debug("REALLY exiting")
-    os._exit()
+    os._exit(0)

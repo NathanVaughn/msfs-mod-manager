@@ -12,7 +12,8 @@ def max_resize(widget: QWidget, size: QSize) -> None:
     widget.setMaximumWidth(2000)
 
     # resize
-    widget.resize(size)
+    # pylance doesn't connect to the correct function definition
+    widget.resize(size) # type: ignore
 
     # reset max height to default
     widget.setMaximumHeight(QWIDGETSIZE_MAX)

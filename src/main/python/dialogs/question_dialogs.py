@@ -10,8 +10,8 @@ def backup_success(parent: QWidget, archive) -> bool:
         "Backup successfully saved to {}. Would you like to open this directory?".format(
             archive
         ),
-        QMessageBox.Yes | QMessageBox.No,
-        QMessageBox.Yes,
+        QMessageBox.Yes | QMessageBox.No, # type: ignore
+        QMessageBox.Yes, # type: ignore
     )
     return result == QMessageBox.Yes
 
@@ -23,7 +23,7 @@ def mod_delete(parent: QWidget, length: int) -> bool:
         "This will permamentaly delete {} mod(s). Are you sure you want to continue?".format(
             length
         ),
-        QMessageBox.Yes | QMessageBox.No,
-        QMessageBox.No,
+        QMessageBox.Yes | QMessageBox.No, # type: ignore
+        QMessageBox.No, # type: ignore
     )
     return result == QMessageBox.Yes

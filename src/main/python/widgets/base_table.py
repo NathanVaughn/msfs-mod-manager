@@ -11,28 +11,28 @@ class base_table(QtWidgets.QTableView):
     def __init__(self, parent: QtWidgets.QWidget = None) -> None:
         """Initialize table widget."""
         super().__init__(parent)
-        self.parent = None
+        self.parent = None # type: ignore
         # needs to be set by inherited class
-        # self.headers = []
-        # self.LOOKUP = {}
+        self.headers = []
+        self.LOOKUP = {}
 
         self.setSortingEnabled(True)
         self.setAlternatingRowColors(True)
         self.setWordWrap(False)
         self.setEditTriggers(
-            QtWidgets.QAbstractItemView.NoEditTriggers
+            QtWidgets.QAbstractItemView.NoEditTriggers # type: ignore
         )  # disable editing
 
         # set the correct size adjust policy to get the proper size hint
-        self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents) # type: ignore
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows) # type: ignore
         self.horizontalHeader().setStretchLastSection(True)
 
         # create data model
         self.base_model = QtGui.QStandardItemModel(0, len(self.LOOKUP))
         # set model headers
         for i, header in enumerate(self.headers):
-            self.base_model.setHeaderData(i, QtCore.Qt.Horizontal, header)
+            self.base_model.setHeaderData(i, QtCore.Qt.Horizontal, header) # type: ignore
 
         # proxy model
         # self.proxy_model = MyProxy()
@@ -41,8 +41,8 @@ class base_table(QtWidgets.QTableView):
         self.proxy_model.setDynamicSortFilter(True)
         self.proxy_model.setFilterKeyColumn(-1)  # all columns
         # proxy model sort settings
-        self.proxy_model.setSortCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.proxy_model.setSortCaseSensitivity(QtCore.Qt.CaseInsensitive) # type: ignore
+        self.proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive) # type: ignore
 
         # set table model
         self.setModel(self.proxy_model)
@@ -74,7 +74,7 @@ class base_table(QtWidgets.QTableView):
 
         # finish
         if first:
-            self.sortByColumn(0, QtCore.Qt.AscendingOrder)
+            self.sortByColumn(0, QtCore.Qt.AscendingOrder) # type: ignore
 
         self.resize()
 

@@ -5,7 +5,7 @@ from typing import Any, Tuple
 
 from loguru import logger
 
-BASE_FOLDER = os.path.abspath(os.path.join(os.getenv("APPDATA"), "MSFS Mod Manager"))
+BASE_FOLDER = os.path.abspath(os.path.join(os.getenv("APPDATA"), "MSFS Mod Manager"))  # type: ignore
 DEBUG_LOG = os.path.join(BASE_FOLDER, "debug.log")
 
 CONFIG_FILE = os.path.join(BASE_FOLDER, "config.ini")
