@@ -44,8 +44,8 @@ class main_window(QtWidgets.QMainWindow):
         file_menu.addSeparator()
 
         menu_action = QtWidgets.QAction("Install Mod(s) from Archive", self)
-        menu_action.triggered.connect(self.main_widget.install_archive) # type: ignore
-        file_menu.addAction(menu_action) # type: ignore
+        menu_action.triggered.connect(self.main_widget.install_archive)  # type: ignore
+        file_menu.addAction(menu_action)  # type: ignore
 
         menu_action = QtWidgets.QAction("Install Mod from Folder", self)
         menu_action.triggered.connect(self.main_widget.install_folder)  # type: ignore
@@ -79,7 +79,7 @@ class main_window(QtWidgets.QMainWindow):
 
         edit_menu.addSeparator()
 
-        menu_action = QtWidgets.QAction("Change Disabled Mod Folder", self)
+        menu_action = QtWidgets.QAction("Change Mod Install Folder", self)
         menu_action.triggered.connect(self.main_widget.select_mod_install)  # type: ignore
         edit_menu.addAction(menu_action)  # type: ignore
 

@@ -13,7 +13,6 @@ import patoolib
 from loguru import logger
 
 import lib.config as config
-import lib.thread as thread
 
 if sys.platform == "win32":
     import win32file
@@ -41,14 +40,17 @@ class AccessError(Exception):
     """Raised after an uncorrectable permission error."""
 
 
-class move_folder_thread(thread.base_thread):
-    """Setup a thread to move a folder and not block the main thread."""
+def exists(path: str) -> bool:
+    """Returns if a path exists."""
+    # os.path.exists doesn't work for directory junctions that are broken, but
+    # os.path.isdir does
+    if os.path.exists(path):
+        return True
 
-    def __init__(self, src: str, dest: str):
-        """Initialize the folder mover thread."""
-        logger.debug("Initialzing folder mover thread")
-        function = lambda: move_folder(src, dest, update_func=self.activity_update.emit) # type: ignore
-        thread.base_thread.__init__(self, function)
+    if os.path.isdir(path):
+        return True
+
+    return bool(os.path.isfile(path))
 
 
 def fix_path(path: str) -> str:
@@ -125,8 +127,15 @@ def human_readable_size(size: Num, decimal_places: int = 2) -> str:
 
 def check_same_path(path1: str, path2: str) -> bool:
     """Tests if two paths resolve to the same location."""
-    return resolve_symlink(os.path.abspath(path1)) == resolve_symlink(
-        os.path.abspath(path2)
+    return fix_path(resolve_symlink(os.path.abspath(path1))) == fix_path(
+        resolve_symlink(os.path.abspath(path2))
+    )
+
+
+def check_in_path(path1: str, path2: str) -> bool:
+    """Tests if the first path is inside the second path path."""
+    return fix_path(resolve_symlink(os.path.abspath(path2))).startswith(
+        fix_path(resolve_symlink(os.path.abspath(path1)))
     )
 
 
@@ -141,7 +150,7 @@ def is_symlink(path: str) -> bool:
         return True
 
     return bool(
-        os.path.exists(path)
+        os.path.isdir(path)
         and win32file.GetFileAttributes(path) & FILE_ATTRIBUTE_REPARSE_POINT
         == FILE_ATTRIBUTE_REPARSE_POINT
     )
@@ -172,14 +181,18 @@ def create_symlink(src: str, dest: str, update_func: Callable = None) -> None:
     if update_func:
         update_func("Creating symlink between {} and {}".format(src, dest))
 
+    logger.debug("Creating symlink between {} and {}".format(src, dest))
+
     # os.symlink(src, dest)
     # TODO, reimplement with Win32
 
     # delete an existing destination
-    if os.path.exists(dest):
+    if exists(dest):
         if is_symlink(dest):
+            logger.debug("Symlink already exists")
             delete_symlink(dest)
         else:
+            logger.debug("Folder already exists")
             delete_folder(dest)
 
     # create the link
@@ -196,6 +209,8 @@ def delete_symlink(path: str, update_func: Callable = None) -> None:
     if update_func:
         update_func("Deleting symlink {} ".format(path))
 
+    logger.debug("Deleting symlink {} ".format(path))
+
     # os.unlink(path)
     # TODO, reimplement with Win32
 
@@ -206,6 +221,7 @@ def delete_symlink(path: str, update_func: Callable = None) -> None:
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
+
     # delete the empty folder
     delete_folder(path)
 

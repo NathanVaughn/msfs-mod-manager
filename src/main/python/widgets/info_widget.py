@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -8,7 +9,6 @@ import lib.files as files
 import lib.resize as resize
 from lib.flight_sim import flight_sim
 from widgets.files_table import files_table
-from typing import List
 
 
 class info_widget(QtWidgets.QWidget):
@@ -21,51 +21,51 @@ class info_widget(QtWidgets.QWidget):
         """Info widget/dialog for displaying mod info."""
         QtWidgets.QWidget.__init__(self)
         self.flight_sim = flight_sim_handle
-        self.parent = parent # type: ignore
+        self.parent = parent  # type: ignore
         self.appctxt = appctxt
 
         # self.setWindowTitle("Info")
         self.setWindowFlags(
-            QtCore.Qt.WindowSystemMenuHint # type: ignore
-            | QtCore.Qt.WindowTitleHint # type: ignore
+            QtCore.Qt.WindowSystemMenuHint  # type: ignore
+            | QtCore.Qt.WindowTitleHint  # type: ignore
             | QtCore.Qt.WindowMinimizeButtonHint
             | QtCore.Qt.WindowMaximizeButtonHint
             | QtCore.Qt.WindowCloseButtonHint
         )
         # self.setWindowModality(QtCore.Qt.ApplicationModal)
 
-        self.layout = QtWidgets.QVBoxLayout() # type: ignore
+        self.layout = QtWidgets.QVBoxLayout()  # type: ignore
 
-        self.top_group = QtWidgets.QGroupBox() # type: ignore
+        self.top_group = QtWidgets.QGroupBox()  # type: ignore
         self.top_layout = QtWidgets.QFormLayout()
 
         self.content_type_field = QtWidgets.QLineEdit(self)
         self.content_type_field.setReadOnly(True)
-        self.top_layout.addRow("Content Type", self.content_type_field) # type: ignore
+        self.top_layout.addRow("Content Type", self.content_type_field)  # type: ignore
 
         self.title_field = QtWidgets.QLineEdit(self)
         self.title_field.setReadOnly(True)
-        self.top_layout.addRow("Title", self.title_field) # type: ignore
+        self.top_layout.addRow("Title", self.title_field)  # type: ignore
 
         self.manufacturer_field = QtWidgets.QLineEdit(self)
         self.manufacturer_field.setReadOnly(True)
-        self.top_layout.addRow("Manufacturer", self.manufacturer_field) # type: ignore
+        self.top_layout.addRow("Manufacturer", self.manufacturer_field)  # type: ignore
 
         self.creator_field = QtWidgets.QLineEdit(self)
         self.creator_field.setReadOnly(True)
-        self.top_layout.addRow("Creator", self.creator_field) # type: ignore
+        self.top_layout.addRow("Creator", self.creator_field)  # type: ignore
 
         self.package_version_field = QtWidgets.QLineEdit(self)
         self.package_version_field.setReadOnly(True)
-        self.top_layout.addRow("Package Version", self.package_version_field) # type: ignore
+        self.top_layout.addRow("Package Version", self.package_version_field)  # type: ignore
 
         self.minimum_game_version_field = QtWidgets.QLineEdit(self)
         self.minimum_game_version_field.setReadOnly(True)
-        self.top_layout.addRow("Minimum Game Version", self.minimum_game_version_field) # type: ignore
+        self.top_layout.addRow("Minimum Game Version", self.minimum_game_version_field)  # type: ignore
 
         self.total_size_field = QtWidgets.QLineEdit(self)
         self.total_size_field.setReadOnly(True)
-        self.top_layout.addRow("Total Size", self.total_size_field) # type: ignore
+        self.top_layout.addRow("Total Size", self.total_size_field)  # type: ignore
 
         self.top_group.setLayout(self.top_layout)
         self.layout.addWidget(self.top_group)
@@ -79,7 +79,7 @@ class info_widget(QtWidgets.QWidget):
 
         self.setLayout(self.layout)
 
-        self.open_folder_button.clicked.connect(self.open_folder) # type: ignore
+        self.open_folder_button.clicked.connect(self.open_folder)  # type: ignore
 
     def set_data(self, mod_data: dict, files_data: List[dict]) -> None:
         """Loads all the data for the widget."""

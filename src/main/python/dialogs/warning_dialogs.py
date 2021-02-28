@@ -29,8 +29,24 @@ def mod_parsing(parent: QWidget, mods: List[str]) -> None:
     QMessageBox().warning(
         parent,
         TITLE,
-        "Unable to parse mod(s):\n{} \nThis is likely due to a missing or corrupt"
-        + " manifest.json file. See the debug log for more info.".format(
+        "Unable to parse mod(s):\n{} \nThis is likely due to a missing or corrupt manifest.json file. See the debug log for more info.".format(
             "\n".join("- {}".format(mod) for mod in mods)
         ),
+    )
+
+
+def mod_install_folder_same(parent: QWidget) -> None:
+    QMessageBox().warning(
+        parent,
+        TITLE,
+        "The mod install folder you've selected is the same as what's currently set.",
+    )
+
+
+def mod_install_folder_in_sim_path(parent: QWidget) -> None:
+    QMessageBox().warning(
+        parent,
+        TITLE,
+        "The mod install folder you've selected contains the same path"
+        + " as the simulator. You, more than likely, do not want this.",
     )

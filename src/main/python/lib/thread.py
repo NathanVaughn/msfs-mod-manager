@@ -23,9 +23,9 @@ class base_thread(QtCore.QThread):
         logger.debug("Running thread")
         try:
             output = self.function()
-            self.finished.emit(output) # type: ignore
+            self.finished.emit(output)  # type: ignore
         except Exception as e:
-            self.failed.emit(e) # type: ignore
+            self.failed.emit(e)  # type: ignore
         logger.debug("Thread completed")
 
 
@@ -52,11 +52,11 @@ def thread_wait(
             timer.stop()
 
     # connect the finished signal to loop quit
-    finished_signal.connect(finished_quit) # type: ignore
+    finished_signal.connect(finished_quit)  # type: ignore
 
     # if an optional finish function is provided, also connect that signal to it
     if finish_func:
-        finished_signal.connect(finish_func) # type: ignore
+        finished_signal.connect(finish_func)  # type: ignore
 
     timer = None
 
@@ -68,12 +68,12 @@ def thread_wait(
     if timeout is not None:
         # setup a timeout quit
         timer = QtCore.QTimer()
-        timer.timeout.connect(timeout_quit) # type: ignore
+        timer.timeout.connect(timeout_quit)  # type: ignore
         timer.setSingleShot(True)
         timer.start(timeout)
 
         if update_signal:
-            update_signal.connect(lambda: timer.start(timeout)) # type: ignore
+            update_signal.connect(lambda: timer.start(timeout))  # type: ignore
 
     # create a failed quit function
     def failed_quit(err) -> None:
@@ -87,7 +87,7 @@ def thread_wait(
 
     # if an optional failure function is provided, also connect that signal to it
     if failed_signal and failed_func:
-        failed_signal.connect(failed_quit) # type: ignore
+        failed_signal.connect(failed_quit)  # type: ignore
 
     # do
     yield
