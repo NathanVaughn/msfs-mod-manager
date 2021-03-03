@@ -1,5 +1,9 @@
 # flap_lift_fix.py
 
+***!!!! UPDATE***
+
+Don't use this script anymore. A hotfix has been released: [https://forums.flightsimulator.com/t/hotfix-flight-dynamics-bug/372996](https://forums.flightsimulator.com/t/hotfix-flight-dynamics-bug/372996)
+
 This script will help you fix the [flight dynamics bug](https://forums.flightsimulator.com/t/flight-dynamics-bug-details/368499)
 introduced in World Update 3, which Asobo decided not to fix immediately.
 
