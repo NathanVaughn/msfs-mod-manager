@@ -1,3 +1,5 @@
+from typing import Any
+
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
@@ -7,7 +9,7 @@ from widgets.base_table import base_table
 class files_table(base_table):
     """Table widget for displaying mod files."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QtWidgets.QWidget = None) -> None:
         """Initialize table widget."""
         self.headers = [
             "Path",
@@ -20,19 +22,19 @@ class files_table(base_table):
         }
 
         super().__init__(parent)
-        self.parent = parent
+        self.parent = parent  # type: ignore
 
-    def get_basic_info(self, row_id):
+    def get_basic_info(self, row_id: int) -> str:
         """Returns path of a given row index."""
         return self.get_item(row_id, self.LOOKUP["path"]).text()
 
-    def contextMenuEvent(self, event):
+    def contextMenuEvent(self, event: Any) -> None:
         """Override default context menu event to provide right-click menu."""
-        right_click_menu = QtWidgets.QMenu(self)
+        right_click_menu = QtWidgets.QMenu(self)  # type: ignore
 
         open_folder_action = QtWidgets.QAction("Open In Folder", self)
-        open_folder_action.triggered.connect(self.parent.open_file_folder)
-        right_click_menu.addAction(open_folder_action)
+        open_folder_action.triggered.connect(self.parent.open_file_folder)  # type: ignore
+        right_click_menu.addAction(open_folder_action)  # type: ignore
 
         # popup at cursor position
-        right_click_menu.popup(QtGui.QCursor.pos())
+        right_click_menu.popup(QtGui.QCursor.pos())  # type: ignore

@@ -1,15 +1,19 @@
+from typing import Tuple
+
 import PySide2.QtWidgets as QtWidgets
 
 
 class version_check_dialog:
-    def __init__(self, parent=None, installed=False):
+    def __init__(
+        self, parent: QtWidgets.QWidget = None, installed: bool = False
+    ) -> None:
         """Version check widget."""
         self.parent = parent
 
         self.chkbox = QtWidgets.QCheckBox("Don't ask me again")
 
         self.msgbox = QtWidgets.QMessageBox(parent)
-        self.msgbox.setIcon(QtWidgets.QMessageBox.Information)
+        self.msgbox.setIcon(QtWidgets.QMessageBox.Information)  # type: ignore
         if installed:
             self.msgbox.setText(
                 "A new version is available. "
@@ -22,11 +26,11 @@ class version_check_dialog:
             )
         self.msgbox.setCheckBox(self.chkbox)
 
-        self.msgbox.addButton(QtWidgets.QMessageBox.Yes)
-        self.msgbox.addButton(QtWidgets.QMessageBox.No)
-        self.msgbox.setDefaultButton(QtWidgets.QMessageBox.Yes)
+        self.msgbox.addButton(QtWidgets.QMessageBox.Yes)  # type: ignore
+        self.msgbox.addButton(QtWidgets.QMessageBox.No)  # type: ignore
+        self.msgbox.setDefaultButton(QtWidgets.QMessageBox.Yes)  # type: ignore
 
-    def exec_(self):
+    def exec_(self) -> Tuple[bool, bool]:
         """Executes the widget.
         Returns selected button and if the remember option was selected."""
         return (

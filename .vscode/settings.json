@@ -1,0 +1,16 @@
+{
+    // venv
+    "python.terminal.activateEnvironment": false,
+    // format/lint
+    "python.formatting.provider": "black",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.analysis.extraPaths": [
+        "src/main/python"
+    ],
+    "python.analysis.typeCheckingMode": "basic",
+    // terminal
+    "terminal.integrated.shellArgs.windows": [
+        "-NoExit", "-Command", "pipenv shell"
+    ],
+}

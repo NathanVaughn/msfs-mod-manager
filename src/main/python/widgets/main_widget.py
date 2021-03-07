@@ -2,10 +2,12 @@ import datetime
 import os
 import sys
 import webbrowser
+from typing import Any, Callable
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
+from fbs_runtime.application_context.PySide2 import ApplicationContext
 from loguru import logger
 
 import dialogs.error_dialogs as error_dialogs
@@ -28,35 +30,37 @@ ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
 
 
 class main_widget(QtWidgets.QWidget):
-    def __init__(self, parent=None, appctxt=None):
+    def __init__(
+        self, parent: QtWidgets.QWidget = None, appctxt: ApplicationContext = None
+    ) -> None:
         """Main application widget."""
         QtWidgets.QWidget.__init__(self)
-        self.parent = parent
+        self.parent = parent  # type: ignore
         self.appctxt = appctxt
 
-    def build(self):
+    def build(self) -> None:
         """Build layout."""
-        self.layout = QtWidgets.QGridLayout()
+        self.layout = QtWidgets.QGridLayout()  # type: ignore
 
         self.install_button = QtWidgets.QPushButton("Install", self)
-        self.layout.addWidget(self.install_button, 0, 0)
+        self.layout.addWidget(self.install_button, 0, 0)  # type: ignore
 
         self.uninstall_button = QtWidgets.QPushButton("Uninstall", self)
-        self.layout.addWidget(self.uninstall_button, 0, 1)
+        self.layout.addWidget(self.uninstall_button, 0, 1)  # type: ignore
 
         self.enable_button = QtWidgets.QPushButton("Enable", self)
-        self.layout.addWidget(self.enable_button, 0, 4)
+        self.layout.addWidget(self.enable_button, 0, 4)  # type: ignore
 
         self.disable_button = QtWidgets.QPushButton("Disable", self)
-        self.layout.addWidget(self.disable_button, 0, 5)
+        self.layout.addWidget(self.disable_button, 0, 5)  # type: ignore
 
         self.info_button = QtWidgets.QPushButton("Info", self)
-        self.layout.addWidget(self.info_button, 0, 8)
+        self.layout.addWidget(self.info_button, 0, 8)  # type: ignore
 
         self.refresh_button = QtWidgets.QPushButton("Refresh", self)
-        self.layout.addWidget(self.refresh_button, 0, 9)
+        self.layout.addWidget(self.refresh_button, 0, 9)  # type: ignore
 
-        self.sublayout = QtWidgets.QHBoxLayout()
+        self.sublayout = QtWidgets.QHBoxLayout()  # type: ignore
 
         self.search_label = QtWidgets.QLabel("Search:", self)
         self.sublayout.addWidget(self.search_label)
@@ -70,27 +74,27 @@ class main_widget(QtWidgets.QWidget):
         self.layout.addLayout(self.sublayout, 1, 6, 1, 4)
 
         self.main_table = main_table(self)
-        self.layout.addWidget(self.main_table, 2, 0, 1, 10)
+        self.layout.addWidget(self.main_table, 2, 0, 1, 10)  # type: ignore
 
         self.setLayout(self.layout)
 
         # buttons
-        self.install_button.clicked.connect(self.install_archive)
-        self.uninstall_button.clicked.connect(self.uninstall)
-        self.enable_button.clicked.connect(self.enable)
-        self.disable_button.clicked.connect(self.disable)
-        self.refresh_button.clicked.connect(self.refresh)
-        self.info_button.clicked.connect(self.info)
-        self.main_table.doubleClicked.connect(self.info)
+        self.install_button.clicked.connect(self.install_archive)  # type: ignore
+        self.uninstall_button.clicked.connect(self.uninstall)  # type: ignore
+        self.enable_button.clicked.connect(self.enable)  # type: ignore
+        self.disable_button.clicked.connect(self.disable)  # type: ignore
+        self.refresh_button.clicked.connect(self.refresh)  # type: ignore
+        self.info_button.clicked.connect(self.info)  # type: ignore
+        self.main_table.doubleClicked.connect(self.info)  # type: ignore
 
-        self.clear_button.clicked.connect(self.clear_search)
-        self.search_field.textChanged.connect(self.search)
+        self.clear_button.clicked.connect(self.clear_search)  # type: ignore
+        self.search_field.textChanged.connect(self.search)  # type: ignore
 
         # shortcuts
         self.shortcut_delete = QtWidgets.QShortcut(
-            QtGui.QKeySequence(QtCore.Qt.Key_Delete), self
+            QtGui.QKeySequence(QtCore.Qt.Key_Delete), self  # type: ignore
         )
-        self.shortcut_delete.activated.connect(self.uninstall)
+        self.shortcut_delete.activated.connect(self.uninstall)  # type: ignore
 
         # handle to data
         self.flight_sim = flight_sim.flight_sim()
@@ -99,17 +103,17 @@ class main_widget(QtWidgets.QWidget):
     # Sim Functions
     # ======================
 
-    def find_sim(self):
+    def find_sim(self) -> None:
         """Sets the path to the simulator root folder."""
 
-        def user_selection():
+        def user_selection() -> None:
             """Function to keep user in a loop until they select correct folder."""
             # prompt user to select
             self.flight_sim.sim_packages_folder = (
                 QtWidgets.QFileDialog.getExistingDirectory(
                     parent=self,
                     caption="Select the root Microsoft Flight Simulator directory",
-                    dir=os.getenv("APPDATA"),
+                    dir=os.getenv("APPDATA"),  # type: ignore
                 )
             )
 
@@ -145,7 +149,7 @@ class main_widget(QtWidgets.QWidget):
         # try to automatically find the sim
         (
             success,
-            self.flight_sim.sim_packages_folder,
+            self.flight_sim.sim_packages_folder,  # type: ignore
         ) = self.flight_sim.find_sim_packages_folder()
 
         if not self.flight_sim.sim_packages_folder:
@@ -162,9 +166,11 @@ class main_widget(QtWidgets.QWidget):
             # notify user
             information_dialogs.sim_detected(self, self.flight_sim.sim_packages_folder)
 
-    def select_mod_install(self):
+    def select_mod_install(self) -> None:
         """Allow user to select new mod install folder."""
         old_install = files.get_mod_install_folder()
+
+        information_dialogs.mod_install_folder(self)
 
         new_install = QtWidgets.QFileDialog.getExistingDirectory(
             parent=self,
@@ -172,16 +178,18 @@ class main_widget(QtWidgets.QWidget):
             dir=os.path.dirname(old_install),
         )
 
-        def core(progress):
+        def core(progress: Callable) -> None:
             # setup mover thread
-            mover = files.move_folder_thread(old_install, new_install)
-            mover.activity_update.connect(progress.set_activity)
+            mover = flight_sim.move_mod_install_folder_thread(
+                self.flight_sim, old_install, new_install
+            )
+            mover.activity_update.connect(progress.set_activity)  # type: ignore
 
-            def failed(err):
+            def failed(err: Exception) -> None:
                 typ = type(err)
-                message = err
+                message = str(err)
 
-                logger.exception("Failed to move folder")
+                logger.exception("Failed to move mod install folder")
                 error_dialogs.general(self, typ, message)
 
             # start the thread
@@ -193,23 +201,40 @@ class main_widget(QtWidgets.QWidget):
             ):
                 mover.start()
 
-            config.set_key_value(config.MOD_INSTALL_FOLDER_KEY, new_install, path=True)
-            information_dialogs.disabled_mods_folder(self, new_install)
+            # done
+            information_dialogs.mod_install_folder_set(self, new_install)
 
-        if new_install and not files.check_same_path(old_install, new_install):
-            self.base_action(core)
+        if not new_install:
+            # cancel if no folder selected
+            return
+
+        if files.check_same_path(old_install, new_install):
+            # cancel if new folder is same as old folder
+            warning_dialogs.mod_install_folder_same(self)
+            return
+
+        if files.check_in_path(new_install, self.flight_sim.get_sim_mod_folder()):
+            # cancel if new folder is in sim packages folder
+            warning_dialogs.mod_install_folder_in_sim_path(self)
+            return
+
+        if not question_dialogs.mod_install_folder_move(self, old_install, new_install):
+            # last sanity check
+            return
+
+        self.base_action(core)
 
     # ======================
     # Inherited Functions
     # ======================
 
-    def base_fail(self, error, mapping, fallback_text):
+    def base_fail(self, error: Exception, mapping: dict, fallback_text: str) -> None:
         """Base thread failure function."""
         typ = type(error)
-        message = error
-
         if typ not in mapping:
             logger.error(fallback_text)
+            message = str(error)
+
             logger.error("{}: {}", typ, message)
             error_dialogs.general(self, typ, message)
         else:
@@ -218,12 +243,12 @@ class main_widget(QtWidgets.QWidget):
 
     def base_action(
         self,
-        core_func,
-        button=None,
-        sanity_dialog=None,
-        empty_check=False,
-        empty_val=None,
-        refresh=True,
+        core_func: Callable,
+        button: QtWidgets.QPushButton = None,
+        sanity_dialog: Callable = None,
+        empty_check: bool = False,
+        empty_val: Any = None,
+        refresh: bool = True,
     ):
         """Base function for GUI actions."""
         if empty_check and not empty_val:
@@ -260,22 +285,22 @@ class main_widget(QtWidgets.QWidget):
     # Version Check
     # ======================
 
-    def check_version(self):
+    def check_version(self) -> None:
         """Checks the application version and allows user to open browser to update."""
         installed = version.is_installed()
-        return_url = version.check_version(self.appctxt, installed)
+        return_url = version.check_version(self.appctxt, installed)  # type: ignore
 
-        def core(progress):
+        def core(progress: Callable) -> None:
             progress.set_mode(progress.PERCENT)
             progress.set_activity("Downloading latest version ({})".format(return_url))
 
             # setup downloader thread
-            downloader = version.download_new_version_thread(return_url)
-            downloader.percent_update.connect(progress.set_percent)
+            downloader = version.download_new_version_thread(return_url)  # type: ignore
+            downloader.percent_update.connect(progress.set_percent)  # type: ignore
 
-            def failed(err):
+            def failed(err: Exception) -> None:
                 typ = type(err)
-                message = err
+                message = str(err)
 
                 logger.exception("Failed to download new version")
                 error_dialogs.general(self, typ, message)
@@ -290,21 +315,23 @@ class main_widget(QtWidgets.QWidget):
             ):
                 downloader.start()
 
-        if return_url:
-            result, remember = version_check_dialog(self, installed).exec_()
-            if result:
-                if installed:
-                    self.base_action(core, refresh=False)
-                else:
-                    webbrowser.open(return_url)
-            elif remember:
-                config.set_key_value(config.NEVER_VER_CHEK_KEY, True)
+        if not return_url:
+            return
+
+        result, remember = version_check_dialog(self, installed).exec_()
+        if result:
+            if installed:
+                self.base_action(core, refresh=False)
+            else:
+                webbrowser.open(return_url)  # type: ignore
+        elif remember:
+            config.set_key_value(config.NEVER_VER_CHEK_KEY, True)
 
     # ======================
     # Data Operations
     # ======================
 
-    def install_archive(self):
+    def install_archive(self) -> None:
         """Installs selected mod archives."""
 
         # first, let user select multiple archives
@@ -317,25 +344,27 @@ class main_widget(QtWidgets.QWidget):
 
         succeeded = []
 
-        def core(progress):
+        def core(progress: Callable) -> None:
             # for each archive, try to install it
             for mod_archive in mod_archives:
 
-                def finish(result):
+                def finish(result: list) -> None:
                     # this function is required as the results will be a list,
                     # which is not a hashable type
                     succeeded.extend(result)
 
-                def failed(error):
+                def failed(err: Exception) -> None:
+                    message = str(err)
+
                     mapping = {
                         files.ExtractionError: lambda: error_dialogs.archive_extract(
-                            self, mod_archive, error
+                            self, mod_archive, message
                         ),
                         flight_sim.NoManifestError: lambda: warning_dialogs.mod_parsing(
                             self, [mod_archive]
                         ),
                         files.AccessError: lambda: error_dialogs.permission(
-                            self, mod_archive, error
+                            self, mod_archive, message
                         ),
                         flight_sim.NoModsError: lambda: error_dialogs.no_mods(
                             self, mod_archive
@@ -343,7 +372,7 @@ class main_widget(QtWidgets.QWidget):
                     }
 
                     self.base_fail(
-                        error,
+                        err,
                         mapping,
                         "Failed to install mod archive",
                     )
@@ -352,8 +381,8 @@ class main_widget(QtWidgets.QWidget):
                 installer = flight_sim.install_mod_archive_thread(
                     self.flight_sim, mod_archive
                 )
-                installer.activity_update.connect(progress.set_activity)
-                installer.percent_update.connect(progress.set_percent)
+                installer.activity_update.connect(progress.set_activity)  # type: ignore
+                installer.percent_update.connect(progress.set_percent)  # type: ignore
 
                 # start the thread
                 with thread.thread_wait(
@@ -379,7 +408,7 @@ class main_widget(QtWidgets.QWidget):
             )
             information_dialogs.mods_installed(self, succeeded)
 
-    def install_folder(self):
+    def install_folder(self) -> None:
         """Installs selected mod folders."""
 
         # first, let user select a folder
@@ -391,19 +420,21 @@ class main_widget(QtWidgets.QWidget):
 
         succeeded = []
 
-        def core(progress):
-            def finish(result):
+        def core(progress: Callable) -> None:
+            def finish(result: list) -> None:
                 # this function is required as the results will be a list,
                 # which is not a hashable type
                 succeeded.extend(result)
 
-            def failed(error):
+            def failed(err: Exception) -> None:
+                message = str(err)
+
                 mapping = {
                     flight_sim.NoManifestError: lambda: warning_dialogs.mod_parsing(
                         self, [mod_folder]
                     ),
                     files.AccessError: lambda: error_dialogs.permission(
-                        self, mod_folder, error
+                        self, mod_folder, message
                     ),
                     flight_sim.NoModsError: lambda: error_dialogs.no_mods(
                         self, mod_folder
@@ -411,14 +442,14 @@ class main_widget(QtWidgets.QWidget):
                 }
 
                 self.base_fail(
-                    error,
+                    err,
                     mapping,
                     "Failed to install mod folder",
                 )
 
             # setup installer thread
             installer = flight_sim.install_mods_thread(self.flight_sim, mod_folder)
-            installer.activity_update.connect(progress.set_activity)
+            installer.activity_update.connect(progress.set_activity)  # type: ignore
 
             # start the thread
             with thread.thread_wait(
@@ -443,11 +474,11 @@ class main_widget(QtWidgets.QWidget):
             )
             information_dialogs.mods_installed(self, succeeded)
 
-    def uninstall(self):
+    def uninstall(self) -> None:
         """Uninstalls selected mods."""
         selected = self.main_table.get_selected_rows()
 
-        def core(progress):
+        def core(progress: Callable) -> None:
             for i, _id in enumerate(selected):
                 # first, get the mod name and enabled status
                 (folder, enabled) = self.main_table.get_basic_info(_id)
@@ -457,10 +488,10 @@ class main_widget(QtWidgets.QWidget):
                 uninstaller = flight_sim.uninstall_mod_thread(
                     self.flight_sim, mod_folder
                 )
-                uninstaller.activity_update.connect(progress.set_activity)
+                uninstaller.activity_update.connect(progress.set_activity)  # type: ignore
 
-                def failed(error):
-                    self.base_fail(error, {}, "Failed to uninstall mod")
+                def failed(err: Exception) -> None:
+                    self.base_fail(err, {}, "Failed to uninstall mod")
 
                 # start the thread
                 with thread.thread_wait(
@@ -481,11 +512,11 @@ class main_widget(QtWidgets.QWidget):
             empty_val=selected,
         )
 
-    def enable(self):
+    def enable(self) -> None:
         """Enables selected mods."""
         selected = self.main_table.get_selected_rows()
 
-        def core(progress):
+        def core(progress: Callable) -> None:
             for i, _id in enumerate(selected):
                 # first, get the mod name and enabled status
                 (folder, enabled) = self.main_table.get_basic_info(_id)
@@ -495,10 +526,10 @@ class main_widget(QtWidgets.QWidget):
 
                 # setup enabler thread
                 enabler = flight_sim.enable_mod_thread(self.flight_sim, folder)
-                enabler.activity_update.connect(progress.set_activity)
+                enabler.activity_update.connect(progress.set_activity)  # type: ignore
 
-                def failed(error):
-                    self.base_fail(error, {}, "Failed to enable mod")
+                def failed(err: Exception) -> None:
+                    self.base_fail(err, {}, "Failed to enable mod")
 
                 # start the thread
                 with thread.thread_wait(
@@ -515,11 +546,11 @@ class main_widget(QtWidgets.QWidget):
             core, button=self.enable_button, empty_check=True, empty_val=selected
         )
 
-    def disable(self):
+    def disable(self) -> None:
         """Disables selected mods."""
         selected = self.main_table.get_selected_rows()
 
-        def core(progress):
+        def core(progress: Callable) -> None:
             for i, _id in enumerate(selected):
                 # first, get the mod name and disable status
                 (folder, enabled) = self.main_table.get_basic_info(_id)
@@ -529,10 +560,10 @@ class main_widget(QtWidgets.QWidget):
 
                 # setup disabler thread
                 disabler = flight_sim.disable_mod_thread(self.flight_sim, folder)
-                disabler.activity_update.connect(progress.set_activity)
+                disabler.activity_update.connect(progress.set_activity)  # type: ignore
 
-                def failed(error):
-                    self.base_fail(error, {}, "Failed to disable mod")
+                def failed(err: Exception) -> None:
+                    self.base_fail(err, {}, "Failed to disable mod")
 
                 # start the thread
                 with thread.thread_wait(
@@ -549,7 +580,7 @@ class main_widget(QtWidgets.QWidget):
             core, button=self.disable_button, empty_check=True, empty_val=selected
         )
 
-    def create_backup(self):
+    def create_backup(self) -> None:
         """Creates a backup of all enabled mods."""
 
         archive = QtWidgets.QFileDialog.getSaveFileName(
@@ -566,25 +597,27 @@ class main_widget(QtWidgets.QWidget):
 
         succeeded = []
 
-        def core(progress):
+        def core(progress: Callable) -> None:
             # setup backuper thread
             backuper = flight_sim.create_backup_thread(self.flight_sim, archive)
-            backuper.activity_update.connect(progress.set_activity)
+            backuper.activity_update.connect(progress.set_activity)  # type: ignore
 
-            def finish(result):
+            def finish(result: list) -> None:
                 # this function is required as the results will be a list,
                 # which is not a hashable type
                 succeeded.extend(result)
 
-            def failed(error):
+            def failed(err: Exception) -> None:
+                message = str(err)
+
                 mapping = {
                     files.ExtractionError: lambda: error_dialogs.archive_create(
-                        self, archive, error
+                        self, archive, message
                     )
                 }
 
                 self.base_fail(
-                    error,
+                    err,
                     mapping,
                     "Failed to create backup",
                 )
@@ -614,7 +647,7 @@ class main_widget(QtWidgets.QWidget):
                 # this will always be opening a folder and therefore is safe
                 os.startfile(os.path.dirname(archive))  # nosec
 
-    def refresh(self, first=False, automated=False):
+    def refresh(self, first: bool = False, automated: bool = False) -> None:
         """Refreshes all mod data."""
 
         """This is not a separate thread, as the time it takes to parse each manifest
@@ -623,13 +656,13 @@ class main_widget(QtWidgets.QWidget):
         4 seconds to respond to incoming events before being marked as unresponsive,
         which should never happen in the process of parsing manifest.json files"""
 
-        def core(progress):
+        def core(progress: Callable) -> None:
             # temporarily clear search so that header resizing doesn't get borked
             self.search(override="")
 
             progress.set_mode(progress.PERCENT)
 
-            def update(message, percent, total):
+            def update(message: str, percent: int, total: int) -> None:
                 progress.set_activity(message)
                 progress.set_percent(percent, total)
                 # make sure the progress bar gets updated.
@@ -665,30 +698,32 @@ class main_widget(QtWidgets.QWidget):
     # Child Widgets
     # ======================
 
-    def info(self):
+    def info(self) -> None:
         """Open dialog to view mod info."""
         # self.info_button.setEnabled(False)
 
         selected = self.main_table.get_selected_rows()
 
-        if selected:
-            (folder, enabled) = self.main_table.get_basic_info(selected[0])
-            mod_folder = self.flight_sim.get_mod_folder(folder, enabled)
+        if not selected:
+            return
 
-            wid = info_widget(self.flight_sim, self, self.appctxt)
-            wid.set_data(
-                self.flight_sim.parse_mod_manifest(mod_folder),
-                self.flight_sim.parse_mod_files(mod_folder),
-            )
-            wid.show()
+        (folder, enabled) = self.main_table.get_basic_info(selected[0])
+        mod_folder = self.flight_sim.get_mod_folder(folder, enabled)
+
+        wid = info_widget(self.flight_sim, self, self.appctxt)
+        wid.set_data(
+            self.flight_sim.parse_mod_manifest(mod_folder),
+            self.flight_sim.parse_mod_files(mod_folder),
+        )
+        wid.show()
 
         # self.info_button.setEnabled(True)
 
-    def about(self):
+    def about(self) -> None:
         """Launch the about widget."""
         about_widget(self, self.appctxt).exec_()
 
-    def versions(self):
+    def versions(self) -> None:
         """Launch the versions widget."""
         versions_widget(self.flight_sim, self, self.appctxt).exec_()
 
@@ -696,7 +731,7 @@ class main_widget(QtWidgets.QWidget):
     # Search
     # ======================
 
-    def search(self, override=None):
+    def search(self, override: str = None) -> None:
         """Filter rows to match search term."""
         # strip
         term = self.search_field.text().strip()
@@ -707,6 +742,6 @@ class main_widget(QtWidgets.QWidget):
         # search
         self.main_table.search(term)
 
-    def clear_search(self):
+    def clear_search(self) -> None:
         """Clear the search field."""
         self.search_field.clear()
