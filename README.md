@@ -93,7 +93,7 @@ the executable is not signed. A code signing certificate is needed to fix this,
 but they are rather expensive, and I can't justify the cost.
 The program is open source however, so you could build
 it yourself if you wanted, and the provided pre-built binaries are all created
-[automatically on GitHub's infrastructure](https://github.com/NathanVaughn/msfs-mod-manager/actions?query=workflow%3A%22Make+Release%22).
+[automatically on GitHub's infrastructure](https://github.com/NathanVaughn/msfs-mod-manager/actions?query=workflow%3A%22Create+Release%22).
 
 ## Running/Building From Source
 
