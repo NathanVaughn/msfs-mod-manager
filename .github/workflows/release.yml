@@ -3,7 +3,7 @@ on:
     tags:
       - "v*"
 
-name: Make Release
+name: Publish Release
 
 jobs:
   build:
