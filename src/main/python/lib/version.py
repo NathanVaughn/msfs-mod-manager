@@ -122,6 +122,9 @@ def check_version(
         logger.debug("Attemping to parse page contents")
         parsed_data = json.loads(data)
         remote_version = parsed_data["tag_name"]
+
+        if parsed_data["prerelease"]:
+            return False
     except Exception:
         logger.exception("Parsing page contents failed")
         return False
