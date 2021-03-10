@@ -17,6 +17,7 @@ fbs = "*"
 loguru = "*"
 pywin32 = "*"
 pywin32-ctypes = "*"
+win32_setctime = "*"
 
 [requires]
 python_version = "3.6"
