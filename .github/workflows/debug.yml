@@ -22,13 +22,6 @@ jobs:
           path: ~\AppData\Local\pip\Cache
           key: pip-${{ hashFiles('**/Pipfile.lock') }}
 
-      - name: Cache Pipenv Environment
-        uses: actions/cache@v2
-        id: cache-pipenv
-        with:
-          path: .venv
-          key: pipenv-${{ hashFiles('**/Pipfile.lock') }}
-
       - name: Install Pipenv
         run: python -m pip install wheel setuptools pipenv
 

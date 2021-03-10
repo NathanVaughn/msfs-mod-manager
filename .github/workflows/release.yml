@@ -29,13 +29,6 @@ jobs:
           path: ~\AppData\Local\pip\Cache
           key: pip-${{ hashFiles('**/Pipfile.lock') }}
 
-      - name: Cache Pipenv Environment
-        uses: actions/cache@v2
-        id: cache-pipenv
-        with:
-          path: .venv
-          key: pipenv-${{ hashFiles('**/Pipfile.lock') }}
-
       - name: Install Pipenv
         run: python -m pip install wheel setuptools pipenv
 
@@ -86,10 +79,7 @@ jobs:
       #   run: pipenv run fbs clean
 
       # - name: Build Debug
-      #   run: pipenv run fbs freeze --debug
-
-      # - name: Build Debug Installer
-      #   run: pipenv run fbs installer
+      #   run: ./build.ps1 -installer -debug
 
       # - name: Add Debug Installer Artifact
       #   uses: actions/upload-release-asset@v1
