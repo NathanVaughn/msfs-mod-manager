@@ -1,86 +1,188 @@
 import configparser
-import functools
 import os
-from typing import Any, Tuple
+from datetime import datetime
+from pathlib import Path
 
-from loguru import logger
+class _Config:
+    """
+    Object to represent the global configuration
+    """
+    BASE_FOLDER: Path = Path.joinpath(os.getenv("APPDATA"), "MSFS Mod ManagerV2")  # type: ignore
+    LOG_FILE: Path = Path.joinpath(BASE_FOLDER, "debug.log")
+    CONFIG_FILE: Path = Path.joinpath(BASE_FOLDER, "config.ini")
 
-BASE_FOLDER = os.path.abspath(os.path.join(os.getenv("APPDATA"), "MSFS Mod Manager"))  # type: ignore
-DEBUG_LOG = os.path.join(BASE_FOLDER, "debug.log")
+    TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
-CONFIG_FILE = os.path.join(BASE_FOLDER, "config.ini")
-SECTION_KEY = "settings"
+    def __init__(self) -> None:
+        self._has_been_loaded: bool  = False
+        
+        # section header
+        self._settings_section = "Settings"
 
-SIM_FOLDER_KEY = "sim_folder"
-# this key is kept as-is for legacy purposes
-MOD_INSTALL_FOLDER_KEY = "mod_cache_folder"
-LAST_OPEN_FOLDER_KEY = "last_open_folder"
+        # path to community folder
+        self._sim_packages_path: Path = Path()
+        self._sim_packages_path_key: str = "sim_packages_path"
 
-LAST_VER_CHECK_KEY = "last_version_check"
-NEVER_VER_CHEK_KEY = "never_version_check"
-
-THEME_KEY = "theme"
-
-
-@functools.lru_cache()
-def get_key_value(
-    key: str, default: Any = None, path: bool = False
-) -> Tuple[bool, Any]:
-    """Attempts to load value from key in the config file.
-    Returns a tuple of if the value was found, and if so, what the contents where."""
-    logger.debug(
-        "Attempting to read key '{}' from the main config file {}".format(
-            key, CONFIG_FILE
+        # path to where disabled mods are stored
+        self._disabled_mods_path: Path = Path.joinpath(
+            self.BASE_FOLDER, "disabled_mods"
         )
-    )
+        self._disabled_mods_path_key: str = "disabled_mods_path"
 
-    config = configparser.ConfigParser()
-    config.read(CONFIG_FILE)
+        # last time version was checked
+        self._last_version_check: datetime = datetime.now()
+        self._last_version_check_key: str = "last_version_check"
+        # if user has stopped all version checks
+        self._never_version_check: bool = False
+        self._never_version_check_key: str = "never_version_check"
 
-    # this is tiered as such, so that one missing piece doesn't cause an error
-    if SECTION_KEY in config:
-        logger.debug("Section key '{}' found in config file".format(SECTION_KEY))
-        if key in config[SECTION_KEY]:
-            value = config[SECTION_KEY][key]
-            if path:
-                value = os.path.normpath(value)
+        # if custom theme should be used
+        self._use_theme: bool = False
+        self._use_theme_key: str = "use_theme"
 
-            logger.debug("Key '{}' found in section".format(key))
-            logger.debug("Key '{}' value: {}".format(key, value))
+    def _load(self) -> None:
+        """
+        Load the config file into the object.
+        """
+        if self._has_been_loaded:
+            return
+        
+        parser = configparser.ConfigParser()
+        parser.read(self.CONFIG_FILE)
 
-            return (True, value)
+        if self._settings_section not in parser:
+            return
 
-    logger.debug("Unable to find key '{}' in config file".format(key))
-    return (False, default)
+        section = parser[self._settings_section]
 
+        # load the paths from the config
+        self._sim_packages_path = Path(section.get(self._sim_packages_path_key, ""))
+        self._disabled_mods_path = Path(section.get(self._disabled_mods_path_key, ""))
 
-def set_key_value(key: str, value: Any, path: bool = False) -> None:
-    """Writes a key and value to the config file."""
-    value = str(value)
+        # try load datetime from config
+        try:
+            self._last_version_check = datetime.strptime(
+                section.get(self._last_version_check_key), self.TIME_FORMAT
+            )
+        except Exception:
+            pass
 
-    logger.debug(
-        "Attempting to write key '{}' and value '{}' to the main config file {}".format(
-            key, value, CONFIG_FILE
+        # load booleans
+        self._never_version_check = section.getboolean(self._never_version_check_key)
+        self._use_theme = section.getboolean(self._use_theme_key)
+        
+        self._has_been_loaded = True
+
+    def _dump(self) -> None:
+        """
+        Dump the object into the config file.
+        """
+        parser = configparser.ConfigParser()
+        parser.read(self.CONFIG_FILE)
+
+        if self._settings_section not in parser:
+            parser.add_section(self._settings_section)
+
+        section = parser[self._settings_section]
+
+        # save the paths to the config
+        section[self._sim_packages_path_key] = str(self._sim_packages_path)
+        section[self._disabled_mods_path_key] = str(self._disabled_mods_path)
+
+        # save datetime
+        section[self._last_version_check_key] = datetime.strftime(
+            self._last_version_check, self.TIME_FORMAT
         )
-    )
 
-    config = configparser.ConfigParser()
-    config.read(CONFIG_FILE)
+        # save booleans
+        section[self._never_version_check_key] = str(self._never_version_check)
+        section[self._use_theme_key] = str(self._use_theme)
 
-    if SECTION_KEY not in config:
-        logger.debug(
-            "Section key '{}' not found in config file, adding it".format(SECTION_KEY)
-        )
-        config.add_section(SECTION_KEY)
+        with open(self.CONFIG_FILE, "w") as f:
+            parser.write(f)
+            
+        self._has_been_loaded = False
 
-    # if it's a path, normalize it
-    if path:
-        value = os.path.normpath(value)
-    config[SECTION_KEY][key] = value
+    @property
+    def sim_packages_path(self) -> Path:
+        """
+        Return the path of the sim community folder.
+        """
+        self._load()
+        return self._sim_packages_path
 
-    logger.debug("Writing out config file")
-    with open(CONFIG_FILE, "w") as f:
-        config.write(f)
+    @sim_packages_path.setter
+    def sim_packages_path(self, value: Path) -> None:
+        """
+        Set the path of the sim community folder.
+        """
+        self.sim_packages_path = value
+        self._dump()
 
-    # clear the cache
-    get_key_value.cache_clear()
+    @property
+    def disabled_mods_path(self) -> Path:
+        """
+        Return the path of the disabled mods folder.
+        """
+        self._load()
+        return self._disabled_mods_path
+
+    @disabled_mods_path.setter
+    def disabled_mods_path(self, value: Path) -> None:
+        """
+        Set the path of the disabled mods folder.
+        """
+        self.disabled_mods_path = value
+        self._dump()
+
+    @property
+    def last_version_check(self) -> datetime:
+        """
+        Return the last time the version was checked.
+        """
+        self._load()
+        return self._last_version_check
+
+    @last_version_check.setter
+    def last_version_check(self, value: datetime) -> None:
+        """
+        Set the last time the version was checked.
+        """
+        self._last_version_check = value
+        self._dump()
+
+    @property
+    def never_version_check(self) -> bool:
+        """
+        Return if version checks have been disabled.
+        """
+        self._load()
+        return self._never_version_check
+
+    @never_version_check.setter
+    def never_version_check(self, value: bool) -> None:
+        """
+        Set if version checks have been disabled.
+        """
+        self._never_version_check = value
+        self._dump()
+
+    @property
+    def use_theme(self) -> bool:
+        """
+        Return if the custom theme should be used.
+        """
+        self._load()
+        return self._use_theme
+
+    @use_theme.setter
+    def use_theme(self, value: bool) -> None:
+        """
+        Set if the custom theme should be used.
+        """
+        self._use_theme = value
+        self._dump()
+        
+# singleton
+# or something like that, I'm not a compsci major
+config = _Config()
