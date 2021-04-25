@@ -3,25 +3,27 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+
 class _Config:
     """
     Object to represent the global configuration
     """
-    BASE_FOLDER: Path = Path.joinpath(os.getenv("APPDATA"), "MSFS Mod ManagerV2")  # type: ignore
+
+    BASE_FOLDER: Path = Path.joinpath(Path(os.getenv("APPDATA")), "MSFS Mod Manager V2")  # type: ignore
     LOG_FILE: Path = Path.joinpath(BASE_FOLDER, "debug.log")
     CONFIG_FILE: Path = Path.joinpath(BASE_FOLDER, "config.ini")
 
     TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
     def __init__(self) -> None:
-        self._has_been_loaded: bool  = False
-        
+        self._has_been_loaded: bool = False
+
         # section header
         self._settings_section = "Settings"
 
-        # path to community folder
-        self._sim_packages_path: Path = Path()
-        self._sim_packages_path_key: str = "sim_packages_path"
+        # path to root packages folder
+        self._packages_path: Path = Path()
+        self._packages_path_key: str = "packages_path"
 
         # path to where disabled mods are stored
         self._disabled_mods_path: Path = Path.joinpath(
@@ -46,7 +48,7 @@ class _Config:
         """
         if self._has_been_loaded:
             return
-        
+
         parser = configparser.ConfigParser()
         parser.read(self.CONFIG_FILE)
 
@@ -56,7 +58,7 @@ class _Config:
         section = parser[self._settings_section]
 
         # load the paths from the config
-        self._sim_packages_path = Path(section.get(self._sim_packages_path_key, ""))
+        self._packages_path = Path(section.get(self._packages_path_key, ""))
         self._disabled_mods_path = Path(section.get(self._disabled_mods_path_key, ""))
 
         # try load datetime from config
@@ -70,7 +72,7 @@ class _Config:
         # load booleans
         self._never_version_check = section.getboolean(self._never_version_check_key)
         self._use_theme = section.getboolean(self._use_theme_key)
-        
+
         self._has_been_loaded = True
 
     def _dump(self) -> None:
@@ -86,7 +88,7 @@ class _Config:
         section = parser[self._settings_section]
 
         # save the paths to the config
-        section[self._sim_packages_path_key] = str(self._sim_packages_path)
+        section[self._packages_path_key] = str(self._packages_path)
         section[self._disabled_mods_path_key] = str(self._disabled_mods_path)
 
         # save datetime
@@ -100,23 +102,23 @@ class _Config:
 
         with open(self.CONFIG_FILE, "w") as f:
             parser.write(f)
-            
+
         self._has_been_loaded = False
 
     @property
-    def sim_packages_path(self) -> Path:
+    def packages_path(self) -> Path:
         """
-        Return the path of the sim community folder.
+        Return the path of the simulator packages folder.
         """
         self._load()
-        return self._sim_packages_path
+        return self._packages_path
 
-    @sim_packages_path.setter
-    def sim_packages_path(self, value: Path) -> None:
+    @packages_path.setter
+    def packages_path(self, value: Path) -> None:
         """
-        Set the path of the sim community folder.
+        Set the path of the simulator packages folder.
         """
-        self.sim_packages_path = value
+        self._packages_path = value
         self._dump()
 
     @property
@@ -132,7 +134,7 @@ class _Config:
         """
         Set the path of the disabled mods folder.
         """
-        self.disabled_mods_path = value
+        self._disabled_mods_path = value
         self._dump()
 
     @property
@@ -182,7 +184,8 @@ class _Config:
         """
         self._use_theme = value
         self._dump()
-        
+
+
 # singleton
 # or something like that, I'm not a compsci major
 config = _Config()
