@@ -18,11 +18,10 @@ def main() -> None:
     logger.info("Launching application")
 
     flightsim.find_installation()
-    print(flightsim.packages_path)
-    print(flightsim.community_packages_path)
-    for mod in flightsim.get_enabled_mods():
-        mod.load_files()
-        print(mod.name, mod.size)
+    for mod in flightsim.get_disabled_mods():
+        print(mod.name)
+        if mod.name == "test":
+            mod.enable()
 
 
 if __name__ == "__main__":

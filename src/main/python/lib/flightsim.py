@@ -105,12 +105,33 @@ class Mod:
         if self.enabled:
             return
 
+        enabled_path = Path.joinpath(
+            files.fix(flightsim.community_packages_path), self.name
+        )
+        files.create_junction(self.abs_path, enabled_path)
+
+        # now mark as enabled
+        self.enabled = True
+        self.abs_path = enabled_path
+
     def disable(self) -> None:
         """
         Disable the mod object. Does nothing if already disabled.
         """
         if not self.enabled:
             return
+
+        disabled_path = files.fix(Path.joinpath(config.disabled_mods_path, self.name))
+        if files.is_junction(self.abs_path):
+            # if the mod was installed via a symlink
+            files.add_magic(self.abs_path).rmdir()
+        else:
+            # if the mod was installed via copy/paste
+            files.move_dir(self.abs_path, disabled_path)
+
+        # now mark as disabled
+        self.enabled = False
+        self.abs_path = disabled_path
 
     def load_files(self) -> None:
         """
@@ -287,6 +308,12 @@ class _FlightSim:
         Return a list of enabled mods.
         """
         return [Mod(subdir) for subdir in self.community_packages_path.glob("*/")]
+
+    def get_disabled_mods(self) -> List[Mod]:
+        """
+        Return a list of disabled mods.
+        """
+        return [Mod(subdir) for subdir in config.disabled_mods_path.glob("*/")]
 
 
 flightsim = _FlightSim()
