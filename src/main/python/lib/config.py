@@ -26,10 +26,10 @@ class _Config:
         self._packages_path_key: str = "packages_path"
 
         # path to where disabled mods are stored
-        self._disabled_mods_path: Path = Path.joinpath(
-            self.BASE_FOLDER, "disabled_mods"
+        self._mods_path: Path = Path.joinpath(
+            self.BASE_FOLDER, "mods"
         )
-        self._disabled_mods_path_key: str = "disabled_mods_path"
+        self._mods_path_key: str = "mods_path"
 
         # last time version was checked
         self._last_version_check: datetime = datetime.now()
@@ -59,7 +59,7 @@ class _Config:
 
         # load the paths from the config
         self._packages_path = Path(section.get(self._packages_path_key, ""))
-        self._disabled_mods_path = Path(section.get(self._disabled_mods_path_key, ""))
+        self._mods_path = Path(section.get(self._mods_path_key, ""))
 
         # try load datetime from config
         try:
@@ -89,7 +89,7 @@ class _Config:
 
         # save the paths to the config
         section[self._packages_path_key] = str(self._packages_path)
-        section[self._disabled_mods_path_key] = str(self._disabled_mods_path)
+        section[self._mods_path_key] = str(self._mods_path)
 
         # save datetime
         section[self._last_version_check_key] = datetime.strftime(
@@ -122,19 +122,19 @@ class _Config:
         self._dump()
 
     @property
-    def disabled_mods_path(self) -> Path:
+    def mods_path(self) -> Path:
         """
         Return the path of the disabled mods folder.
         """
         self._load()
-        return self._disabled_mods_path
+        return self._mods_path
 
-    @disabled_mods_path.setter
-    def disabled_mods_path(self, value: Path) -> None:
+    @mods_path.setter
+    def mods_path(self, value: Path) -> None:
         """
         Set the path of the disabled mods folder.
         """
-        self._disabled_mods_path = value
+        self._mods_path = value
         self._dump()
 
     @property

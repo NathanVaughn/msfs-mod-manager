@@ -121,7 +121,7 @@ class Mod:
         if not self.enabled:
             return
 
-        disabled_path = files.fix(Path.joinpath(config.disabled_mods_path, self.name))
+        disabled_path = files.fix(Path.joinpath(config.mods_path, self.name))
         if files.is_junction(self.abs_path):
             # if the mod was installed via a symlink
             files.add_magic(self.abs_path).rmdir()
@@ -313,7 +313,24 @@ class _FlightSim:
         """
         Return a list of disabled mods.
         """
-        return [Mod(subdir) for subdir in config.disabled_mods_path.glob("*/")]
+        # because mods are just symlinked to the Community folder
+        # first, get a list of folders there
+        enabled_dirs = [
+            subdir.name for subdir in self.community_packages_path.glob("*/")
+        ]
+        # now, only return Mods that don't have a folder of the same name in 
+        # the Community folder
+        return [
+            Mod(subdir)
+            for subdir in config.mods_path.glob("*/")
+            if subdir.name not in enabled_dirs
+        ]
+
+    def get_all_mods(self) -> List[Mod]:
+        """
+        Return a list of all mods.
+        """
+        return self.get_enabled_mods() + self.get_disabled_mods()
 
 
 flightsim = _FlightSim()
