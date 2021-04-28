@@ -11,10 +11,7 @@ def fix_coeff(line: str, undo: bool = False) -> str:
 
     groups = list(re.findall(regex, line)[0])
     coeff = float(groups[1])
-    if undo:
-        new_coeff = str(coeff * 2)
-    else:
-        new_coeff = str(coeff / 2)
+    new_coeff = str(coeff * 2) if undo else str(coeff / 2)
     groups[1] = new_coeff
 
     return "".join(groups + ["\n"])
