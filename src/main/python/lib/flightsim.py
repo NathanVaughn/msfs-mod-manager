@@ -38,12 +38,14 @@ class ModFile:
         """
         Open the file itself with the system default program.
         """
+        logger.debug(f"Opening {self.abs_path.parent}")
         os.startfile(self.abs_path.parent)
 
     def open_folder(self) -> None:
         """
         Open the folder containing the file in File Explorer.
         """
+        logger.debug(f"Opening {self.abs_path}")
         os.startfile(self.abs_path)
 
 
@@ -81,9 +83,10 @@ class Mod:
         # load in data from manifest file
         # ====================================
         if not self.manifest_path.exists():
-            raise ManifestError
+            raise ManifestError(f"{self.manifest_path}")
 
-        with open(self.manifest_path, "r") as fp:
+        logger.debug(f"Parsing manifest.json at {self.manifest_path}")
+        with open(self.manifest_path, "r", encoding="utf8") as fp:
             manifest_data = json.load(fp)
 
         self.content_type = manifest_data.get("content_type", "")
@@ -102,7 +105,10 @@ class Mod:
         """
         Enable the mod object. Does nothing if already enabled.
         """
+        logger.debug(f"Enabling {self.name}")
+
         if self.enabled:
+            logger.debug("Mod already enabled, returning.")
             return
 
         enabled_path = Path.joinpath(
@@ -118,7 +124,10 @@ class Mod:
         """
         Disable the mod object. Does nothing if already disabled.
         """
+        logger.debug(f"Disabling {self.name}")
+
         if not self.enabled:
+            logger.debug("Mod already disabled, returning.")
             return
 
         disabled_path = files.fix(Path.joinpath(config.mods_path, self.name))
@@ -138,6 +147,8 @@ class Mod:
         Load extra data on the files of a mod into the object.
         This is an expensive operation, so must be done explicitly.
         """
+        logger.debug(f"Loading ModFiles for {self.name}")
+
         for subfile in self.abs_path.glob("**/*.*"):
             self.files.append(
                 ModFile(self.abs_path, subfile.relative_to(self.abs_path))
@@ -171,6 +182,8 @@ class _FlightSim:
         Also builds the path the community and official package folders.
         """
         self._packages_path = files.fix(value)
+        logger.debug(f"packages_path set to {self._packages_path}")
+
         self.community_packages_path = self._packages_path.joinpath("Community")
         self.official_packages_path = self._packages_path.joinpath("Official")
 
@@ -184,6 +197,8 @@ class _FlightSim:
         # if a directory, add the filename
         if path.is_dir():
             path = path.joinpath("UserCfg.opt")
+
+        logger.debug(f"Attempting to parse UserCfg.opt at {path}")
 
         installed_packages_path = ""
 
@@ -200,12 +215,15 @@ class _FlightSim:
         # evaluate the path
         installed_packages_path = Path(installed_packages_path)
 
+        logger.debug(f"InstalledPackagesPath found to be {installed_packages_path}")
+
         return installed_packages_path
 
     def _is_sim_packages_path(self, path: Path) -> bool:
         """
         Tests if a path is indeed the simulator packages folder.
         """
+        logger.debug(f"Testing if {path} is the Packages folder")
         return (
             files.fix(path).joinpath("Community").is_dir()
             and files.fix(path).joinpath("Official").is_dir()
@@ -215,6 +233,7 @@ class _FlightSim:
         """
         Tests if a path is indeed the root simulation folder.
         """
+        logger.debug(f"Testing if {path} is the simulator root folder")
         return files.fix(path).joinpath("FlightSimulator.CFG").is_file()
 
     def find_installation(self) -> bool:
@@ -307,18 +326,20 @@ class _FlightSim:
         """
         Return a list of enabled mods.
         """
+        logger.debug("Getting enabled mods")
         return [Mod(subdir) for subdir in self.community_packages_path.glob("*/")]
 
     def get_disabled_mods(self) -> List[Mod]:
         """
         Return a list of disabled mods.
         """
+        logger.debug("Getting disabled mods")
         # because mods are just symlinked to the Community folder
         # first, get a list of folders there
         enabled_dirs = [
             subdir.name for subdir in self.community_packages_path.glob("*/")
         ]
-        # now, only return Mods that don't have a folder of the same name in 
+        # now, only return Mods that don't have a folder of the same name in
         # the Community folder
         return [
             Mod(subdir)
@@ -330,6 +351,7 @@ class _FlightSim:
         """
         Return a list of all mods.
         """
+        logger.debug("Getting all mods")
         return self.get_enabled_mods() + self.get_disabled_mods()
 
 

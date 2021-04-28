@@ -3,6 +3,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+from loguru import logger
+
 
 class _Config:
     """
@@ -26,9 +28,7 @@ class _Config:
         self._packages_path_key: str = "packages_path"
 
         # path to where disabled mods are stored
-        self._mods_path: Path = Path.joinpath(
-            self.BASE_FOLDER, "mods"
-        )
+        self._mods_path: Path = Path.joinpath(self.BASE_FOLDER, "mods")
         self._mods_path_key: str = "mods_path"
 
         # last time version was checked
@@ -48,6 +48,8 @@ class _Config:
         """
         if self._has_been_loaded:
             return
+
+        logger.debug(f"Loading config object from {self.CONFIG_FILE}")
 
         parser = configparser.ConfigParser()
         parser.read(self.CONFIG_FILE)
@@ -79,6 +81,8 @@ class _Config:
         """
         Dump the object into the config file.
         """
+        logger.debug(f"Dumping config object to {self.CONFIG_FILE}")
+
         parser = configparser.ConfigParser()
         parser.read(self.CONFIG_FILE)
 

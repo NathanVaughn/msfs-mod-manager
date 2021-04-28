@@ -47,22 +47,23 @@ def create_junction(src: Path, dest: Path) -> None:
     """
     Creates a directory junction between two directories.
     """
-    logger.debug(f"{src}, {dest}")
+    logger.debug(f"Creating directory junction from {src} to {dest}")
+
     if dest.exists():
-        if is_junction(dest):
-            # works fine in removing the junction but not
-            # the source directory
-            dest.rmdir()
-        else:
+        if not is_junction(dest):
             raise FileExistsError(dest)
 
-    # create the link
+        # works fine in removing the junction but not
+        # the source directory
+        logger.debug(f"Removing existing directory junction at {dest}")
+        dest.rmdir()
+
     # TODO win32
+    # create the link
+    command = ["cmd", "/c", "mklink", "/J", str(add_magic(dest)), str(add_magic(src))]
+    logger.debug(f"Executing: {str(command)}")
     subprocess.run(
-        ["cmd", "/c", "mklink", "/J", str(add_magic(dest)), str(add_magic(src))],
-        check=True,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
 
 
@@ -70,6 +71,7 @@ def move_dir(src: Path, dest: Path) -> None:
     """
     Move a path object from one location to another.
     """
+    logger.debug(f"Moving direcotry from {src} to {dest}")
     shutil.move(str(add_magic(src)), str(add_magic(dest)))
 
 
