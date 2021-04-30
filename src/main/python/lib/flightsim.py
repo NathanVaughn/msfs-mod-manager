@@ -67,39 +67,73 @@ class Mod:
         self.minimum_game_version: str = ""
 
         # metadata
-        self.enabled: bool = False
-        self.name: str = ""
-        self.last_modified: datetime = datetime.now()
+        # check if absolute path to this mod is in the flightsim folder
+        self.enabled = flightsim.packages_path in self.abs_path.parents
+        self.name = self.abs_path.name
+        self.last_modified = datetime.fromtimestamp(self.manifest_path.stat().st_ctime)
+        self.manifest_data: dict = {}
+
+        # update information
+        self.url: str = ""
 
         # files
         # intentionally don't fully resolve this path, as we don't
         # want to resolve a symlink to be able to tell if this mod is enabled
         # or no
-        self.abs_path: Path = files.add_magic(abs_path)
+        self.abs_path: Path = files.magic(abs_path)
         self.manifest_path: Path = self.abs_path.joinpath("manifest.json")
         self.files: List[ModFile] = []
         self.size: int = 0
 
-        # load in data from manifest file
-        # ====================================
+        # load manifest
+        self.load()
+
+    def load(self) -> None:
+        """
+        Load data from the manifest.json file.
+        """
+
         if not self.manifest_path.exists():
-            raise ManifestError(f"{self.manifest_path}")
+            raise ManifestError(f"{self.manifest_path} not found")
 
         logger.debug(f"Parsing manifest.json at {self.manifest_path}")
-        with open(self.manifest_path, "r", encoding="utf8") as fp:
-            manifest_data = json.load(fp)
 
-        self.content_type = manifest_data.get("content_type", "")
-        self.title = manifest_data.get("title", "")
-        self.manufacturer = manifest_data.get("manufacturer", "")
-        self.creator = manifest_data.get("creator", "")
-        self.version = manifest_data.get("package_version", "")
-        self.minimum_game_version = manifest_data.get("minimum_game_version", "")
+        # read
+        try:
+            with open(self.manifest_path, "r", encoding="utf8") as fp:
+                self.manifest_data = json.load(fp)
+        except Exception:
+            raise ManifestError(f"{self.manifest_path} parsing error")
 
-        # check if absolute path to this mod is in the flightsim folder
-        self.enabled = flightsim.packages_path in self.abs_path.parents
-        self.name = self.abs_path.name
-        self.last_modified = datetime.fromtimestamp(self.manifest_path.stat().st_ctime)
+        # game content
+        self.content_type = self.manifest_data.get("content_type", "")
+        self.title = self.manifest_data.get("title", "")
+        self.manufacturer = self.manifest_data.get("manufacturer", "")
+        self.creator = self.manifest_data.get("creator", "")
+        self.version = self.manifest_data.get("package_version", "")
+        self.minimum_game_version = self.manifest_data.get("minimum_game_version", "")
+
+        # mod manager content
+        self.url = self.manifest_data.get("_nvmmm_url", "")
+
+    def dump(self) -> None:
+        """
+        Save data to the manifest.json file.
+        """
+        # game content
+        self.manifest_data["content_type"] = self.content_type
+        self.manifest_data["title"] = self.title
+        self.manifest_data["manufacturer"] = self.manufacturer
+        self.manifest_data["creator"] = self.creator
+        self.manifest_data["package_version"] = self.version
+        self.manifest_data["minimum_game_version"] = self.minimum_game_version
+
+        # mod manager content
+        self.manifest_data["_nvmmm_url"] = self.url
+
+        # write
+        with open(self.manifest_path, "w", encoding="utf8") as fp:
+            json.dump(self.manifest_data, fp)
 
     def enable(self) -> None:
         """
@@ -112,9 +146,9 @@ class Mod:
             return
 
         enabled_path = Path.joinpath(
-            files.fix(flightsim.community_packages_path), self.name
+            files.magic_resolve(flightsim.community_packages_path), self.name
         )
-        files.create_junction(self.abs_path, enabled_path)
+        files.mk_junction(self.abs_path, enabled_path)
 
         # now mark as enabled
         self.enabled = True
@@ -130,17 +164,26 @@ class Mod:
             logger.debug("Mod already disabled, returning.")
             return
 
-        disabled_path = files.fix(Path.joinpath(config.mods_path, self.name))
+        disabled_path = files.magic_resolve(Path.joinpath(config.mods_path, self.name))
         if files.is_junction(self.abs_path):
             # if the mod was installed via a symlink
-            files.add_magic(self.abs_path).rmdir()
+            files.rm_junction(files.magic(self.abs_path))
         else:
             # if the mod was installed via copy/paste
-            files.move_dir(self.abs_path, disabled_path)
+            files.mv_path(self.abs_path, disabled_path)
 
         # now mark as disabled
         self.enabled = False
         self.abs_path = disabled_path
+
+    def uninstall(self) -> None:
+        """
+        Uninstalls the mod mod object.
+        """
+        logger.debug(f"Uninstalling {self.name}")
+
+        self.disable()
+        files.rm_path(self.abs_path)
 
     def load_files(self) -> None:
         """
@@ -181,7 +224,7 @@ class _FlightSim:
         Set the path of the packages folder.
         Also builds the path the community and official package folders.
         """
-        self._packages_path = files.fix(value)
+        self._packages_path = files.magic_resolve(value)
         logger.debug(f"packages_path set to {self._packages_path}")
 
         self.community_packages_path = self._packages_path.joinpath("Community")
@@ -202,7 +245,7 @@ class _FlightSim:
 
         installed_packages_path = ""
 
-        with open(files.fix(path), "r", encoding="utf8") as fp:
+        with open(files.magic_resolve(path), "r", encoding="utf8") as fp:
             for line in fp:
                 if line.startswith("InstalledPackagesPath"):
                     installed_packages_path = line
@@ -225,8 +268,8 @@ class _FlightSim:
         """
         logger.debug(f"Testing if {path} is the Packages folder")
         return (
-            files.fix(path).joinpath("Community").is_dir()
-            and files.fix(path).joinpath("Official").is_dir()
+            files.magic_resolve(path).joinpath("Community").is_dir()
+            and files.magic_resolve(path).joinpath("Official").is_dir()
         )
 
     def _is_sim_root_path(self, path: Path) -> bool:
@@ -234,7 +277,7 @@ class _FlightSim:
         Tests if a path is indeed the root simulation folder.
         """
         logger.debug(f"Testing if {path} is the simulator root folder")
-        return files.fix(path).joinpath("FlightSimulator.CFG").is_file()
+        return files.magic_resolve(path).joinpath("FlightSimulator.CFG").is_file()
 
     def find_installation(self) -> bool:
         """

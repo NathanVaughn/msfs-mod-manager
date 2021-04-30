@@ -1,4 +1,6 @@
+import os
 import shutil
+import stat
 import subprocess
 from pathlib import Path
 from typing import Union
@@ -11,8 +13,12 @@ Num = Union[float, int]
 # this is truly voodoo magic
 MAGIC = "\\\\?\\"
 
+# ======================================================================================
+# Magic
+# ======================================================================================
 
-def add_magic(path: Path) -> Path:
+
+def magic(path: Path) -> Path:
     """
     Adds magic Windows prefix that allows support of paths longer than 256 characters.
     """
@@ -23,12 +29,38 @@ def add_magic(path: Path) -> Path:
     return path
 
 
-def fix(path: Path) -> Path:
+def magic_resolve(path: Path) -> Path:
     """
     Adds magic Windows prefix and resolves symlinks.
     """
-    path = add_magic(path)
+    path = magic(path)
     return path.resolve()
+
+
+def fix_perms(path: Path) -> None:
+    """
+    Fix the permissions of an individual path. Not recursive.
+    """
+    # logger.debug("Applying stat.S_IWUSR permission to {}".format(path))
+    # fix deletion permission https://blog.nathanv.me/posts/python-permission-issue/
+    path.chmod(stat.S_IWUSR)
+
+
+def fix_perms_recursive(path: Path) -> None:
+    """
+    Recursively fixes the permissions of a folder so that it can be deleted.
+    """
+
+    logger.debug(f"Fixing permissions for {path}")
+
+    for root, dirs, files in os.walk(path):
+        for i in dirs + files:
+            fix_perms(Path(root).joinpath(i))
+
+
+# ======================================================================================
+# Directory Junctions
+# ======================================================================================
 
 
 def is_junction(path: Path) -> bool:
@@ -43,7 +75,7 @@ def is_junction(path: Path) -> bool:
     return not path.resolve().samefile(path)
 
 
-def create_junction(src: Path, dest: Path) -> None:
+def mk_junction(src: Path, dest: Path) -> None:
     """
     Creates a directory junction between two directories.
     """
@@ -60,19 +92,78 @@ def create_junction(src: Path, dest: Path) -> None:
 
     # TODO win32
     # create the link
-    command = ["cmd", "/c", "mklink", "/J", str(add_magic(dest)), str(add_magic(src))]
+    command = ["cmd", "/c", "mklink", "/J", str(magic(dest)), str(magic(src))]
     logger.debug(f"Executing: {str(command)}")
     subprocess.run(
         command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
 
 
-def move_dir(src: Path, dest: Path) -> None:
+def rm_junction(path: Path) -> None:
+    """
+    Attempts to delete the given directory junction.
+    """
+    if not is_junction(path):
+        return
+
+    # this will delete only the junction and not the linked directory
+    path.rmdir()
+
+
+# ======================================================================================
+# Move/Del
+# ======================================================================================
+
+
+def mv_path(src: Path, dest: Path) -> None:
     """
     Move a path object from one location to another.
     """
-    logger.debug(f"Moving direcotry from {src} to {dest}")
-    shutil.move(str(add_magic(src)), str(add_magic(dest)))
+    logger.debug(f"Moving directory from {src} to {dest}")
+
+    # apply magic
+    src = magic(src)
+    dest = magic(dest)
+
+    # remove the destination if the dest already exists
+    if dest.exists():
+        rm_path(dest)
+
+    # copy to the new path
+    shutil.copytree(src, dest)
+    # delete the old path
+    rm_path(src)
+
+
+def rm_path(path: Path, first: bool = True) -> None:
+    """
+    Delete a path and fix permissions issues.
+    """
+    path = magic(path)
+
+    logger.debug(f"Deleting path {path}")
+
+    # check if it exists
+    if not path.exists():
+        logger.debug(f"Path {path} does not exist")
+        return
+
+    try:
+        # try to delete it
+        shutil.rmtree(path, ignore_errors=False)
+    except PermissionError:
+        # if there is a permission error, try to fix
+        logger.info(f"Path {path} deletion failed because of PermissionError")
+        if first:
+            fix_perms_recursive(path)
+            rm_path(path, first=False)
+        else:
+            raise
+
+
+# ======================================================================================
+# Misc
+# ======================================================================================
 
 
 def human_readable_size(size: Num, decimal_places: int = 2) -> str:

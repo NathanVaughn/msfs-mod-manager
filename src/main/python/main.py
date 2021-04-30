@@ -14,7 +14,7 @@ def main() -> None:
         diagnose=True,
         enqueue=True,
     )
-    logger.info("-----------------------")
+    logger.info("---------------------")
     logger.info("Launching application")
 
     flightsim.find_installation()
