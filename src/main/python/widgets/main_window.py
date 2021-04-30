@@ -2,9 +2,8 @@ import os
 import webbrowser
 from pathlib import Path
 
-import PySide2.QtGui as QtGui
-import PySide2.QtWidgets as QtWidgets
 from fbs_runtime.application_context.PySide2 import ApplicationContext
+from PySide2 import QtGui, QtWidgets
 
 import lib.versions as versions
 from lib.config import config
@@ -18,7 +17,7 @@ class MainWindow(QtWidgets.QMainWindow):
     """
 
     def __init__(self, parent: QtWidgets.QWidget, appctxt: ApplicationContext) -> None:
-        super().__init__(self)
+        QtWidgets.QMainWindow.__init__(self)
         self.parent = parent  # type: ignore
         self.appctxt = appctxt
 
@@ -79,8 +78,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         edit_menu.addSeparator()
 
-        menu_action = QtWidgets.QAction("Change Mod Install Folder", self)
-        menu_action.triggered.connect(self.main_widget.select_mod_install)  # type: ignore
+        menu_action = QtWidgets.QAction("Change Mod Install Path", self)
+        menu_action.triggered.connect(self.main_widget.select_mod_path)  # type: ignore
         edit_menu.addAction(menu_action)  # type: ignore
 
         info_menu = main_menu.addMenu("Info")

@@ -1,8 +1,6 @@
 from typing import List, Tuple
 
-import PySide2.QtCore as QtCore
-import PySide2.QtGui as QtGui
-import PySide2.QtWidgets as QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class BaseTable(QtWidgets.QTableView):
@@ -58,7 +56,7 @@ class BaseTable(QtWidgets.QTableView):
         self.storage.insert(0, data)
 
         for index, attribute in enumerate(self.header_attributes):
-            item = getattr(data, attribute[1], __default="")
+            item = getattr(data, attribute[1], "")
 
             # if it's a boolean, convert to string so capitalization
             # is preserved, which oddly Qt does not do

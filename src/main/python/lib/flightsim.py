@@ -72,6 +72,9 @@ class Mod:
         self.manifest_path: Path = self.abs_path.joinpath("manifest.json")
         self.manifest_data: dict = {}
 
+        if not self.manifest_path.exists():
+            raise ManifestError(f"{self.manifest_path} not found")
+
         # update information
         self.url: str = ""
 
@@ -90,10 +93,6 @@ class Mod:
         """
         Load data from the manifest.json file.
         """
-
-        if not self.manifest_path.exists():
-            raise ManifestError(f"{self.manifest_path} not found")
-
         logger.debug(f"Parsing manifest.json at {self.manifest_path}")
 
         # read
@@ -260,7 +259,7 @@ class _FlightSim:
 
         return installed_packages_path
 
-    def _is_sim_packages_path(self, path: Path) -> bool:
+    def is_sim_packages_path(self, path: Path) -> bool:
         """
         Tests if a path is indeed the simulator packages folder.
         """
@@ -270,7 +269,7 @@ class _FlightSim:
             and files.magic_resolve(path).joinpath("Official").is_dir()
         )
 
-    def _is_sim_root_path(self, path: Path) -> bool:
+    def is_sim_root_path(self, path: Path) -> bool:
         """
         Tests if a path is indeed the root simulation folder.
         """
@@ -286,7 +285,7 @@ class _FlightSim:
         logger.debug("Loading sim_packages_path from config file")
         config_packages_path = config.packages_path
 
-        if self._is_sim_packages_path(config_packages_path):
+        if self.is_sim_packages_path(config_packages_path):
             self.packages_path = config_packages_path
             return True
 
@@ -294,9 +293,9 @@ class _FlightSim:
         logger.debug("Loading sim_packages_path from normal Steam")
         normal_steam_root_path = Path(os.getenv("APPDATA"), "Microsoft Flight Simulator")  # type: ignore
 
-        if self._is_sim_root_path(normal_steam_root_path):
+        if self.is_sim_root_path(normal_steam_root_path):
             normal_steam_packages_path = self._parse_user_cfg(normal_steam_root_path)
-            if self._is_sim_packages_path(normal_steam_packages_path):
+            if self.is_sim_packages_path(normal_steam_packages_path):
                 self.packages_path = normal_steam_packages_path
                 return True
 
@@ -309,9 +308,9 @@ class _FlightSim:
             "LocalCache",
         )
 
-        if self._is_sim_root_path(msstore_root_path):
+        if self.is_sim_root_path(msstore_root_path):
             msstore_packages_path = self._parse_user_cfg(msstore_root_path)
-            if self._is_sim_packages_path(msstore_packages_path):
+            if self.is_sim_packages_path(msstore_packages_path):
                 self.packages_path = msstore_packages_path
                 return True
 
@@ -321,7 +320,7 @@ class _FlightSim:
             os.getenv("LOCALAPPDATA"), "MSFSPackages"  # type: ignore
         )
 
-        if self._is_sim_packages_path(boxed_packages_path):
+        if self.is_sim_packages_path(boxed_packages_path):
             self.packages_path = boxed_packages_path
             return True
 
@@ -334,11 +333,11 @@ class _FlightSim:
             "MicrosoftFlightSimulator",
         )
 
-        if self._is_sim_root_path(programfiles_normal_steam_root_path):
+        if self.is_sim_root_path(programfiles_normal_steam_root_path):
             programfiles_normal_steam_packages_path = self._parse_user_cfg(
                 programfiles_normal_steam_root_path
             )
-            if self._is_sim_packages_path(programfiles_normal_steam_packages_path):
+            if self.is_sim_packages_path(programfiles_normal_steam_packages_path):
                 self.packages_path = programfiles_normal_steam_packages_path
                 return True
 
@@ -351,11 +350,11 @@ class _FlightSim:
             "Chucky",
         )
 
-        if self._is_sim_root_path(programfiles_chucky_steam_root_path):
+        if self.is_sim_root_path(programfiles_chucky_steam_root_path):
             programfiles_chucky_steam_packages_path = self._parse_user_cfg(
                 programfiles_chucky_steam_root_path
             )
-            if self._is_sim_packages_path(programfiles_chucky_steam_packages_path):
+            if self.is_sim_packages_path(programfiles_chucky_steam_packages_path):
                 self.packages_path = programfiles_chucky_steam_packages_path
                 return True
 

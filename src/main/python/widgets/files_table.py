@@ -1,7 +1,6 @@
 from typing import Any
 
-import PySide2.QtGui as QtGui
-import PySide2.QtWidgets as QtWidgets
+from PySide2 import QtGui, QtWidgets
 
 from widgets.base_table import BaseTable
 

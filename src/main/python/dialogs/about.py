@@ -1,9 +1,7 @@
 from pathlib import Path
 
-import PySide2.QtCore as QtCore
-import PySide2.QtGui as QtGui
-import PySide2.QtWidgets as QtWidgets
 from fbs_runtime.application_context.PySide2 import ApplicationContext
+from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class AboutDialog(QtWidgets.QDialog):

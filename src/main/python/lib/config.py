@@ -60,8 +60,10 @@ class _Config:
         section = parser[self._settings_section]
 
         # load the paths from the config
-        self._packages_path = Path(section.get(self._packages_path_key, ""))
-        self._mods_path = Path(section.get(self._mods_path_key, ""))
+        self._packages_path = Path(
+            section.get(self._packages_path_key, str(self._packages_path))
+        )
+        self._mods_path = Path(section.get(self._mods_path_key, str(self._mods_path)))
 
         # try load datetime from config
         try:
@@ -72,8 +74,10 @@ class _Config:
             pass
 
         # load booleans
-        self._never_version_check = section.getboolean(self._never_version_check_key)
-        self._use_theme = section.getboolean(self._use_theme_key)
+        self._never_version_check = section.getboolean(
+            self._never_version_check_key, fallback=False
+        )
+        self._use_theme = section.getboolean(self._use_theme_key, fallback=False)
 
         self._has_been_loaded = True
 
