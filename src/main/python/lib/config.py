@@ -11,9 +11,9 @@ class _Config:
     Object to represent the global configuration
     """
 
-    BASE_FOLDER: Path = Path.joinpath(Path(os.getenv("APPDATA")), "MSFS Mod Manager V2")  # type: ignore
-    LOG_FILE: Path = Path.joinpath(BASE_FOLDER, "debug.log")
-    CONFIG_FILE: Path = Path.joinpath(BASE_FOLDER, "config.ini")
+    BASE_FOLDER: Path = Path(os.getenv("APPDATA"), "MSFS Mod Manager V2")  # type: ignore
+    LOG_FILE: Path = Path(BASE_FOLDER, "debug.log")
+    CONFIG_FILE: Path = Path(BASE_FOLDER, "config.ini")
 
     TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
@@ -28,7 +28,7 @@ class _Config:
         self._packages_path_key: str = "packages_path"
 
         # path to where disabled mods are stored
-        self._mods_path: Path = Path.joinpath(self.BASE_FOLDER, "mods")
+        self._mods_path: Path = Path(self.BASE_FOLDER, "mods")
         self._mods_path_key: str = "mods_path"
 
         # last time version was checked

@@ -24,7 +24,7 @@ def magic(path: Path) -> Path:
     """
     path_str = str(path)
     if not path_str.startswith(MAGIC):
-        path = Path.joinpath(Path(MAGIC), path)
+        path = Path(Path(MAGIC), path)
 
     return path
 
@@ -55,7 +55,7 @@ def fix_perms_recursive(path: Path) -> None:
 
     for root, dirs, files in os.walk(path):
         for i in dirs + files:
-            fix_perms(Path(root).joinpath(i))
+            fix_perms(Path(root, i))
 
 
 # ======================================================================================

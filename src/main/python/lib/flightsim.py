@@ -55,9 +55,6 @@ class Mod:
     """
 
     def __init__(self, abs_path: Path) -> None:
-        # prep variables
-        # ====================================
-
         # manifest data
         self.content_type: str = ""
         self.title: str = ""
@@ -68,9 +65,11 @@ class Mod:
 
         # metadata
         # check if absolute path to this mod is in the flightsim folder
+        self.abs_path: Path = files.magic(abs_path)
         self.enabled = flightsim.packages_path in self.abs_path.parents
         self.name = self.abs_path.name
-        self.last_modified = datetime.fromtimestamp(self.manifest_path.stat().st_ctime)
+
+        self.manifest_path: Path = self.abs_path.joinpath("manifest.json")
         self.manifest_data: dict = {}
 
         # update information
@@ -80,8 +79,7 @@ class Mod:
         # intentionally don't fully resolve this path, as we don't
         # want to resolve a symlink to be able to tell if this mod is enabled
         # or no
-        self.abs_path: Path = files.magic(abs_path)
-        self.manifest_path: Path = self.abs_path.joinpath("manifest.json")
+        self.last_modified = datetime.fromtimestamp(self.manifest_path.stat().st_ctime)
         self.files: List[ModFile] = []
         self.size: int = 0
 
@@ -116,6 +114,20 @@ class Mod:
         # mod manager content
         self.url = self.manifest_data.get("_nvmmm_url", "")
 
+    def load_files(self) -> None:
+        """
+        Load extra data on the files of a mod into the object.
+        This is an expensive operation, so must be done explicitly.
+        """
+        logger.debug(f"Loading ModFiles for {self.name}")
+
+        for subfile in self.abs_path.glob("**/*.*"):
+            self.files.append(
+                ModFile(self.abs_path, subfile.relative_to(self.abs_path))
+            )
+
+        self.size = sum(file.size for file in self.files)
+
     def dump(self) -> None:
         """
         Save data to the manifest.json file.
@@ -145,7 +157,7 @@ class Mod:
             logger.debug("Mod already enabled, returning.")
             return
 
-        enabled_path = Path.joinpath(
+        enabled_path = Path(
             files.magic_resolve(flightsim.community_packages_path), self.name
         )
         files.mk_junction(self.abs_path, enabled_path)
@@ -164,7 +176,7 @@ class Mod:
             logger.debug("Mod already disabled, returning.")
             return
 
-        disabled_path = files.magic_resolve(Path.joinpath(config.mods_path, self.name))
+        disabled_path = files.magic_resolve(Path(config.mods_path, self.name))
         if files.is_junction(self.abs_path):
             # if the mod was installed via a symlink
             files.rm_junction(files.magic(self.abs_path))
@@ -184,20 +196,6 @@ class Mod:
 
         self.disable()
         files.rm_path(self.abs_path)
-
-    def load_files(self) -> None:
-        """
-        Load extra data on the files of a mod into the object.
-        This is an expensive operation, so must be done explicitly.
-        """
-        logger.debug(f"Loading ModFiles for {self.name}")
-
-        for subfile in self.abs_path.glob("**/*.*"):
-            self.files.append(
-                ModFile(self.abs_path, subfile.relative_to(self.abs_path))
-            )
-
-        self.size = sum(file.size for file in self.files)
 
 
 class _FlightSim:
@@ -294,9 +292,7 @@ class _FlightSim:
 
         # try Steam normal install path
         logger.debug("Loading sim_packages_path from normal Steam")
-        normal_steam_root_path = Path.joinpath(
-            Path(os.getenv("APPDATA")), "Microsoft Flight Simulator"  # type: ignore
-        )
+        normal_steam_root_path = Path(os.getenv("APPDATA"), "Microsoft Flight Simulator")  # type: ignore
 
         if self._is_sim_root_path(normal_steam_root_path):
             normal_steam_packages_path = self._parse_user_cfg(normal_steam_root_path)
@@ -306,8 +302,8 @@ class _FlightSim:
 
         # try MS Store install path
         logger.debug("Loading sim_packages_path from MS Store")
-        msstore_root_path = Path.joinpath(
-            Path(os.getenv("LOCALAPPDATA")),  # type: ignore
+        msstore_root_path = Path(
+            os.getenv("LOCALAPPDATA"),  # type: ignore
             "Packages",
             "Microsoft.FlightSimulator_8wekyb3d8bbwe",
             "LocalCache",
@@ -321,8 +317,8 @@ class _FlightSim:
 
         # try boxed edition install path
         logger.debug("Loading sim_packages_path from boxed edition")
-        boxed_packages_path = Path.joinpath(
-            Path(os.getenv("LOCALAPPDATA")), "MSFSPackages"  # type: ignore
+        boxed_packages_path = Path(
+            os.getenv("LOCALAPPDATA"), "MSFSPackages"  # type: ignore
         )
 
         if self._is_sim_packages_path(boxed_packages_path):
@@ -330,8 +326,8 @@ class _FlightSim:
             return True
 
         # try Steam Program Files normal install path
-        programfiles_normal_steam_root_path = Path.joinpath(
-            Path(os.getenv("PROGRAMFILES(x86)")),  # type: ignore
+        programfiles_normal_steam_root_path = Path(
+            os.getenv("PROGRAMFILES(x86)"),  # type: ignore
             "Steam",
             "steamapps",
             "common",
@@ -347,8 +343,8 @@ class _FlightSim:
                 return True
 
         # try Steam Program Files Chucky install path
-        programfiles_chucky_steam_root_path = Path.joinpath(
-            Path(os.getenv("PROGRAMFILES(x86)")),  # type: ignore
+        programfiles_chucky_steam_root_path = Path(
+            os.getenv("PROGRAMFILES(x86)"),  # type: ignore
             "Steam",
             "steamapps",
             "common",
