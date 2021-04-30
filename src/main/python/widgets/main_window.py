@@ -18,7 +18,7 @@ class MainWindow(QtWidgets.QMainWindow):
     """
 
     def __init__(self, parent: QtWidgets.QWidget, appctxt: ApplicationContext) -> None:
-        QtWidgets.QMainWindow.__init__(self)
+        super().__init__(self)
         self.parent = parent  # type: ignore
         self.appctxt = appctxt
 
@@ -30,7 +30,6 @@ class MainWindow(QtWidgets.QMainWindow):
         )
 
         self.main_widget = MainWidget(parent=self, appctxt=self.appctxt)
-        self.main_widget.build()
 
         self.setCentralWidget(self.main_widget)
 
