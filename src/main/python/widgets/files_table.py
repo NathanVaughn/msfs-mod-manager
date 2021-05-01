@@ -1,7 +1,8 @@
-from typing import Any
+from typing import Any, List
 
 from PySide2 import QtGui, QtWidgets
 
+from lib.flightsim import ModFile
 from widgets.base_table import BaseTable
 
 
@@ -16,6 +17,12 @@ class FilesTable(BaseTable):
         header_attributes = [("Path", "path"), ("Size (Bytes)", "size")]
 
         super().__init__(self.parent, header_attributes)
+
+    def set_data(self, data: List[ModFile], first: bool = False) -> None:
+        """
+        Proxy function for the sake of type-hinting
+        """
+        super().set_data(data, first=first)  # type: ignore
 
     def contextMenuEvent(self, event: Any) -> None:
         """
