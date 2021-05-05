@@ -10,8 +10,7 @@ class AboutDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, parent: QtWidgets.QWidget, appctxt: ApplicationContext) -> None:
-
-        super().__init__(self)
+        QtWidgets.QDialog.__init__(self)
         self.parent = parent  # type: ignore
         self.appctxt = appctxt
 

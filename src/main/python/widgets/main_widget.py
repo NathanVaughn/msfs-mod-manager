@@ -7,11 +7,33 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 import dialogs.information
 import dialogs.warning
+from dialogs.about import AboutDialog
 from lib.config import config
 from lib.flightsim import flightsim
+from lib.thread import Thread, wait_for_thread
 from widgets.mod_table import ModTable
 
 ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
+
+# ======================
+# Decorators
+# ======================
+
+
+def disable_button(button_name: str):
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
+            button: QtWidgets.QPushButton = getattr(self, button_name)
+
+            button.setEnabled(False)
+            output = func(self, *args, **kwargs)
+            button.setEnabled(True)
+
+            return output
+
+        return wrapper
+
+    return decorator
 
 
 class MainWidget(QtWidgets.QWidget):
@@ -20,7 +42,6 @@ class MainWidget(QtWidgets.QWidget):
     """
 
     def __init__(self, parent: QtWidgets.QWidget, appctxt: ApplicationContext) -> None:
-
         QtWidgets.QWidget.__init__(self)
         self.parent = parent  # type: ignore
         self.appctxt = appctxt
@@ -29,23 +50,23 @@ class MainWidget(QtWidgets.QWidget):
 
         # layouts don't work with keyword arguments ????
 
-        install_button = QtWidgets.QPushButton("Install", self)
-        layout.addWidget(install_button, 0, 0)  # type: ignore
+        self.install_button = QtWidgets.QPushButton("Install", self)
+        layout.addWidget(self.install_button, 0, 0)  # type: ignore
 
-        uninstall_button = QtWidgets.QPushButton("Uninstall", self)
-        layout.addWidget(uninstall_button, 0, 1)  # type: ignore
+        self.uninstall_button = QtWidgets.QPushButton("Uninstall", self)
+        layout.addWidget(self.uninstall_button, 0, 1)  # type: ignore
 
-        enable_button = QtWidgets.QPushButton("Enable", self)
-        layout.addWidget(enable_button, 0, 4)  # type: ignore
+        self.enable_button = QtWidgets.QPushButton("Enable", self)
+        layout.addWidget(self.enable_button, 0, 4)  # type: ignore
 
-        disable_button = QtWidgets.QPushButton("Disable", self)
-        layout.addWidget(disable_button, 0, 5)  # type: ignore
+        self.disable_button = QtWidgets.QPushButton("Disable", self)
+        layout.addWidget(self.disable_button, 0, 5)  # type: ignore
 
-        info_button = QtWidgets.QPushButton("Info", self)
-        layout.addWidget(info_button, 0, 8)  # type: ignore
+        self.info_button = QtWidgets.QPushButton("Info", self)
+        layout.addWidget(self.info_button, 0, 8)  # type: ignore
 
-        refresh_button = QtWidgets.QPushButton("Refresh", self)
-        layout.addWidget(refresh_button, 0, 9)  # type: ignore
+        self.refresh_button = QtWidgets.QPushButton("Refresh", self)
+        layout.addWidget(self.refresh_button, 0, 9)  # type: ignore
 
         sublayout = QtWidgets.QHBoxLayout()  # type: ignore
 
@@ -55,8 +76,8 @@ class MainWidget(QtWidgets.QWidget):
         self.search_field = QtWidgets.QLineEdit(self)
         sublayout.addWidget(self.search_field)
 
-        clear_button = QtWidgets.QPushButton("Clear", self)
-        sublayout.addWidget(clear_button)
+        self.clear_button = QtWidgets.QPushButton("Clear", self)
+        sublayout.addWidget(self.clear_button)
 
         layout.addLayout(sublayout, 1, 6, 1, 4)
 
@@ -66,15 +87,15 @@ class MainWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
         # buttons
-        install_button.clicked.connect(self.install_archive)  # type: ignore
-        uninstall_button.clicked.connect(self.uninstall)  # type: ignore
-        enable_button.clicked.connect(self.enable)  # type: ignore
-        disable_button.clicked.connect(self.disable)  # type: ignore
-        refresh_button.clicked.connect(self.refresh)  # type: ignore
-        info_button.clicked.connect(self.info)  # type: ignore
+        self.install_button.clicked.connect(self.install_archive)  # type: ignore
+        self.uninstall_button.clicked.connect(self.uninstall)  # type: ignore
+        self.enable_button.clicked.connect(self.enable)  # type: ignore
+        self.disable_button.clicked.connect(self.disable)  # type: ignore
+        self.refresh_button.clicked.connect(self.refresh)  # type: ignore
+        self.info_button.clicked.connect(self.info)  # type: ignore
         self.main_table.doubleClicked.connect(self.info)  # type: ignore
 
-        clear_button.clicked.connect(self.clear_search)  # type: ignore
+        self.clear_button.clicked.connect(self.clear_search)  # type: ignore
         self.search_field.textChanged.connect(self.search)  # type: ignore
 
         # shortcuts
@@ -150,16 +171,31 @@ class MainWidget(QtWidgets.QWidget):
     # Data
     # ======================
 
-    def refresh(self, first: bool):
-        all_mods = flightsim.get_all_mods()
+    @disable_button("refresh_button")
+    def refresh(self, first: bool = False):
+        """
+        Refresh main table data.
+        """
+        # temporarily clear search so that header resizing doesn't get borked
+        self.search(override="")
+
+        all_mods_thread = Thread(flightsim.get_all_mods)
+        all_mods = wait_for_thread(all_mods_thread)
+
         self.main_table.set_data(all_mods, first=True)
         self.main_table.set_colors(config.use_theme)
+
+        # put the search back to how it was
+        self.search()
 
     def info(self):
         pass
 
     def about(self):
-        pass
+        """
+        Launch the about dialog.
+        """
+        AboutDialog(self, self.appctxt).exec_()
 
     def versions(self):
         pass

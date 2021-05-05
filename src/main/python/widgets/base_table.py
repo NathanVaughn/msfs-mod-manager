@@ -12,15 +12,17 @@ class BaseTable(QtWidgets.QTableView):
         self, parent: QtWidgets.QWidget, header_attributes: List[Tuple[str, str]]
     ) -> None:
         super().__init__(parent)
-        self.parent = None  # type: ignore
+        self.parent = parent  # type: ignore
         self.header_attributes = header_attributes
 
+        # allow sorting
         self.setSortingEnabled(True)
+        # turn on row colors
         self.setAlternatingRowColors(True)
+        # disable word wrap
         self.setWordWrap(False)
-        self.setEditTriggers(
-            QtWidgets.QAbstractItemView.NoEditTriggers  # type: ignore
-        )  # disable editing
+        # disable editing
+        self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)  # type: ignore
 
         # set the correct size adjust policy to get the proper size hint
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)  # type: ignore
@@ -45,16 +47,19 @@ class BaseTable(QtWidgets.QTableView):
         # set table model
         self.setModel(self.proxy_model)
 
-        # prepare secondary data storage
+        # prepare secondary object storage
         self.storage = []
 
     def insert_row(self, data: object) -> None:
         """
         Insert a new row into the table.
         """
+        # insert new model row
         self.base_model.insertRow(0)
+        # insert into secondary storage
         self.storage.insert(0, data)
 
+        # go through all the attributes that should be displayed
         for index, attribute in enumerate(self.header_attributes):
             item = getattr(data, attribute[1], "")
 
@@ -95,11 +100,11 @@ class BaseTable(QtWidgets.QTableView):
         """
         return self.base_model.item(r, c)
 
-    def get_row(self, row_id: int) -> object:
+    def get_row(self, id_: int) -> object:
         """
         Returns the original object inserted into a row.
         """
-        return self.storage[row_id]
+        return self.storage[id_]
 
     def row_count(self) -> int:
         """
@@ -136,7 +141,7 @@ class BaseTable(QtWidgets.QTableView):
         Returns a list of selected row indexes.
         """
         # this gets the list of model indexes from the table, then maps them
-        # to the source data via the proxy model, and returns the row elements
+        # to the source data via the proxy model, and returns the row indexes
         return [
             y.row()
             for y in [
@@ -144,6 +149,12 @@ class BaseTable(QtWidgets.QTableView):
                 for x in self.selectionModel().selectedRows()
             ]
         ]
+
+    def get_selected_row_objects(self) -> list:
+        """
+        Returns a list of selected row objects.
+        """
+        return [self.storage[i] for i in self.get_selected_rows()]
 
     def search(self, term: str) -> None:
         """

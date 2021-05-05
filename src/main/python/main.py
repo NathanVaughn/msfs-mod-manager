@@ -31,7 +31,7 @@ def main() -> None:
 
         # load data
         app_main_window.main_widget.find_sim()
-        app_main_window.main_widget.check_version()
+        # app_main_window.main_widget.check_version()
         app_main_window.main_widget.refresh(first=True)
 
         # resize and show
