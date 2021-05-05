@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import Callable, List
 
 from loguru import logger
 
@@ -360,14 +360,29 @@ class _FlightSim:
 
         return False
 
-    def get_enabled_mods(self) -> List[Mod]:
+    def get_enabled_mods(
+        self, activity_func: Callable = None, percent_func: Callable = None
+    ) -> List[Mod]:
         """
         Return a list of enabled mods.
         """
         logger.debug("Getting enabled mods")
-        return [Mod(subdir) for subdir in self.community_packages_path.glob("*/")]
 
-    def get_disabled_mods(self) -> List[Mod]:
+        enabled_mods = []
+        subdirs = list(self.community_packages_path.glob("*/"))
+
+        percent_func((0, len(subdirs)))
+
+        for i, subdir in enumerate(subdirs):
+            activity_func(f"Parsing {subdir}")
+            enabled_mods.append(Mod(subdir))
+            percent_func(i)
+
+        return enabled_mods
+
+    def get_disabled_mods(
+        self, activity_func: Callable = None, percent_func: Callable = None
+    ) -> List[Mod]:
         """
         Return a list of disabled mods.
         """
@@ -379,18 +394,32 @@ class _FlightSim:
         ]
         # now, only return Mods that don't have a folder of the same name in
         # the Community folder
-        return [
-            Mod(subdir)
-            for subdir in config.mods_path.glob("*/")
-            if subdir.name not in enabled_dirs
-        ]
+        disabled_mods = []
+        subdirs = list(config.mods_path.glob("*/"))
 
-    def get_all_mods(self) -> List[Mod]:
+        percent_func((0, len(subdirs)))
+
+        for i, subdir in enumerate(subdirs):
+            if subdir.name not in enabled_dirs:
+                activity_func(f"Parsing {subdir}")
+                disabled_mods.append(Mod(subdir))
+
+            percent_func(i)
+
+        return disabled_mods
+
+    def get_all_mods(
+        self, activity_func: Callable = None, percent_func: Callable = None
+    ) -> List[Mod]:
         """
         Return a list of all mods.
         """
         logger.debug("Getting all mods")
-        return self.get_enabled_mods() + self.get_disabled_mods()
+        return self.get_enabled_mods(
+            activity_func=activity_func, percent_func=percent_func
+        ) + self.get_disabled_mods(
+            activity_func=activity_func, percent_func=percent_func
+        )
 
 
 flightsim = _FlightSim()

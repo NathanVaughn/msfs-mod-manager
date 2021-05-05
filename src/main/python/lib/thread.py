@@ -26,7 +26,10 @@ class Thread(QtCore.QThread):
         logger.debug("Running thread")
 
         try:
-            output = self.function()
+            output = self.function(
+                activity_func=self.activity_update.emit,
+                percent_func=self.percent_update.emit,
+            )
             self.finished.emit(output)  # type: ignore
         except Exception as e:
             self.failed.emit(e)  # type: ignore

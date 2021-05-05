@@ -8,6 +8,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 import dialogs.information
 import dialogs.warning
 from dialogs.about import AboutDialog
+from dialogs.progress import ProgressDialog
 from lib.config import config
 from lib.flightsim import flightsim
 from lib.thread import Thread, wait_for_thread
@@ -179,11 +180,19 @@ class MainWidget(QtWidgets.QWidget):
         # temporarily clear search so that header resizing doesn't get borked
         self.search(override="")
 
+        progress = ProgressDialog(self, self.appctxt)
+        progress.set_mode(progress.PERCENT)
+
         all_mods_thread = Thread(flightsim.get_all_mods)
+        all_mods_thread.percent_update.connect(progress.set_percent)
+        all_mods_thread.activity_update.connect(progress.set_activity)
+
         all_mods = wait_for_thread(all_mods_thread)
 
         self.main_table.set_data(all_mods, first=True)
         self.main_table.set_colors(config.use_theme)
+
+        progress.close()
 
         # put the search back to how it was
         self.search()

@@ -69,6 +69,7 @@ class ProgressDialog(QtWidgets.QDialog):
         Update the displayed message.
         """
         self.activity.setText(message)
+        self.appctxt.app.processEvents()
 
     def set_percent(
         self, percent: Union[Tuple[int, int], int], total: int = None
@@ -93,3 +94,5 @@ class ProgressDialog(QtWidgets.QDialog):
         # if the total value was provided, set that
         if total is not None:
             self.progbar.setMaximum(total)
+
+        self.appctxt.app.processEvents()
