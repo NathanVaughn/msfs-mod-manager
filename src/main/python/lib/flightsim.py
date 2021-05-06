@@ -38,15 +38,15 @@ class ModFile:
         """
         Open the file itself with the system default program.
         """
-        logger.debug(f"Opening {self.abs_path.parent}")
-        os.startfile(self.abs_path.parent)
+        logger.debug(f"Opening {self.abs_path}")
+        os.startfile(self.abs_path)
 
     def open_folder(self) -> None:
         """
         Open the folder containing the file in File Explorer.
         """
-        logger.debug(f"Opening {self.abs_path}")
-        os.startfile(self.abs_path)
+        logger.debug(f"Opening {self.abs_path.parent}")
+        os.startfile(self.abs_path.parent)
 
 
 class Mod:

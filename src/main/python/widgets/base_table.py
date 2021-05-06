@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Tuple
 
 from PySide2 import QtCore, QtGui, QtWidgets
@@ -65,7 +66,9 @@ class BaseTable(QtWidgets.QTableView):
 
             # if it's a boolean, convert to string so capitalization
             # is preserved, which oddly Qt does not do
-            if isinstance(item, bool):
+            # It also doesn't like a Path object, even though that can be represented
+            # as a string
+            if isinstance(item, (bool, Path)):
                 item = str(item)
 
             self.base_model.setData(self.base_model.index(0, index), item)

@@ -30,7 +30,7 @@ def main() -> None:
         app_main_window = MainWindow(parent=app, appctxt=appctxt)
 
         # load data
-        app_main_window.main_widget.find_sim()
+        app_main_window.main_widget.find_sim_path()
         # app_main_window.main_widget.check_version()
         app_main_window.main_widget.refresh(first=True)
 

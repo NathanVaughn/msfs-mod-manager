@@ -12,6 +12,7 @@ from dialogs.progress import ProgressDialog
 from lib.config import config
 from lib.flightsim import flightsim
 from lib.thread import Thread, wait_for_thread
+from widgets.mod_info_widet import ModInfoWidget
 from widgets.mod_table import ModTable
 
 ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
@@ -109,13 +110,33 @@ class MainWidget(QtWidgets.QWidget):
     # Path Selection
     # ======================
 
+    def find_sim_path(self) -> None:
+        """
+        Sets the path to the simulator root path.
+        """
+
+        # try to automatically find the sim
+        success = flightsim.find_installation()
+
+        if success:
+            return
+
+        # show error
+        dialogs.warning.sim_not_detected(self)
+        # let user select folder
+        selection = self.select_sim_path()
+
+        # this function only runs at first startup
+        # so if nothing is selected, exit
+        if not selection:
+            sys.exit()
+
     def select_sim_path(self) -> bool:
         """
         Function to keep user in a loop until they select correct path to simulator.
         Returns if something was selected.
         """
         # prompt user to select
-
         result = QtWidgets.QFileDialog.getExistingDirectory(
             parent=self,
             caption="Select the root Microsoft Flight Simulator directory",
@@ -198,7 +219,18 @@ class MainWidget(QtWidgets.QWidget):
         self.search()
 
     def info(self):
-        pass
+        """
+        Launch the info widget for the selected Mod.
+        """
+        selected = self.main_table.get_selected_row_objects()
+
+        if not selected:
+            return
+
+        mod = selected[0]
+        mod.load_files()
+
+        ModInfoWidget(self, self.appctxt, mod).show()
 
     def about(self):
         """
@@ -238,27 +270,6 @@ class MainWidget(QtWidgets.QWidget):
     # ======================
     # Other
     # ======================
-
-    def find_sim(self) -> None:
-        """
-        Sets the path to the simulator root path.
-        """
-
-        # try to automatically find the sim
-        success = flightsim.find_installation()
-
-        if success:
-            return
-
-        # show error
-        dialogs.warning.sim_not_detected(self)
-        # let user select folder
-        selection = self.select_sim_path()
-
-        # this function only runs at first startup
-        # so if nothing is selected, exit
-        if not selection:
-            sys.exit()
 
     def create_backup(self):
         pass
