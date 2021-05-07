@@ -1,3 +1,4 @@
+import functools
 import os
 import sys
 from pathlib import Path
@@ -183,11 +184,45 @@ class MainWidget(QtWidgets.QWidget):
     # Enable/disable
     # ======================
 
+    @disable_button("enable_button")
     def enable(self):
-        pass
+        """
+        Enable the selected Mod objects.
+        """
+        progress = ProgressDialog(self, self.appctxt)
+        progress.set_mode(progress.PERCENT)
 
+        enable_mods_thread = Thread(
+            functools.partial(
+                flightsim.enable_mods, self.main_table.get_selected_row_objects()
+            )
+        )
+        enable_mods_thread.percent_update.connect(progress.set_percent)
+        enable_mods_thread.activity_update.connect(progress.set_activity)
+
+        wait_for_thread(enable_mods_thread)
+
+        progress.close()
+
+    @disable_button("disable_button")
     def disable(self):
-        pass
+        """
+        Disable the selected Mod objects.
+        """
+        progress = ProgressDialog(self, self.appctxt)
+        progress.set_mode(progress.PERCENT)
+
+        disable_mods_thread = Thread(
+            functools.partial(
+                flightsim.disable_mods, self.main_table.get_selected_row_objects()
+            )
+        )
+        disable_mods_thread.percent_update.connect(progress.set_percent)
+        disable_mods_thread.activity_update.connect(progress.set_activity)
+
+        wait_for_thread(disable_mods_thread)
+
+        progress.close()
 
     # ======================
     # Data

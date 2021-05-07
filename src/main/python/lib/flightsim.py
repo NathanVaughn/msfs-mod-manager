@@ -361,7 +361,9 @@ class _FlightSim:
         return False
 
     def get_enabled_mods(
-        self, activity_func: Callable = None, percent_func: Callable = None
+        self,
+        activity_func: Callable = lambda x: None,
+        percent_func: Callable = lambda x: None,
     ) -> List[Mod]:
         """
         Return a list of enabled mods.
@@ -371,7 +373,7 @@ class _FlightSim:
         enabled_mods = []
         subdirs = list(self.community_packages_path.glob("*/"))
 
-        percent_func((0, len(subdirs)))
+        percent_func((0, len(subdirs) - 1))
 
         for i, subdir in enumerate(subdirs):
             activity_func(f"Parsing {subdir}")
@@ -381,7 +383,9 @@ class _FlightSim:
         return enabled_mods
 
     def get_disabled_mods(
-        self, activity_func: Callable = None, percent_func: Callable = None
+        self,
+        activity_func: Callable = lambda x: None,
+        percent_func: Callable = lambda x: None,
     ) -> List[Mod]:
         """
         Return a list of disabled mods.
@@ -397,7 +401,7 @@ class _FlightSim:
         disabled_mods = []
         subdirs = list(config.mods_path.glob("*/"))
 
-        percent_func((0, len(subdirs)))
+        percent_func((0, len(subdirs) - 1))
 
         for i, subdir in enumerate(subdirs):
             if subdir.name not in enabled_dirs:
@@ -409,7 +413,9 @@ class _FlightSim:
         return disabled_mods
 
     def get_all_mods(
-        self, activity_func: Callable = None, percent_func: Callable = None
+        self,
+        activity_func: Callable = lambda x: None,
+        percent_func: Callable = lambda x: None,
     ) -> List[Mod]:
         """
         Return a list of all mods.
@@ -420,6 +426,40 @@ class _FlightSim:
         ) + self.get_disabled_mods(
             activity_func=activity_func, percent_func=percent_func
         )
+
+    def enable_mods(
+        self,
+        mods: List[Mod],
+        activity_func: Callable = lambda x: None,
+        percent_func: Callable = lambda x: None,
+    ) -> None:
+        """
+        Enable a list of Mod objects.
+        """
+        logger.debug("Enabling mods")
+        percent_func((0, len(mods) - 1))
+
+        for i, mod in enumerate(mods):
+            activity_func(f"Enabling {mod.name}")
+            mod.enable()
+            percent_func(i)
+
+    def disable_mods(
+        self,
+        mods: List[Mod],
+        activity_func: Callable = lambda x: None,
+        percent_func: Callable = lambda x: None,
+    ) -> None:
+        """
+        Disable a list of Mod objects.
+        """
+        logger.debug("Disabling mods")
+        percent_func((0, len(mods) - 1))
+
+        for i, mod in enumerate(mods):
+            activity_func(f"Disabling {mod.name}")
+            mod.disable()
+            percent_func(i)
 
 
 flightsim = _FlightSim()

@@ -45,7 +45,7 @@ def main() -> None:
         if isinstance(e, SystemExit):
             logger.info("System exit requested")
         else:
-            logger.exception("Uncaught exception")
+            logger.exception("Uncaught exception in application")
 
 
 if __name__ == "__main__":

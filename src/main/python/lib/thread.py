@@ -32,6 +32,7 @@ class Thread(QtCore.QThread):
             )
             self.finished.emit(output)  # type: ignore
         except Exception as e:
+            logger.exception("Uncaught exception in thread")
             self.failed.emit(e)  # type: ignore
 
         logger.debug("Thread completed")
@@ -41,7 +42,6 @@ def wait_for_thread(thread: Thread) -> Any:
     """
     Run a thread in a separate event loop so as not to block the main GUI.
     """
-
     loop = QtCore.QEventLoop()
 
     # outputs can only be obtained via connected signals
