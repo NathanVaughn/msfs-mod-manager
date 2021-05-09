@@ -120,10 +120,11 @@ class Mod:
         """
         logger.debug(f"Loading ModFiles for {self.name}")
 
-        for subfile in self.abs_path.glob("**/*.*"):
-            self.files.append(
-                ModFile(self.abs_path, subfile.relative_to(self.abs_path))
-            )
+        for subfile in self.abs_path.glob("**/*"):
+            if subfile.is_file():
+                self.files.append(
+                    ModFile(self.abs_path, subfile.relative_to(self.abs_path))
+                )
 
         self.size = sum(file.size for file in self.files)
 
