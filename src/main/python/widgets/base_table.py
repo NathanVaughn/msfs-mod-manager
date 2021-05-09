@@ -1,3 +1,4 @@
+import datetime
 from pathlib import Path
 from typing import List, Tuple
 
@@ -70,6 +71,8 @@ class BaseTable(QtWidgets.QTableView):
             # as a string
             if isinstance(item, (bool, Path)):
                 item = str(item)
+            elif isinstance(item, datetime.datetime):
+                item = item.isoformat()
 
             self.base_model.setData(self.base_model.index(0, index), item)
 

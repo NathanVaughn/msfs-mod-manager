@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 from PySide2.QtWidgets import QMessageBox, QWidget
 
@@ -7,6 +6,9 @@ TITLE = "Info"
 
 
 def sim_detected(parent: QWidget, path: Path) -> None:
+    """
+    Dialog for showing the user what path the sim installation was detected.
+    """
     QMessageBox().information(
         parent,
         "Info",
@@ -14,17 +16,10 @@ def sim_detected(parent: QWidget, path: Path) -> None:
     )
 
 
-def mods_installed(parent: QWidget, mods: List[str]) -> None:
-    QMessageBox().information(
-        parent,
-        TITLE,
-        "{} mod(s) installed!\n{}".format(
-            len(mods), "\n".join("- {}".format(mod) for mod in mods)
-        ),
-    )
-
-
 def mod_install_folder(parent: QWidget) -> None:
+    """
+    Dialog for informing the use what the mod install folder is used for.
+    """
     QMessageBox().information(
         parent,
         TITLE,
@@ -36,7 +31,10 @@ def mod_install_folder(parent: QWidget) -> None:
     )
 
 
-def mod_install_folder_set(parent: QWidget, path: str) -> None:
+def mod_install_folder_set(parent: QWidget, path: Path) -> None:
+    """
+    Dialog for showing the user what path the mod install folder has changed to.
+    """
     QMessageBox().information(
         parent,
         TITLE,

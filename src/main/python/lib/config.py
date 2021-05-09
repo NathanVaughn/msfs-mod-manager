@@ -108,7 +108,7 @@ class _Config:
         section[self._never_version_check_key] = str(self._never_version_check)
         section[self._use_theme_key] = str(self._use_theme)
 
-        with open(self.CONFIG_FILE, "w") as f:
+        with open(self.CONFIG_FILE, "w", encoding="utf-8") as f:
             parser.write(f)
 
         self._has_been_loaded = False

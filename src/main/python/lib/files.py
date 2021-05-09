@@ -3,7 +3,7 @@ import shutil
 import stat
 import subprocess
 from pathlib import Path
-from typing import Union
+from typing import Callable, Union
 
 from loguru import logger
 
@@ -37,25 +37,25 @@ def magic_resolve(path: Path) -> Path:
     return path.resolve()
 
 
-def fix_perms(path: Path) -> None:
+def fix_perms(path: Path, activity_func: Callable = lambda x: None) -> None:
     """
     Fix the permissions of an individual path. Not recursive.
     """
     # logger.debug("Applying stat.S_IWUSR permission to {}".format(path))
     # fix deletion permission https://blog.nathanv.me/posts/python-permission-issue/
+    activity_func(("", f"Fixing permissions for {str(path)}"))
     path.chmod(stat.S_IWUSR)
 
 
-def fix_perms_recursive(path: Path) -> None:
+def fix_perms_recursive(path: Path, activity_func: Callable = lambda x: None) -> None:
     """
     Recursively fixes the permissions of a folder so that it can be deleted.
     """
-
     logger.debug(f"Fixing permissions for {path}")
 
     for root, dirs, files in os.walk(path):
         for i in dirs + files:
-            fix_perms(Path(root, i))
+            fix_perms(Path(root, i), activity_func=activity_func)
 
 
 # ======================================================================================
@@ -72,23 +72,24 @@ def is_junction(path: Path) -> bool:
         return True
 
     # see if the resolved path is the same as what we started with
-    return not path.resolve().samefile(path)
+    return path.resolve() != path
 
 
-def mk_junction(src: Path, dest: Path) -> None:
+def mk_junction(
+    src: Path, dest: Path, activity_func: Callable = lambda x: None
+) -> None:
     """
     Creates a directory junction between two directories.
     """
     logger.debug(f"Creating directory junction from {src} to {dest}")
+    activity_func(("", f"Creating directory junction from {src} to {dest}"))
 
     if dest.exists():
         if not is_junction(dest):
             raise FileExistsError(dest)
 
-        # works fine in removing the junction but not
-        # the source directory
         logger.debug(f"Removing existing directory junction at {dest}")
-        dest.rmdir()
+        rm_junction(dest, activity_func=activity_func)
 
     # TODO win32
     # create the link
@@ -99,7 +100,7 @@ def mk_junction(src: Path, dest: Path) -> None:
     )
 
 
-def rm_junction(path: Path) -> None:
+def rm_junction(path: Path, activity_func: Callable = lambda x: None) -> None:
     """
     Attempts to delete the given directory junction.
     """
@@ -107,6 +108,7 @@ def rm_junction(path: Path) -> None:
         return
 
     # this will delete only the junction and not the linked directory
+    activity_func(("", f"Deleting directory junction at {str(path)}"))
     path.rmdir()
 
 
@@ -115,11 +117,14 @@ def rm_junction(path: Path) -> None:
 # ======================================================================================
 
 
-def mv_path(src: Path, dest: Path) -> None:
+def mv_path(src: Path, dest: Path, activity_func: Callable = lambda x: None) -> None:
     """
     Move a path object from one location to another.
     """
     logger.debug(f"Moving directory from {src} to {dest}")
+
+    if src.resolve() == dest.resolve():
+        raise ValueError("Source and destination are same location")
 
     # apply magic
     src = magic(src)
@@ -127,15 +132,22 @@ def mv_path(src: Path, dest: Path) -> None:
 
     # remove the destination if the dest already exists
     if dest.exists():
-        rm_path(dest)
+        logger.debug(f"Deleting destination {dest}")
+        rm_path(dest, activity_func=activity_func)
 
     # copy to the new path
+    activity_func(("", f"Copying {str(src)} to {str(dest)}"))
     shutil.copytree(src, dest)
     # delete the old path
-    rm_path(src)
+    logger.debug(f"Deleting source {src}")
+    rm_path(src, activity_func=activity_func)
 
 
-def rm_path(path: Path, first: bool = True) -> None:
+def rm_path(
+    path: Path,
+    first: bool = True,
+    activity_func: Callable = lambda x: None,
+) -> None:
     """
     Delete a path and fix permissions issues.
     """
@@ -150,13 +162,14 @@ def rm_path(path: Path, first: bool = True) -> None:
 
     try:
         # try to delete it
+        activity_func(("", f"Deleting {str(path)}"))
         shutil.rmtree(path, ignore_errors=False)
     except PermissionError:
         # if there is a permission error, try to fix
         logger.info(f"Path {path} deletion failed because of PermissionError")
         if first:
-            fix_perms_recursive(path)
-            rm_path(path, first=False)
+            fix_perms_recursive(path, activity_func=activity_func)
+            rm_path(path, first=False, activity_func=activity_func)
         else:
             raise
 

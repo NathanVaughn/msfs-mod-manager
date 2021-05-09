@@ -12,5 +12,3 @@ pythonenv*/*
 
 src/main/resources/base/base.json
 scripts/files.txt
-
-!.vscode/settings.json

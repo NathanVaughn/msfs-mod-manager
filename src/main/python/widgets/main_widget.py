@@ -11,9 +11,9 @@ import dialogs.warning
 from dialogs.about import AboutDialog
 from dialogs.progress import ProgressDialog
 from lib.config import config
-from lib.flightsim import flightsim
+from lib.flightsim import disable_mods, enable_mods, flightsim, uninstall_mods
 from lib.thread import Thread, wait_for_thread
-from widgets.mod_info_widet import ModInfoWidget
+from widgets.mod_info_widget import ModInfoWidget
 from widgets.mod_table import ModTable
 
 ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
@@ -165,20 +165,38 @@ class MainWidget(QtWidgets.QWidget):
         return True
 
     def select_mod_path(self):
-        pass
+        raise NotImplementedError
 
     # ======================
     # Install
     # ======================
 
     def install_archive(self):
-        pass
+        raise NotImplementedError
 
     def install_folder(self):
-        pass
+        raise NotImplementedError
 
+    @disable_button("uninstall_button")
     def uninstall(self):
-        pass
+        """
+        Uninstall the selected Mod objects.
+        """
+        mods = self.main_table.get_selected_row_objects()
+        if not mods:
+            return
+
+        progress = ProgressDialog(self, self.appctxt)
+        progress.set_mode(progress.PERCENT)
+
+        enable_mods_thread = Thread(functools.partial(uninstall_mods, mods))
+        enable_mods_thread.percent_update.connect(progress.set_percent)
+        enable_mods_thread.activity_update.connect(progress.set_activity)
+
+        wait_for_thread(enable_mods_thread)
+
+        progress.close()
+        self.refresh()
 
     # ======================
     # Enable/disable
@@ -193,16 +211,21 @@ class MainWidget(QtWidgets.QWidget):
         if not mods:
             return
 
+        if all(mod.enabled for mod in mods):
+            # all mods selected already enabled
+            return
+
         progress = ProgressDialog(self, self.appctxt)
         progress.set_mode(progress.PERCENT)
 
-        enable_mods_thread = Thread(functools.partial(flightsim.enable_mods, mods))
+        enable_mods_thread = Thread(functools.partial(enable_mods, mods))
         enable_mods_thread.percent_update.connect(progress.set_percent)
         enable_mods_thread.activity_update.connect(progress.set_activity)
 
         wait_for_thread(enable_mods_thread)
 
         progress.close()
+        self.refresh()
 
     @disable_button("disable_button")
     def disable(self):
@@ -213,16 +236,21 @@ class MainWidget(QtWidgets.QWidget):
         if not mods:
             return
 
+        if all(not mod.enabled for mod in mods):
+            # all mods selected already disabled
+            return
+
         progress = ProgressDialog(self, self.appctxt)
         progress.set_mode(progress.PERCENT)
 
-        disable_mods_thread = Thread(functools.partial(flightsim.disable_mods, mods))
+        disable_mods_thread = Thread(functools.partial(disable_mods, mods))
         disable_mods_thread.percent_update.connect(progress.set_percent)
         disable_mods_thread.activity_update.connect(progress.set_activity)
 
         wait_for_thread(disable_mods_thread)
 
         progress.close()
+        self.refresh()
 
     # ======================
     # Data
@@ -245,7 +273,7 @@ class MainWidget(QtWidgets.QWidget):
 
         all_mods = wait_for_thread(all_mods_thread)
 
-        self.main_table.set_data(all_mods, first=True)
+        self.main_table.set_data(all_mods, first=first)
         self.main_table.set_colors(config.use_theme)
 
         progress.close()
@@ -273,10 +301,10 @@ class MainWidget(QtWidgets.QWidget):
         AboutDialog(self, self.appctxt).exec_()
 
     def versions(self):
-        pass
+        raise NotImplementedError
 
     def check_version(self):
-        pass
+        raise NotImplementedError
 
     # ======================
     # Search
@@ -306,4 +334,4 @@ class MainWidget(QtWidgets.QWidget):
     # ======================
 
     def create_backup(self):
-        pass
+        raise NotImplementedError

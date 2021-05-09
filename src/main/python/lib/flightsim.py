@@ -132,6 +132,8 @@ class Mod:
         """
         Save data to the manifest.json file.
         """
+        logger.debug(f"Saving {self.name}")
+
         # game content
         self.manifest_data["content_type"] = self.content_type
         self.manifest_data["title"] = self.title
@@ -145,9 +147,12 @@ class Mod:
 
         # write
         with open(self.manifest_path, "w", encoding="utf8") as fp:
-            json.dump(self.manifest_data, fp)
+            json.dump(self.manifest_data, fp, indent=4)
 
-    def enable(self) -> None:
+    def enable(
+        self,
+        activity_func: Callable = lambda x: None,
+    ) -> None:
         """
         Enable the mod object. Does nothing if already enabled.
         """
@@ -160,13 +165,16 @@ class Mod:
         enabled_path = Path(
             files.magic_resolve(flightsim.community_packages_path), self.name
         )
-        files.mk_junction(self.abs_path, enabled_path)
+        files.mk_junction(self.abs_path, enabled_path, activity_func=activity_func)
 
         # now mark as enabled
         self.enabled = True
         self.abs_path = enabled_path
 
-    def disable(self) -> None:
+    def disable(
+        self,
+        activity_func: Callable = lambda x: None,
+    ) -> None:
         """
         Disable the mod object. Does nothing if already disabled.
         """
@@ -178,24 +186,46 @@ class Mod:
 
         disabled_path = files.magic_resolve(Path(config.mods_path, self.name))
         if files.is_junction(self.abs_path):
-            # if the mod was installed via a symlink
-            files.rm_junction(files.magic(self.abs_path))
+            if files.magic_resolve(self.abs_path) == disabled_path:
+                # if the mod was installed via a symlink
+                logger.debug(
+                    "Mod installation is directory junction, removing junction."
+                )
+                files.rm_junction(
+                    files.magic(self.abs_path), activity_func=activity_func
+                )
+            else:
+                # if the mod was installed somewhere else
+                logger.debug(
+                    "Mod installation is a directory junction, NOT pointing to its disabled path."
+                )
+                real_files = files.magic_resolve(self.abs_path)
+                # remove the junction
+                files.rm_junction(
+                    files.magic(self.abs_path), activity_func=activity_func
+                )
+                # move the source files
+                files.mv_path(real_files, disabled_path, activity_func=activity_func)
         else:
             # if the mod was installed via copy/paste
-            files.mv_path(self.abs_path, disabled_path)
+            logger.debug("Mod installation is not directory junction, moving.")
+            files.mv_path(self.abs_path, disabled_path, activity_func=activity_func)
 
         # now mark as disabled
         self.enabled = False
         self.abs_path = disabled_path
 
-    def uninstall(self) -> None:
+    def uninstall(
+        self,
+        activity_func: Callable = lambda x: None,
+    ) -> None:
         """
         Uninstalls the mod mod object.
         """
         logger.debug(f"Uninstalling {self.name}")
 
-        self.disable()
-        files.rm_path(self.abs_path)
+        self.disable(activity_func=activity_func)
+        files.rm_path(self.abs_path, activity_func=activity_func)
 
 
 class _FlightSim:
@@ -377,7 +407,7 @@ class _FlightSim:
         percent_func((0, len(subdirs) - 1))
 
         for i, subdir in enumerate(subdirs):
-            activity_func(f"Parsing {subdir}")
+            activity_func(f"Parsing {subdir.name}")
             enabled_mods.append(Mod(subdir))
             percent_func(i)
 
@@ -406,7 +436,7 @@ class _FlightSim:
 
         for i, subdir in enumerate(subdirs):
             if subdir.name not in enabled_dirs:
-                activity_func(f"Parsing {subdir}")
+                activity_func(f"Parsing {subdir.name}")
                 disabled_mods.append(Mod(subdir))
 
             percent_func(i)
@@ -428,39 +458,56 @@ class _FlightSim:
             activity_func=activity_func, percent_func=percent_func
         )
 
-    def enable_mods(
-        self,
-        mods: List[Mod],
-        activity_func: Callable = lambda x: None,
-        percent_func: Callable = lambda x: None,
-    ) -> None:
-        """
-        Enable a list of Mod objects.
-        """
-        logger.debug("Enabling mods")
-        percent_func((0, len(mods) - 1))
 
-        for i, mod in enumerate(mods):
-            activity_func(f"Enabling {mod.name}")
-            mod.enable()
-            percent_func(i)
+def enable_mods(
+    mods: List[Mod],
+    activity_func: Callable = lambda x: None,
+    percent_func: Callable = lambda x: None,
+) -> None:
+    """
+    Enable a list of Mod objects.
+    """
+    logger.debug("Enabling mods")
+    percent_func((0, len(mods) - 1))
 
-    def disable_mods(
-        self,
-        mods: List[Mod],
-        activity_func: Callable = lambda x: None,
-        percent_func: Callable = lambda x: None,
-    ) -> None:
-        """
-        Disable a list of Mod objects.
-        """
-        logger.debug("Disabling mods")
-        percent_func((0, len(mods) - 1))
+    for i, mod in enumerate(mods):
+        activity_func(f"Enabling {mod.name}")
+        mod.enable(activity_func=activity_func)
+        percent_func(i)
 
-        for i, mod in enumerate(mods):
-            activity_func(f"Disabling {mod.name}")
-            mod.disable()
-            percent_func(i)
+
+def disable_mods(
+    mods: List[Mod],
+    activity_func: Callable = lambda x: None,
+    percent_func: Callable = lambda x: None,
+) -> None:
+    """
+    Disable a list of Mod objects.
+    """
+    logger.debug("Disabling mods")
+    percent_func((0, len(mods) - 1))
+
+    for i, mod in enumerate(mods):
+        activity_func(f"Disabling {mod.name}")
+        mod.disable(activity_func=activity_func)
+        percent_func(i)
+
+
+def uninstall_mods(
+    mods: List[Mod],
+    activity_func: Callable = lambda x: None,
+    percent_func: Callable = lambda x: None,
+) -> None:
+    """
+    Uninstall a list of Mod objects.
+    """
+    logger.debug("Uninstalling mods")
+    percent_func((0, len(mods) - 1))
+
+    for i, mod in enumerate(mods):
+        activity_func(f"Uninstalling {mod.name}")
+        mod.uninstall(activity_func=activity_func)
+        percent_func(i)
 
 
 flightsim = _FlightSim()

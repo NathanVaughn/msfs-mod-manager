@@ -5,7 +5,7 @@ from pathlib import Path
 from fbs_runtime.application_context.PySide2 import ApplicationContext
 from PySide2 import QtGui, QtWidgets
 
-import lib.versions as versions
+from lib import versions
 from lib.config import config
 from lib.flightsim import flightsim
 from widgets.main_widget import MainWidget
@@ -154,7 +154,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if config.use_theme:
             # apply theme
             stylesheet = self.appctxt.get_resource("fs_style.qss")
-            self.appctxt.app.setStyleSheet(open(stylesheet, "r").read())
+            self.appctxt.app.setStyleSheet(
+                open(stylesheet, "r", encoding="utf8").read()
+            )
         else:
             # remove theme
             self.appctxt.app.setStyleSheet("")

@@ -4,8 +4,8 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 from fbs_runtime.application_context.PySide2 import ApplicationContext
 
-import lib.files as files
-import lib.helpers as helpers
+from dialogs import success
+from lib import files, helpers
 from lib.flightsim import Mod
 from widgets.files_table import FilesTable
 
@@ -44,27 +44,21 @@ class ModInfoWidget(QtWidgets.QWidget):
         top_layout = QtWidgets.QFormLayout()
 
         self.content_type_field = QtWidgets.QLineEdit(self)
-        self.content_type_field.setReadOnly(True)
         top_layout.addRow("Content Type", self.content_type_field)  # type: ignore
 
         self.title_field = QtWidgets.QLineEdit(self)
-        self.title_field.setReadOnly(True)
         top_layout.addRow("Title", self.title_field)  # type: ignore
 
         self.manufacturer_field = QtWidgets.QLineEdit(self)
-        self.manufacturer_field.setReadOnly(True)
         top_layout.addRow("Manufacturer", self.manufacturer_field)  # type: ignore
 
         self.creator_field = QtWidgets.QLineEdit(self)
-        self.creator_field.setReadOnly(True)
         top_layout.addRow("Creator", self.creator_field)  # type: ignore
 
-        self.package_version_field = QtWidgets.QLineEdit(self)
-        self.package_version_field.setReadOnly(True)
-        top_layout.addRow("Package Version", self.package_version_field)  # type: ignore
+        self.version_field = QtWidgets.QLineEdit(self)
+        top_layout.addRow("Version", self.version_field)  # type: ignore
 
         self.minimum_game_version_field = QtWidgets.QLineEdit(self)
-        self.minimum_game_version_field.setReadOnly(True)
         top_layout.addRow("Minimum Game Version", self.minimum_game_version_field)  # type: ignore
 
         self.total_size_field = QtWidgets.QLineEdit(self)
@@ -74,8 +68,15 @@ class ModInfoWidget(QtWidgets.QWidget):
         top_group.setLayout(top_layout)
         layout.addWidget(top_group)
 
+        sublayout = QtWidgets.QHBoxLayout()
+
         self.open_folder_button = QtWidgets.QPushButton("Open Folder", self)
-        layout.addWidget(self.open_folder_button)
+        sublayout.addWidget(self.open_folder_button)
+
+        self.save_button = QtWidgets.QPushButton("Save Changes", self)
+        sublayout.addWidget(self.save_button)
+
+        layout.addLayout(sublayout)
 
         self.files_table = FilesTable(self)
         self.files_table.setAccessibleName("mod_info_files")
@@ -88,18 +89,21 @@ class ModInfoWidget(QtWidgets.QWidget):
         # ===================
 
         self.open_folder_button.clicked.connect(self.open_mod_folder)  # type: ignore
+        self.save_button.clicked.connect(self.dump)  # type: ignore
 
-        # ===================
-        # Populate data
-        # ===================
+        self.load()
 
+    def load(self) -> None:
+        """
+        Load in the data from the mod.
+        """
         # form data
-        self.content_type_field.setText(mod.content_type)
-        self.title_field.setText(mod.title)
-        self.manufacturer_field.setText(mod.manufacturer)
-        self.creator_field.setText(mod.creator)
-        self.package_version_field.setText(mod.version)
-        self.minimum_game_version_field.setText(mod.minimum_game_version)
+        self.content_type_field.setText(self.mod.content_type)
+        self.title_field.setText(self.mod.title)
+        self.manufacturer_field.setText(self.mod.manufacturer)
+        self.creator_field.setText(self.mod.creator)
+        self.version_field.setText(self.mod.version)
+        self.minimum_game_version_field.setText(self.mod.minimum_game_version)
 
         # files data
         self.files_table.set_data(self.mod.files, first=True)
@@ -110,6 +114,21 @@ class ModInfoWidget(QtWidgets.QWidget):
         )
 
         self.total_size_field.setText(files.human_readable_size(self.mod.size))
+
+    def dump(self) -> None:
+        """
+        Saves the changes made to the mod.
+        """
+        self.mod.content_type = self.content_type_field.text()
+        self.mod.title = self.title_field.text()
+        self.mod.manufacturer = self.manufacturer_field.text()
+        self.mod.creator = self.creator_field.text()
+        self.mod.version = self.version_field.text()
+        self.mod.minimum_game_version = self.minimum_game_version_field.text()
+
+        self.mod.dump()
+
+        success.mods_manifest_saved(self, self.mod)
 
     def open_mod_folder(self) -> None:
         """

@@ -36,6 +36,10 @@ class ProgressDialog(QtWidgets.QDialog):
         self.activity.setWordWrap(True)
         layout.addWidget(self.activity)
 
+        self.sub_activity = QtWidgets.QLabel(parent=self)  # type: ignore
+        self.sub_activity.setWordWrap(True)
+        layout.addWidget(self.sub_activity)
+
         self.progbar = QtWidgets.QProgressBar(self)
         layout.addWidget(self.progbar)
 
@@ -44,7 +48,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.show()
         self.raise_()
 
-        self.setFixedSize(500, 100)
+        self.setFixedSize(550, 100)
 
     def set_mode(self, mode: Any) -> None:
         """
@@ -64,11 +68,26 @@ class ProgressDialog(QtWidgets.QDialog):
             self.progbar.setValue(0)
             self.mode = self.PERCENT
 
-    def set_activity(self, message: str) -> None:
+    def set_activity(self, message: Union[Tuple[str, str], str]) -> None:
         """
         Update the displayed message.
+        If the given message is a Tuple, the first value is the main activity
+        and the second value is the sub activity.
         """
-        self.activity.setText(message)
+        # extract values from tuple
+        if isinstance(message, tuple):
+            activity_message = message[0]
+            sub_activity_message = message[1]
+        else:
+            activity_message = message
+            sub_activity_message = None
+
+        # only display anything that was set
+        if activity_message:
+            self.activity.setText(f"<b>{activity_message}</b>")
+        if sub_activity_message:
+            self.sub_activity.setText(sub_activity_message)
+
         self.appctxt.app.processEvents()
 
     def set_percent(
@@ -85,14 +104,17 @@ class ProgressDialog(QtWidgets.QDialog):
 
         # extract values from tuple
         if isinstance(percent, tuple):
-            total = percent[1]
-            percent = percent[0]
+            percent_value = percent[0]
+            total_value = percent[1]
+        else:
+            percent_value = percent
+            total_value = None
 
         # set the percent value
-        self.progbar.setValue(percent)
+        self.progbar.setValue(percent_value)
 
         # if the total value was provided, set that
-        if total is not None:
-            self.progbar.setMaximum(total)
+        if total_value is not None:
+            self.progbar.setMaximum(total_value)
 
         self.appctxt.app.processEvents()
