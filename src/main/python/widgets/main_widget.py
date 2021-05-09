@@ -189,14 +189,14 @@ class MainWidget(QtWidgets.QWidget):
         """
         Enable the selected Mod objects.
         """
+        mods = self.main_table.get_selected_row_objects()
+        if not mods:
+            return
+
         progress = ProgressDialog(self, self.appctxt)
         progress.set_mode(progress.PERCENT)
 
-        enable_mods_thread = Thread(
-            functools.partial(
-                flightsim.enable_mods, self.main_table.get_selected_row_objects()
-            )
-        )
+        enable_mods_thread = Thread(functools.partial(flightsim.enable_mods, mods))
         enable_mods_thread.percent_update.connect(progress.set_percent)
         enable_mods_thread.activity_update.connect(progress.set_activity)
 
@@ -209,14 +209,14 @@ class MainWidget(QtWidgets.QWidget):
         """
         Disable the selected Mod objects.
         """
+        mods = self.main_table.get_selected_row_objects()
+        if not mods:
+            return
+
         progress = ProgressDialog(self, self.appctxt)
         progress.set_mode(progress.PERCENT)
 
-        disable_mods_thread = Thread(
-            functools.partial(
-                flightsim.disable_mods, self.main_table.get_selected_row_objects()
-            )
-        )
+        disable_mods_thread = Thread(functools.partial(flightsim.disable_mods, mods))
         disable_mods_thread.percent_update.connect(progress.set_percent)
         disable_mods_thread.activity_update.connect(progress.set_activity)
 
@@ -257,12 +257,11 @@ class MainWidget(QtWidgets.QWidget):
         """
         Launch the info widget for the selected Mod.
         """
-        selected = self.main_table.get_selected_row_objects()
-
-        if not selected:
+        mods = self.main_table.get_selected_row_objects()
+        if not mods:
             return
 
-        mod = selected[0]
+        mod = mods[0]
         mod.load_files()
 
         ModInfoWidget(self, self.appctxt, mod).show()
