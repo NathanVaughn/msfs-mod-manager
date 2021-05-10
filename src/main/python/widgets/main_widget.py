@@ -6,6 +6,7 @@ from pathlib import Path
 from fbs_runtime.application_context.PySide2 import ApplicationContext
 from PySide2 import QtCore, QtGui, QtWidgets
 
+import dialogs.error
 import dialogs.information
 import dialogs.warning
 from dialogs.about import AboutDialog
@@ -24,6 +25,11 @@ ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
 
 
 def disable_button(button_name: str):
+    """
+    Decorator to disable a given button name before function execution
+    and re-enable it after the function is done.
+    """
+
     def decorator(func):
         def wrapper(self, *args, **kwargs):
             button: QtWidgets.QPushButton = getattr(self, button_name)
@@ -33,6 +39,23 @@ def disable_button(button_name: str):
             button.setEnabled(True)
 
             return output
+
+        return wrapper
+
+    return decorator
+
+
+def try_except():
+    """
+    Decorator to display a dialog box if an uncaught exception occurs.
+    """
+
+    def decorator(func):
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                dialogs.error.general(self, e)
 
         return wrapper
 
@@ -178,6 +201,7 @@ class MainWidget(QtWidgets.QWidget):
         raise NotImplementedError
 
     @disable_button("uninstall_button")
+    @try_except()
     def uninstall(self):
         """
         Uninstall the selected Mod objects.
@@ -203,6 +227,7 @@ class MainWidget(QtWidgets.QWidget):
     # ======================
 
     @disable_button("enable_button")
+    @try_except()
     def enable(self):
         """
         Enable the selected Mod objects.
@@ -228,6 +253,7 @@ class MainWidget(QtWidgets.QWidget):
         self.refresh()
 
     @disable_button("disable_button")
+    @try_except()
     def disable(self):
         """
         Disable the selected Mod objects.
@@ -257,6 +283,7 @@ class MainWidget(QtWidgets.QWidget):
     # ======================
 
     @disable_button("refresh_button")
+    @try_except()
     def refresh(self, first: bool = False):
         """
         Refresh main table data.

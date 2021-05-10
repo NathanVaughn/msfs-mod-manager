@@ -37,12 +37,14 @@ def mod_parsing(parent: QWidget, mods: List[Mod]) -> None:
     """
     Dialog for warning the user that the given mods had parsing errors.
     """
+    mod_list_str = "\n".join("- {}".format(mod.name) for mod in mods)
+
     QMessageBox().warning(
         parent,
         TITLE,
-        "Unable to parse mod(s):\n{} \nThis is likely due to a missing or corrupt manifest.json file. See the debug log for more info.".format(
-            "\n".join("- {}".format(mod.name) for mod in mods)
-        ),
+        f"Unable to parse mod(s):\n{mod_list_str} \n"
+        + " This is likely due to a missing or corrupt manifest.json file."
+        + " See the debug log for more info.",
     )
 
 
