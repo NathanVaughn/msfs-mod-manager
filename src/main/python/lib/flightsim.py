@@ -66,7 +66,7 @@ class Mod:
         # metadata
         # check if absolute path to this mod is in the flightsim folder
         self.abs_path: Path = files.magic(abs_path)
-        self.enabled = flightsim.packages_path in self.abs_path.parents
+        self.enabled = files.magic(flightsim.packages_path) in self.abs_path.parents
         self.name = self.abs_path.name
 
         self.manifest_path: Path = self.abs_path.joinpath("manifest.json")
@@ -253,10 +253,21 @@ class _FlightSim:
         Also builds the path the community and official package folders.
         """
         self._packages_path = files.magic_resolve(value)
-        logger.debug(f"packages_path set to {self._packages_path}")
+        logger.debug(f"_packages_path set to {self._packages_path}")
 
         self.community_packages_path = self._packages_path.joinpath("Community")
+        logger.debug(f"community_packages_path set to {self.community_packages_path}")
+
+        # the official packages folder contains a single folder
+        # with the game source like Steam.
         self.official_packages_path = self._packages_path.joinpath("Official")
+        subdirs = [
+            subdir
+            for subdir in self.official_packages_path.iterdir()
+            if subdir.is_dir()
+        ]
+        self.official_packages_path = self._packages_path.joinpath(subdirs[0])
+        logger.debug(f"official_packages_path set to {self.official_packages_path}")
 
         config.packages_path = self._packages_path
 
@@ -289,6 +300,24 @@ class _FlightSim:
         logger.debug(f"InstalledPackagesPath found to be {installed_packages_path}")
 
         return installed_packages_path
+
+    def get_game_version(self) -> str:
+        """
+        Attempts to guess the game's version.
+        This is based on the fs-base package and the minimum game version listed.
+        """
+        version = "???"
+        # build path to fs-base manifest
+        fs_base = files.magic_resolve(self.official_packages_path.joinpath("fs-base"))
+        logger.debug(f"fs-base path: {str(fs_base)}")
+
+        # parse it if we guessed correct
+        if fs_base.exists():
+            fs_base_mod = Mod(fs_base)
+            version = fs_base_mod.minimum_game_version
+
+        logger.debug(f"Game version: {version}")
+        return version
 
     def is_sim_packages_path(self, path: Path) -> bool:
         """

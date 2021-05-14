@@ -6,7 +6,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 class AboutDialog(QtWidgets.QDialog):
     """
-    Application about widget.
+    Application about dialog.
     """
 
     def __init__(self, parent: QtWidgets.QWidget, appctxt: ApplicationContext) -> None:

@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from fbs_runtime.application_context.PySide2 import ApplicationContext
+from loguru import logger
 from PySide2 import QtCore, QtGui, QtWidgets
 
 import dialogs.error
@@ -11,6 +12,7 @@ import dialogs.information
 import dialogs.warning
 from dialogs.about import AboutDialog
 from dialogs.progress import ProgressDialog
+from dialogs.versions_info import VersionsInfoDialog
 from lib.config import config
 from lib.flightsim import disable_mods, enable_mods, flightsim, uninstall_mods
 from lib.thread import Thread, wait_for_thread
@@ -206,6 +208,8 @@ class MainWidget(QtWidgets.QWidget):
         """
         Uninstall the selected Mod objects.
         """
+        logger.debug("Uninstall button clicked")
+
         mods = self.main_table.get_selected_row_objects()
         if not mods:
             return
@@ -232,6 +236,8 @@ class MainWidget(QtWidgets.QWidget):
         """
         Enable the selected Mod objects.
         """
+        logger.debug("Enable button clicked")
+
         mods = self.main_table.get_selected_row_objects()
         if not mods:
             return
@@ -258,6 +264,8 @@ class MainWidget(QtWidgets.QWidget):
         """
         Disable the selected Mod objects.
         """
+        logger.debug("Disable button clicked")
+
         mods = self.main_table.get_selected_row_objects()
         if not mods:
             return
@@ -288,6 +296,9 @@ class MainWidget(QtWidgets.QWidget):
         """
         Refresh main table data.
         """
+        if not first:
+            logger.debug("Refresh button clicked")
+
         # temporarily clear search so that header resizing doesn't get borked
         self.search(override="")
 
@@ -312,6 +323,8 @@ class MainWidget(QtWidgets.QWidget):
         """
         Launch the info widget for the selected Mod.
         """
+        logger.debug("Info button clicked")
+
         mods = self.main_table.get_selected_row_objects()
         if not mods:
             return
@@ -325,10 +338,15 @@ class MainWidget(QtWidgets.QWidget):
         """
         Launch the about dialog.
         """
+        logger.debug("Launching about dialog")
         AboutDialog(self, self.appctxt).exec_()
 
-    def versions(self):
-        raise NotImplementedError
+    def version_info(self):
+        """
+        Launch the version info dialog.
+        """
+        logger.debug("Launching versions info dialog")
+        VersionsInfoDialog(self, self.appctxt).exec_()
 
     def check_version(self):
         raise NotImplementedError
@@ -341,6 +359,8 @@ class MainWidget(QtWidgets.QWidget):
         """
         Filter rows to match search term.
         """
+        logger.debug("Search button clicked")
+
         # strip
         term = self.search_field.text().strip()
         # override
@@ -354,6 +374,7 @@ class MainWidget(QtWidgets.QWidget):
         """
         Clear the search field.
         """
+        logger.debug("Clear search button clicked")
         self.search_field.clear()
 
     # ======================

@@ -24,7 +24,8 @@ def magic(path: Path) -> Path:
     """
     path_str = str(path)
     if not path_str.startswith(MAGIC):
-        path = Path(Path(MAGIC), path)
+        # have to merge as strings since Path.joinpath doesn't do the trick
+        path = Path(MAGIC + path_str)
 
     return path
 
@@ -33,8 +34,7 @@ def magic_resolve(path: Path) -> Path:
     """
     Adds magic Windows prefix and resolves symlinks.
     """
-    path = magic(path)
-    return path.resolve()
+    return magic(path.resolve())
 
 
 def fix_perms(path: Path, activity_func: Callable = lambda x: None) -> None:

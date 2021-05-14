@@ -5,6 +5,8 @@ from pathlib import Path
 
 from loguru import logger
 
+from lib import files
+
 
 class _Config:
     """
@@ -12,8 +14,8 @@ class _Config:
     """
 
     BASE_FOLDER: Path = Path(os.getenv("APPDATA"), "MSFS Mod Manager V2")  # type: ignore
-    LOG_FILE: Path = Path(BASE_FOLDER, "debug.log")
-    CONFIG_FILE: Path = Path(BASE_FOLDER, "config.ini")
+    LOG_FILE: Path = files.magic_resolve(Path(BASE_FOLDER, "debug.log"))
+    CONFIG_FILE: Path = files.magic_resolve(Path(BASE_FOLDER, "config.ini"))
 
     TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 

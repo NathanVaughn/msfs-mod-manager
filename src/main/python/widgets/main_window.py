@@ -99,7 +99,7 @@ class MainWindow(QtWidgets.QMainWindow):
         help_menu.addAction(menu_action)  # type: ignore
 
         menu_action = QtWidgets.QAction("Versions", self)
-        menu_action.triggered.connect(self.main_widget.versions)  # type: ignore
+        menu_action.triggered.connect(self.main_widget.version_info)  # type: ignore
         help_menu.addAction(menu_action)  # type: ignore
 
         help_menu.addSeparator()
