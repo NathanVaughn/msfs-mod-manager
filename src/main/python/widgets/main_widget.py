@@ -218,11 +218,11 @@ class MainWidget(QtWidgets.QWidget):
         progress = ProgressDialog(self, self.appctxt)
         progress.set_mode(progress.PERCENT)
 
-        enable_mods_thread = Thread(functools.partial(uninstall_mods, mods))
-        enable_mods_thread.percent_update.connect(progress.set_percent)
-        enable_mods_thread.activity_update.connect(progress.set_activity)
+        uninstall_mods_thread = Thread(functools.partial(uninstall_mods, mods))
+        uninstall_mods_thread.percent_update.connect(progress.set_percent) # type: ignore
+        uninstall_mods_thread.activity_update.connect(progress.set_activity) # type: ignore
 
-        wait_for_thread(enable_mods_thread)
+        wait_for_thread(uninstall_mods_thread)
 
         progress.close()
         self.refresh()
@@ -251,8 +251,8 @@ class MainWidget(QtWidgets.QWidget):
         progress.set_mode(progress.PERCENT)
 
         enable_mods_thread = Thread(functools.partial(enable_mods, mods))
-        enable_mods_thread.percent_update.connect(progress.set_percent)
-        enable_mods_thread.activity_update.connect(progress.set_activity)
+        enable_mods_thread.percent_update.connect(progress.set_percent) # type: ignore
+        enable_mods_thread.activity_update.connect(progress.set_activity) # type: ignore
 
         wait_for_thread(enable_mods_thread)
 
@@ -279,8 +279,8 @@ class MainWidget(QtWidgets.QWidget):
         progress.set_mode(progress.PERCENT)
 
         disable_mods_thread = Thread(functools.partial(disable_mods, mods))
-        disable_mods_thread.percent_update.connect(progress.set_percent)
-        disable_mods_thread.activity_update.connect(progress.set_activity)
+        disable_mods_thread.percent_update.connect(progress.set_percent) # type: ignore
+        disable_mods_thread.activity_update.connect(progress.set_activity) # type: ignore
 
         wait_for_thread(disable_mods_thread)
 
@@ -307,8 +307,8 @@ class MainWidget(QtWidgets.QWidget):
         progress.set_mode(progress.PERCENT)
 
         all_mods_thread = Thread(flightsim.get_all_mods)
-        all_mods_thread.percent_update.connect(progress.set_percent)
-        all_mods_thread.activity_update.connect(progress.set_activity)
+        all_mods_thread.percent_update.connect(progress.set_percent) # type: ignore
+        all_mods_thread.activity_update.connect(progress.set_activity) # type: ignore
 
         all_mods, parsing_errors = wait_for_thread(all_mods_thread)
 

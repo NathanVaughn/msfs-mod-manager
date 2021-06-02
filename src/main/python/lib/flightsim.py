@@ -77,7 +77,9 @@ class Mod:
             raise ManifestError(f"{self.manifest_path} not found")
 
         # update information
-        self.url: str = ""
+        self.update_url: str = ""
+        self.last_update_check: str = ""
+        self.last_update_version: str = ""
 
         # files
         # intentionally don't fully resolve this path, as we don't
@@ -144,7 +146,9 @@ class Mod:
         self.manifest_data["minimum_game_version"] = self.minimum_game_version
 
         # mod manager content
-        self.manifest_data["_nvmmm_url"] = self.url
+        self.manifest_data["_nvmmm_url"] = self.update_url
+        self.manifest_data["_nvmmm_last_check"] = self.last_update_check
+        self.manifest_data["_nvmmm_last_version"] = self.last_update_version
 
         # write
         with open(self.manifest_path, "w", encoding="utf8") as fp:
