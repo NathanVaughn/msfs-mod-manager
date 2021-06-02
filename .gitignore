@@ -1,6 +1,8 @@
 modCache/*
 .tmp/*
 .vscode/*
+!.vscode/launch.json
+
 build/*
 target/*
 dist/*
@@ -12,3 +14,4 @@ pythonenv*/*
 
 src/main/resources/base/base.json
 scripts/files.txt
+todo.txt

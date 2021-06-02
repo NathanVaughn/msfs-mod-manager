@@ -23,6 +23,7 @@ class ModInfoWidget(QtWidgets.QWidget):
         self.appctxt = appctxt
 
         self.mod = mod
+        self.has_changed = False
 
         self.setWindowTitle("{} - Info".format(mod.name))
         self.setWindowFlags(
@@ -68,12 +69,13 @@ class ModInfoWidget(QtWidgets.QWidget):
         top_group.setLayout(top_layout)
         layout.addWidget(top_group)
 
-        sublayout = QtWidgets.QHBoxLayout()
+        sublayout = QtWidgets.QHBoxLayout()  # type: ignore
 
         self.open_folder_button = QtWidgets.QPushButton("Open Folder", self)
         sublayout.addWidget(self.open_folder_button)
 
         self.save_button = QtWidgets.QPushButton("Save Changes", self)
+        self.save_button.setDisabled(True)
         sublayout.addWidget(self.save_button)
 
         layout.addLayout(sublayout)
@@ -87,6 +89,13 @@ class ModInfoWidget(QtWidgets.QWidget):
         # ===================
         # Add connections
         # ===================
+
+        self.content_type_field.textEdited.connect(self.field_change)  # type: ignore
+        self.title_field.textEdited.connect(self.field_change)  # type: ignore
+        self.manufacturer_field.textEdited.connect(self.field_change)  # type: ignore
+        self.creator_field.textEdited.connect(self.field_change)  # type: ignore
+        self.version_field.textEdited.connect(self.field_change)  # type: ignore
+        self.minimum_game_version_field.textEdited.connect(self.field_change)  # type: ignore
 
         self.open_folder_button.clicked.connect(self.open_mod_folder)  # type: ignore
         self.save_button.clicked.connect(self.dump)  # type: ignore
@@ -114,6 +123,14 @@ class ModInfoWidget(QtWidgets.QWidget):
         )
 
         self.total_size_field.setText(files.human_readable_size(self.mod.size))
+
+    def field_change(self) -> None:
+        """
+        Callback for when any text field has changed.
+        """
+        if not self.has_changed:
+            self.has_changed = True
+            self.save_button.setDisabled(False)
 
     def dump(self) -> None:
         """

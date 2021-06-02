@@ -57,6 +57,7 @@ def try_except():
             try:
                 return func(self, *args, **kwargs)
             except Exception as e:
+                logger.exception(e)
                 dialogs.error.general(self, e)
 
         return wrapper
@@ -309,7 +310,7 @@ class MainWidget(QtWidgets.QWidget):
         all_mods_thread.percent_update.connect(progress.set_percent)
         all_mods_thread.activity_update.connect(progress.set_activity)
 
-        all_mods = wait_for_thread(all_mods_thread)
+        all_mods, parsing_errors = wait_for_thread(all_mods_thread)
 
         self.main_table.set_data(all_mods, first=first)
         self.main_table.set_colors(config.use_theme)
@@ -318,6 +319,9 @@ class MainWidget(QtWidgets.QWidget):
 
         # put the search back to how it was
         self.search()
+
+        if parsing_errors:
+            dialogs.warning.mod_parsing(self, parsing_errors)
 
     def info(self):
         """

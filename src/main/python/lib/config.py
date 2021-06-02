@@ -25,11 +25,11 @@ class _Config:
         # section header
         self._settings_section = "Settings"
 
-        # path to root packages folder
+        # path to root sim packages folder
         self._packages_path: Path = Path()
         self._packages_path_key: str = "packages_path"
 
-        # path to where disabled mods are stored
+        # path to where installed mods are stored
         self._mods_path: Path = Path(self.BASE_FOLDER, "mods")
         self._mods_path_key: str = "mods_path"
 

@@ -138,7 +138,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         menu_action = QtWidgets.QAction("Open Mod Install Folder", self)
         menu_action.triggered.connect(  # type: ignore
-            lambda: os.startfile(config.packages_path)
+            lambda: os.startfile(config.mods_path)
         )
         help_menu.addAction(menu_action)  # type: ignore
 

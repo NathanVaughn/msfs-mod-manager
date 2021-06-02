@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, List
+from typing import Callable, List, Tuple
 
 from loguru import logger
 
@@ -73,6 +73,7 @@ class Mod:
         self.manifest_data: dict = {}
 
         if not self.manifest_path.exists():
+            logger.error(f"{self.manifest_path} not found")
             raise ManifestError(f"{self.manifest_path} not found")
 
         # update information
@@ -99,8 +100,8 @@ class Mod:
         try:
             with open(self.manifest_path, "r", encoding="utf8") as fp:
                 self.manifest_data = json.load(fp)
-        except Exception:
-            raise ManifestError(f"{self.manifest_path} parsing error")
+        except Exception as e:
+            raise ManifestError(f"{self.manifest_path} parsing error: {str(e.args)}")
 
         # game content
         self.content_type = self.manifest_data.get("content_type", "")
@@ -424,29 +425,34 @@ class _FlightSim:
         self,
         activity_func: Callable = lambda x: None,
         percent_func: Callable = lambda x: None,
-    ) -> List[Mod]:
+    ) -> Tuple[List[Mod], List[Exception]]:
         """
         Return a list of enabled mods.
         """
         logger.debug("Getting enabled mods")
 
         enabled_mods = []
+        parsing_errors = []
+
         subdirs = list(self.community_packages_path.glob("*/"))
 
         percent_func((0, len(subdirs) - 1))
 
         for i, subdir in enumerate(subdirs):
             activity_func(f"Parsing {subdir.name}")
-            enabled_mods.append(Mod(subdir))
+            try:
+                enabled_mods.append(Mod(subdir))
+            except Exception as e:
+                parsing_errors.append(e)
             percent_func(i)
 
-        return enabled_mods
+        return enabled_mods, parsing_errors
 
     def get_disabled_mods(
         self,
         activity_func: Callable = lambda x: None,
         percent_func: Callable = lambda x: None,
-    ) -> List[Mod]:
+    ) -> Tuple[List[Mod], List[Exception]]:
         """
         Return a list of disabled mods.
         """
@@ -459,6 +465,7 @@ class _FlightSim:
         # now, only return Mods that don't have a folder of the same name in
         # the Community folder
         disabled_mods = []
+        parsing_errors = []
         subdirs = list(config.mods_path.glob("*/"))
 
         percent_func((0, len(subdirs) - 1))
@@ -466,26 +473,32 @@ class _FlightSim:
         for i, subdir in enumerate(subdirs):
             if subdir.name not in enabled_dirs:
                 activity_func(f"Parsing {subdir.name}")
-                disabled_mods.append(Mod(subdir))
+                try:
+                    disabled_mods.append(Mod(subdir))
+                except Exception as e:
+                    parsing_errors.append(e)
 
             percent_func(i)
 
-        return disabled_mods
+        return disabled_mods, parsing_errors
 
     def get_all_mods(
         self,
         activity_func: Callable = lambda x: None,
         percent_func: Callable = lambda x: None,
-    ) -> List[Mod]:
+    ) -> Tuple[List[Mod], List[Exception]]:
         """
         Return a list of all mods.
         """
         logger.debug("Getting all mods")
-        return self.get_enabled_mods(
-            activity_func=activity_func, percent_func=percent_func
-        ) + self.get_disabled_mods(
+        enabled_mods, enabled_errors = self.get_enabled_mods(
             activity_func=activity_func, percent_func=percent_func
         )
+        disabled_mods, disabled_errors = self.get_disabled_mods(
+            activity_func=activity_func, percent_func=percent_func
+        )
+
+        return enabled_mods + disabled_mods, enabled_errors + disabled_errors
 
 
 def enable_mods(

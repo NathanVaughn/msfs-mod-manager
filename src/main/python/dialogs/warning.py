@@ -2,8 +2,6 @@ from typing import List
 
 from PySide2.QtWidgets import QMessageBox, QWidget
 
-from lib.flightsim import Mod
-
 TITLE = "Warning"
 
 
@@ -33,16 +31,16 @@ def sim_path_invalid(parent: QWidget) -> None:
     )
 
 
-def mod_parsing(parent: QWidget, mods: List[Mod]) -> None:
+def mod_parsing(parent: QWidget, errors: List[Exception]) -> None:
     """
     Dialog for warning the user that the given mods had parsing errors.
     """
-    mod_list_str = "\n".join("- {}".format(mod.name) for mod in mods)
+    error_list_str = "\n".join(f"- {error}" for error in errors)
 
     QMessageBox().warning(
         parent,
         TITLE,
-        f"Unable to parse mod(s):\n{mod_list_str} \n"
+        f"Unable to parse mod(s):\n{error_list_str} \n"
         + " This is likely due to a missing or corrupt manifest.json file."
         + " See the debug log for more info.",
     )

@@ -81,6 +81,6 @@ def wait_for_thread(thread: Thread) -> Any:
 
     # return output values
     if failed_output is not None:
-        raise failed_output  # type: ignore
+        raise failed_output  # pylint: disable=raising-bad-type
     else:
         return finished_output
