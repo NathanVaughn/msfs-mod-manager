@@ -32,7 +32,7 @@ class ModFile:
         self.rel_path: Path = rel_path
         # absolute path on disk
         self.abs_path: Path = base_path.joinpath(self.rel_path)
-        self.size: int = self.abs_path.stat().st_size
+        self.size: int = files.path_size(self.abs_path)
 
     def open_file(self) -> None:
         """
@@ -115,6 +115,8 @@ class Mod:
 
         # mod manager content
         self.url = self.manifest_data.get("_nvmmm_url", "")
+        self.last_update_check = self.manifest_data.get("_nvmmm_last_check", "")
+        self.last_update_version = self.manifest_data.get("_nvmmm_last_version", "")
 
     def load_files(self) -> None:
         """
