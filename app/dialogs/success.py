@@ -10,7 +10,7 @@ def mods_installed(parent: QWidget, mods: List[Mod]) -> None:
     """
     Dialog for showing the user what mods were installed.
     """
-    mod_list_str = "\n".join("- {}".format(mod.name) for mod in mods)
+    mod_list_str = "\n".join(f"- {mod.name}" for mod in mods)
     QMessageBox().information(
         parent, TITLE, f"{len(mods)} mod(s) installed!\n{mod_list_str}"
     )

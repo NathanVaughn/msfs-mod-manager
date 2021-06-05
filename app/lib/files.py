@@ -54,7 +54,6 @@ def fix_perms(path: Path, activity_func: Callable = lambda x: None) -> None:
     """
     Fix the permissions of an individual path. Not recursive.
     """
-    # logger.debug("Applying stat.S_IWUSR permission to {}".format(path))
     # fix deletion permission https://blog.nathanv.me/posts/python-permission-issue/
     activity_func(("", f"Fixing permissions for {str(path)}"))
     path.chmod(stat.S_IWUSR)
@@ -288,7 +287,6 @@ def human_readable_size(size: Num, decimal_places: int = 2) -> str:
     Convert number of bytes into human readable value.
     """
     # https://stackoverflow.com/a/43690506/9944427
-    # logger.debug("Converting {} bytes to human readable format".format(size))
     unit = ""
     for unit in ["B", "KB", "MB", "GB", "TB", "PB"]:
         if size < 1024.0 or unit == "PB":
