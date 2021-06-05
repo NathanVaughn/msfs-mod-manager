@@ -84,6 +84,6 @@ def wait_for_thread(thread: Thread) -> Any:
 
     # return output values
     if isinstance(failed_output, Exception):
-        raise failed_output # type: ignore
+        raise failed_output  # type: ignore
     else:
         return finished_output

@@ -99,7 +99,7 @@ it yourself if you wanted, and the provided pre-built binaries are all created
 
 ### Dependencies
 
-First, install [Python 3.9](https://www.python.org/downloads/release/python-368/).
+First, install [Python 3.9](https://www.python.org/downloads/release/python-395/).
 
 Next, install the dependencies with `pipenv`:
 
@@ -141,7 +141,7 @@ Now, run the same build script with the `-installer` flag:
 
 ### Creating a Release
 
-1. Create a commit modifying the version number of `src/build/settings/base.json`.
+1. Create a commit modifying the version number of `app/assets/version.txt`.
 2. In this commit, add the release notes to the commit body.
 3. Tag this commit with the version number in the form of `v#.#.#`.
 4. Push tag and commit to origin.

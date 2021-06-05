@@ -2,6 +2,7 @@ import json
 import re
 import urllib.parse
 import urllib.request
+from pathlib import Path
 from typing import List, Union
 
 from lib import helpers
@@ -12,11 +13,10 @@ def get_app_version() -> str:
     """
     Returns the version of the application.
     """
-    # TODO fixme
     try:
-        with open(helpers.resource_path("base.json"), "r") as fp:
-            data = json.load(fp)
-        return "v{}".format(data["version"])
+        with open(helpers.resource_path(Path("assets", "version.txt")), "r") as fp:
+            data = fp.read()
+        return f"v{data.strip()}"
     except Exception:
         return "v??"
 
@@ -37,7 +37,7 @@ class BaseVersionChecker:
             self.mod_url = self.mod_url[:-1]
 
         # add protocol if not one
-        if not self.mod_url.starsswith("http"):
+        if not self.mod_url.startswith("http"):
             self.mod_url = f"https://{self.mod_url}"
 
         # now, validate domain
