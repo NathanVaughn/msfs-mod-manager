@@ -99,8 +99,7 @@ it yourself if you wanted, and the provided pre-built binaries are all created
 
 ### Dependencies
 
-First, install [Python 3.6](https://www.python.org/downloads/release/python-368/).
-Python 3.7 and Python 3.8 are not fully supported yet.
+First, install [Python 3.9](https://www.python.org/downloads/release/python-368/).
 
 Next, install the dependencies with `pipenv`:
 
@@ -113,13 +112,13 @@ pipenv install
 
 To actually run the program, use
 ```bash
-pipenv run fbs run
+pipenv run python app/main.py
 ```
 
 or
 ```bash
 pipenv shell
-fbs run
+python app/main.py
 ```
 
 ### Building
@@ -128,7 +127,7 @@ Building is done with the `build.ps1` script.
 
 To build a portable version of the program, run
 ```bash
-./build.ps1
+./scripts/build.ps1
 ```
 
 If you want a debug version of an `.exe`, add the `-debug` flag.
@@ -137,7 +136,7 @@ To build an installer version of the program, you first need to install
 [NSIS](https://nsis.sourceforge.io/Main_Page).
 Now, run the same build script with the `-installer` flag:
 ```bash
-./build.ps1 -installer
+./scripts/build.ps1 -installer
 ```
 
 ### Creating a Release

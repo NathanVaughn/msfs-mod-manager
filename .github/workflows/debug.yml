@@ -10,10 +10,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Setup Python 3.6
+      - name: Setup Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: 3.9
 
       - name: Cache Pip
         uses: actions/cache@v2
@@ -31,19 +31,21 @@ jobs:
           PIPENV_VENV_IN_PROJECT: "1"
 
       - name: Build
+        shell: pwsh
         run: ./build.ps1 -installer -debug
 
       - name: Zip Build
-        run: Compress-Archive -Path "./target/MSFS Mod Manager" -DestinationPath "./target/MSFSModManagerPortable"
+        shell: pwsh
+        run: Compress-Archive -Path "./dist/MSFSModManager" -DestinationPath "./dist/MSFSModManagerPortable"
 
       - name: Upload Portable
         uses: actions/upload-artifact@v2
         with:
           name: Portable Executable
-          path: ./target/MSFSModManagerPortable.zip
+          path: ./dist/MSFSModManagerPortable.zip
 
       - name: Upload Installer
         uses: actions/upload-artifact@v2
         with:
           name: Installer
-          path: ./target/MSFS Mod ManagerSetup.exe
+          path: ./dist/MSFSModManagerSetup.exe

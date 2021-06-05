@@ -11,16 +11,18 @@ autoflake = "*"
 isort = "*"
 
 [packages]
-patool = "*"
-pyside2 = "*"
-fbs = "*"
+# base execution
 loguru = "*"
+patool = "*"
+PySide6 = "*"
+# building
+pyinstaller = "*"
 pywin32 = "*"
 pywin32-ctypes = "*"
 win32_setctime = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.9"
 
 [pipenv]
 allow_prereleases = true

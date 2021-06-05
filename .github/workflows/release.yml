@@ -17,10 +17,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Setup Python 3.6
+      - name: Setup Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: 3.9
 
       - name: Cache Pip
         uses: actions/cache@v2
@@ -38,10 +38,12 @@ jobs:
           PIPENV_VENV_IN_PROJECT: "1"
 
       - name: Build
-        run: ./build.ps1 -installer
+        shell: pwsh
+        run: ./scripts/build.ps1 -installer
 
       - name: Zip Build
-        run: Compress-Archive -Path "./target/MSFS Mod Manager" -DestinationPath "./target/MSFSModManagerPortable"
+        shell: pwsh
+        run: Compress-Archive -Path "./dist/MSFSModManager" -DestinationPath "./dist/MSFSModManagerPortable"
 
       - name: Create Release
         id: create_release
@@ -61,7 +63,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./target/MSFSModManagerPortable.zip
+          asset_path: ./dist/MSFSModManagerPortable.zip
           asset_name: MSFSModManagerPortable${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
 
@@ -71,22 +73,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./target/MSFS Mod ManagerSetup.exe
+          asset_path: ./dist/MSFSModManagerSetup.exe
           asset_name: MSFSModManagerSetup${{ steps.get_version.outputs.VERSION }}.exe
           asset_content_type: application/vnd.microsoft.portable-executable
-
-      # - name: Clean
-      #   run: pipenv run fbs clean
-
-      # - name: Build Debug
-      #   run: ./build.ps1 -installer -debug
-
-      # - name: Add Debug Installer Artifact
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./target/MSFS Mod ManagerSetup.exe
-      #     asset_name: MSFSModManagerSetupDebug.exe
-      #     asset_content_type: application/vnd.microsoft.portable-executable
