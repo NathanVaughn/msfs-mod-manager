@@ -14,7 +14,7 @@ def get_app_version() -> str:
     Returns the version of the application.
     """
     try:
-        with open(helpers.resource_path(Path("assets", "version.txt")), "r") as fp:
+        with open(helpers.resource_path(Path("version.txt")), "r") as fp:
             data = fp.read()
         return f"v{data.strip()}"
     except Exception:

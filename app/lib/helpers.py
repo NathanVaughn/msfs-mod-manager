@@ -13,10 +13,11 @@ def resource_path(path: Path) -> Path:
     """
     if hasattr(sys, "_MEIPASS"):
         # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = Path(sys._MEIPASS)  # type: ignore
+        base_path = Path(sys._MEIPASS, "assets")  # type: ignore
     else:
-        base_path = Path.cwd()
+        base_path = Path(Path.cwd(), "app", "assets")
 
+    print(base_path.joinpath(path))
     return base_path.joinpath(path)
 
 

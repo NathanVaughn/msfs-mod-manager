@@ -23,7 +23,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle(f"MSFS Mod Manager - {versions.get_app_version()}")
         self.setWindowIcon(
-            QtGui.QIcon(str(helpers.resource_path(Path("assets", "icon.png"))))
+            QtGui.QIcon(str(helpers.resource_path(Path("icon.png"))))
         )
 
         self.main_widget = MainWidget(parent=self, qapp=self.qapp)
@@ -152,7 +152,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if config.use_theme:
             # apply theme
-            stylesheet = helpers.resource_path(Path("assets", "fs_style.qss"))
+            stylesheet = helpers.resource_path(Path("fs_style.qss"))
             self.qapp.setStyleSheet(open(stylesheet, "r", encoding="utf8").read())
         else:
             # remove theme

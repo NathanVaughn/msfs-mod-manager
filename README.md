@@ -1,4 +1,4 @@
-<center><img src="src/main/resources/base/icons/icon.png" alt="Bad Logo (I'm not good at graphic design)" width="200"/></center>
+<center><img src="app/assets/icon.png" alt="Bad Logo (I'm not good at graphic design)" width="200"/></center>
 
 # MSFS Mod Manager
 

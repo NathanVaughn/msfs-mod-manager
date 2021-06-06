@@ -268,7 +268,7 @@ def path_size(path: Path) -> int:
     """
     Return the size in bytes of a folder, recursively.
     """
-    if path.exists():
+    if not path.exists():
         logger.warning(f"Path {path} does not exist")
         return 0
 
