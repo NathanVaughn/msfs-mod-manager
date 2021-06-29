@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "MSFS Mod Manager"
+version = "2.0.0"
+description = "External mod manager for the new Microsoft Flight Simulator"
+authors = ["Nathan Vaughn <nvaughn51@gmail.com>"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+homepage = "https://github.com/NathanVaughn/msfs-mod-manager"
+repository = "https://github.com/NathanVaughn/msfs-mod-manager"
+
+[tool.poetry.dependencies]
+python = "3.9.*"
+loguru = "^0.5.3"
+patool = "^1.12"
+PySide6 = "^6.1.1"
+pyinstaller = "^4.3"
+pywin32 = "^301"
+pywin32-ctypes = "^0.2.0"
+win32-setctime = "^1.0.3"
+
+[tool.poetry.dev-dependencies]
+autoflake = "^1.4"
+black = "^21.6b0"
+isort = "^5.9.1"
+pylint = "^2.8.3"
+bandit = "^1.7.0"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

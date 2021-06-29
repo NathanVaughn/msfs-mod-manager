@@ -1,3 +1,5 @@
+; TODO Figure this out
+
 !include MUI2.nsh
 !include FileFunc.nsh
 !define MUI_ICON "..\${app_name}\Icon.ico"

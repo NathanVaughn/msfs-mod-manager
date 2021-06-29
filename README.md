@@ -101,23 +101,23 @@ it yourself if you wanted, and the provided pre-built binaries are all created
 
 First, install [Python 3.9](https://www.python.org/downloads/release/python-395/).
 
-Next, install the dependencies with `pipenv`:
+Next, install the dependencies with `poetry`:
 
 ```bash
-python -m pip install pipenv
-pipenv install
+python -m pip install poetry wheel
+poetry install
 ```
 
 ### Running
 
 To actually run the program, use
 ```bash
-pipenv run python app/main.py
+poetry run python app/main.py
 ```
 
 or
 ```bash
-pipenv shell
+poetry shell
 python app/main.py
 ```
 
