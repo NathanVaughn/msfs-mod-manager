@@ -1,7 +1,8 @@
 import PySide6.QtCore as QtCore
 import PySide6.QtWidgets as QtWidgets
-from lib import versions
-from lib.flightsim import flightsim
+
+from ..lib import versions
+from ..lib.flightsim import flightsim
 
 
 class VersionsInfoDialog(QtWidgets.QDialog):

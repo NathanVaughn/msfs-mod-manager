@@ -3,8 +3,9 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from lib import files
 from loguru import logger
+
+from . import files
 
 
 class _Config:
@@ -32,9 +33,14 @@ class _Config:
         self._mods_path: Path = Path(self.BASE_FOLDER, "mods")
         self._mods_path_key: str = "mods_path"
 
+        # path last used in install dialog
+        self._last_opened_path: Path = Path(Path.home(), "Downloads")
+        self._last_opened_path_key: str = "last_opened_path"
+
         # last time version was checked
         self._last_version_check: datetime = datetime.now()
         self._last_version_check_key: str = "last_version_check"
+
         # if user has stopped all version checks
         self._never_version_check: bool = False
         self._never_version_check_key: str = "never_version_check"
@@ -127,6 +133,8 @@ class _Config:
         """
         Set the path of the simulator packages folder.
         """
+        assert value.is_dir()
+
         self._packages_path = value
         self._dump()
 
@@ -143,7 +151,27 @@ class _Config:
         """
         Set the path of the disabled mods folder.
         """
+        assert value.is_dir()
+
         self._mods_path = value
+        self._dump()
+
+    @property
+    def last_opened_path(self) -> Path:
+        """
+        Return the path last opened in the install dialog.
+        """
+        self._load()
+        return self._last_opened_path
+
+    @last_opened_path.setter
+    def last_opened_path(self, value: Path) -> None:
+        """
+        Set the path last opened in the install dialog.
+        """
+        assert value.is_dir()
+
+        self._last_opened_path = value
         self._dump()
 
     @property

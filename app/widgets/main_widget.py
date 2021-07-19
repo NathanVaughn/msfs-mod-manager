@@ -3,19 +3,18 @@ import os
 import sys
 from pathlib import Path
 
-import dialogs.error
-import dialogs.information
-import dialogs.warning
-from dialogs.about import AboutDialog
-from dialogs.progress import ProgressDialog
-from dialogs.versions_info import VersionsInfoDialog
-from lib.config import config
-from lib.flightsim import disable_mods, enable_mods, flightsim, uninstall_mods
-from lib.thread import Thread, wait_for_thread
 from loguru import logger
 from PySide6 import QtCore, QtGui, QtWidgets
-from widgets.mod_info_widget import ModInfoWidget
-from widgets.mod_table import ModTable
+
+from ..dialogs import error, warning
+from ..dialogs.about import AboutDialog
+from ..dialogs.progress import ProgressDialog
+from ..dialogs.versions_info import VersionsInfoDialog
+from ..lib.config import config
+from ..lib.flightsim import disable_mods, enable_mods, flightsim, uninstall_mods
+from ..lib.thread import Thread, wait_for_thread
+from .mod_info_widget import ModInfoWidget
+from .mod_table import ModTable
 
 ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
 
@@ -56,7 +55,7 @@ def try_except():
                 return func(self, *args, **kwargs)
             except Exception as e:
                 logger.exception(e)
-                dialogs.error.general(self, e)
+                error.general(self, e)
 
         return wrapper
 
@@ -148,7 +147,7 @@ class MainWidget(QtWidgets.QWidget):
             return
 
         # show error
-        dialogs.warning.sim_not_detected(self)
+        warning.sim_not_detected(self)
         # let user select folder
         selection = self.select_sim_path()
 
@@ -184,7 +183,7 @@ class MainWidget(QtWidgets.QWidget):
             return True
 
         # show error
-        dialogs.warning.sim_path_invalid(self)
+        warning.sim_path_invalid(self)
         # send them through again
         self.select_sim_path()
         return True
@@ -196,8 +195,38 @@ class MainWidget(QtWidgets.QWidget):
     # Install
     # ======================
 
+    @disable_button("install_button")
+    @try_except()
     def install_archive(self):
-        raise NotImplementedError
+        """
+        Install the selected archives
+        """
+        logger.debug("Install button clicked")
+
+        mod_archives = QtWidgets.QFileDialog.getOpenFileNames(
+            parent=self,
+            caption="Select mod archive(s)",
+            dir=str(config.last_opened_path),
+            filter=ARCHIVE_FILTER,
+        )[0]
+
+        # set the last opened folder, based off the parent directory
+        # of the first item in the list
+        config.last_opened_path = Path(os.path.dirname(mod_archives[0]))
+
+        progress = ProgressDialog(self, self.qapp)
+        progress.set_mode(progress.PERCENT)
+
+        install_mod_archives_thread = Thread(
+            functools.partial(flightsim.install_archive, mod_archives)
+        )
+        install_mod_archives_thread.percent_update.connect(progress.set_percent)
+        install_mod_archives_thread.activity_update.connect(progress.set_activity)
+
+        wait_for_thread(install_mod_archives_thread)
+
+        progress.close()
+        self.refresh()
 
     def install_folder(self):
         raise NotImplementedError
@@ -320,7 +349,7 @@ class MainWidget(QtWidgets.QWidget):
         self.search()
 
         if parsing_errors:
-            dialogs.warning.mod_parsing(self, parsing_errors)
+            warning.mod_parsing(self, parsing_errors)
 
     def info(self):
         """

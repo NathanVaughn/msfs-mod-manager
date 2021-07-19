@@ -4,9 +4,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, List, Tuple
 
-import lib.files as files
-from lib.config import config
 from loguru import logger
+
+from . import files
+from .config import config
 
 
 class LayoutError(Exception):
@@ -155,7 +156,10 @@ class Mod:
         with open(self.manifest_path, "w", encoding="utf8") as fp:
             json.dump(self.manifest_data, fp, indent=4)
 
-    def enable(self, activity_func: Callable = lambda x: None,) -> None:
+    def enable(
+        self,
+        activity_func: Callable = lambda x: None,
+    ) -> None:
         """
         Enable the mod object. Does nothing if already enabled.
         """
@@ -174,7 +178,10 @@ class Mod:
         self.enabled = True
         self.abs_path = enabled_path
 
-    def disable(self, activity_func: Callable = lambda x: None,) -> None:
+    def disable(
+        self,
+        activity_func: Callable = lambda x: None,
+    ) -> None:
         """
         Disable the mod object. Does nothing if already disabled.
         """
@@ -215,7 +222,10 @@ class Mod:
         self.enabled = False
         self.abs_path = disabled_path
 
-    def uninstall(self, activity_func: Callable = lambda x: None,) -> None:
+    def uninstall(
+        self,
+        activity_func: Callable = lambda x: None,
+    ) -> None:
         """
         Uninstalls the mod mod object.
         """
@@ -496,6 +506,42 @@ class _FlightSim:
 
         return enabled_mods + disabled_mods, enabled_errors + disabled_errors
 
+    def install_directory(
+        self,
+        dir: Path,
+        activity_func: Callable = lambda x: None,
+        percent_func: Callable = lambda x: None,
+    ) -> None:
+        """
+        Installs a mod (directory)
+        """
+        # create a new mod object
+        mod = Mod(dir.absolute())
+        # disable it (this moves it to the disabled folder
+        # regardles of where it is originally)
+        mod.disable(activity_func=activity_func)
+        # enable it
+        mod.enable(activity_func=activity_func)
+
+    def install_archive(
+        self,
+        archive: Path,
+        activity_func: Callable = lambda x: None,
+        percent_func: Callable = lambda x: None,
+    ) -> None:
+        """
+        Given an archive file, extracts the archive, discovers mods inside,
+        and installs them
+        """
+        # first, extract the archive
+        extracted = files.extract_archive(archive, activity_func=activity_func)
+
+        # find mods
+        found_mods = find_mods(extracted)
+
+        for mod in found_mods:
+            self.install_directory(mod, activity_func=activity_func)
+
 
 def enable_mods(
     mods: List[Mod],
@@ -546,6 +592,26 @@ def uninstall_mods(
         activity_func(f"Uninstalling {mod.name}")
         mod.uninstall(activity_func=activity_func)
         percent_func(i)
+
+
+def find_mods(path: Path) -> List[Path]:
+    """
+    Discovers mods nested inside of a directory and returns a list of directories
+    which are mods
+    """
+    assert path.is_dir()
+
+    found_mods = []
+
+    # walk the path
+    for root, dirs, _ in os.walk(path):
+        for dir_ in dirs:
+            print(dir_)
+            # if directory contains a manifest.json, add it to found list
+            if Path(root, dir_, "manifest.json").is_file():
+                found_mods.append(Path(root, dir_))
+
+    return found_mods
 
 
 flightsim = _FlightSim()

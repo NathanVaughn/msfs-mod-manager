@@ -2,11 +2,12 @@ import os
 import webbrowser
 from pathlib import Path
 
-from lib import helpers, versions
-from lib.config import config
-from lib.flightsim import flightsim
 from PySide6 import QtGui, QtWidgets
-from widgets.main_widget import MainWidget
+
+from ..lib import helpers, versions
+from ..lib.config import config
+from ..lib.flightsim import flightsim
+from .main_widget import MainWidget
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -22,9 +23,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.qapp = qapp
 
         self.setWindowTitle(f"MSFS Mod Manager - {versions.get_app_version()}")
-        self.setWindowIcon(
-            QtGui.QIcon(str(helpers.resource_path(Path("icon.png"))))
-        )
+        self.setWindowIcon(QtGui.QIcon(str(helpers.resource_path(Path("icon.png")))))
 
         self.main_widget = MainWidget(parent=self, qapp=self.qapp)
 

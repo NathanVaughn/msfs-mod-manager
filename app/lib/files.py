@@ -2,6 +2,7 @@ import os
 import shutil
 import stat
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Callable, Union
 
@@ -156,7 +157,9 @@ def mv_path(src: Path, dest: Path, activity_func: Callable = lambda x: None) -> 
 
 
 def rm_path(
-    path: Path, first: bool = True, activity_func: Callable = lambda x: None,
+    path: Path,
+    first: bool = True,
+    activity_func: Callable = lambda x: None,
 ) -> None:
     """
     Delete a path and fix permissions issues.
@@ -198,9 +201,11 @@ def extract_archive(
     """
     Extracts an archive file and returns the output path.
     """
+    assert archive.is_file()
+
     if path is None:
-        # same path, without extensions
-        path = Path.joinpath(archive.parent, archive.name.split(".", maxsplit=1)[0])
+        # create a temp directory
+        path = Path(tempfile.mkdtemp())
 
     msg = f"Extracting archive {str(archive)} ({human_readable_size(path_size(archive))}) to {str(path)}"
     activity_func(msg)
@@ -231,6 +236,8 @@ def create_archive(
     """
     Creates an archive file and returns the new path.
     """
+    assert path.is_dir()
+
     uncomp_size = human_readable_size(path_size(path))
 
     activity_func(

@@ -2,10 +2,11 @@ import os
 
 import PySide6.QtCore as QtCore
 import PySide6.QtWidgets as QtWidgets
-from dialogs import success
-from lib import files, helpers
-from lib.flightsim import Mod
-from widgets.files_table import FilesTable
+
+from ..dialogs import success
+from ..lib import files, helpers
+from ..lib.flightsim import Mod
+from .files_table import FilesTable
 
 
 class ModInfoWidget(QtWidgets.QWidget):

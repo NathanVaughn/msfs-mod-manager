@@ -1,8 +1,9 @@
 from typing import Any, List
 
-from lib.flightsim import ModFile
 from PySide6 import QtGui, QtWidgets
-from widgets.base_table import BaseTable
+
+from ..lib.flightsim import ModFile
+from .base_table import BaseTable
 
 
 class FilesTable(BaseTable):
@@ -23,7 +24,7 @@ class FilesTable(BaseTable):
         """
         super().set_data(data, first=first)  # type: ignore
 
-    def contextMenuEvent(self, event: Any) -> None:
+    def contextMenuEvent(self, _: Any) -> None:
         """
         Override default context menu event to provide right-click menu.
         """

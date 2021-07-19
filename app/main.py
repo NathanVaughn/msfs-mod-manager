@@ -1,10 +1,11 @@
 import sys
 
-from lib.config import config
-from lib.helpers import max_resize
 from loguru import logger
 from PySide6 import QtWidgets
-from widgets.main_window import MainWindow
+
+from .lib.config import config
+from .lib.helpers import max_resize
+from .widgets.main_window import MainWindow
 
 
 def main() -> None:

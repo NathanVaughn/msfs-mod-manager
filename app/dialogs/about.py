@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from lib import helpers
 from PySide6 import QtCore, QtGui, QtWidgets
+
+from ..lib import helpers
 
 
 class AboutDialog(QtWidgets.QDialog):

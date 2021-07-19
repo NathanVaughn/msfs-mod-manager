@@ -5,8 +5,9 @@ import urllib.request
 from pathlib import Path
 from typing import List, Union
 
-from lib import helpers
 from loguru import logger
+
+from . import helpers
 
 
 def get_app_version() -> str:
@@ -135,7 +136,10 @@ class GithubVersionChecker(BaseVersionChecker):
 class FlightsimToVersionChecker(BaseVersionChecker):
     base_domain = "flightsim.to"
 
-    def check_version(self, current_version: str,) -> Union[List[str], bool]:
+    def check_version(
+        self,
+        current_version: str,
+    ) -> Union[List[str], bool]:
         """
         Returns a download URL if the latest version found on flightsim.to
         is newer than the current version. Otherwise returns False.
