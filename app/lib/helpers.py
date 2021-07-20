@@ -17,7 +17,6 @@ def resource_path(path: Path) -> Path:
     else:
         base_path = Path(Path.cwd(), "app", "assets")
 
-    print(base_path.joinpath(path))
     return base_path.joinpath(path)
 
 

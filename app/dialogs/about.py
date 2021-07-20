@@ -28,7 +28,11 @@ class AboutDialog(QtWidgets.QDialog):
         small_font = QtGui.QFont("Arial", 10)
 
         icon = QtWidgets.QLabel(parent=self)
-        icon.setPixmap(QtGui.QPixmap(str(helpers.resource_path(Path("icon.png")))))
+        icon.setPixmap(
+            QtGui.QPixmap.scaledToHeight(
+                QtGui.QPixmap(str(helpers.resource_path(Path("icon.png")))), 512
+            )
+        )
         layout.addWidget(icon)
 
         name = QtWidgets.QLabel("Microsoft Flight Simulator Mod Manager", parent=self)
