@@ -36,7 +36,5 @@ def mod_install_folder_set(parent: QWidget, path: Path) -> None:
     Dialog for showing the user what path the mod install folder has changed to.
     """
     QMessageBox().information(
-        parent,
-        TITLE,
-        f"The mod install path has been set to {str(path)}",
+        parent, TITLE, f"The mod install path has been set to {str(path)}",
     )

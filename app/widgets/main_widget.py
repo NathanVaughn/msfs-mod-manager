@@ -6,7 +6,7 @@ from pathlib import Path
 from loguru import logger
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..dialogs import error, warning
+from ..dialogs import error, success, warning
 from ..dialogs.about import AboutDialog
 from ..dialogs.progress import ProgressDialog
 from ..dialogs.versions_info import VersionsInfoDialog
@@ -210,6 +210,9 @@ class MainWidget(QtWidgets.QWidget):
             filter=ARCHIVE_FILTER,
         )[0]
 
+        # convert strings to Paths
+        mod_archives = [Path(a) for a in mod_archives]
+
         # set the last opened folder, based off the parent directory
         # of the first item in the list
         config.last_opened_path = Path(os.path.dirname(mod_archives[0]))
@@ -218,14 +221,17 @@ class MainWidget(QtWidgets.QWidget):
         progress.set_mode(progress.PERCENT)
 
         install_mod_archives_thread = Thread(
-            functools.partial(flightsim.install_archive, mod_archives)
+            functools.partial(flightsim.install_archives, mod_archives)
         )
         install_mod_archives_thread.percent_update.connect(progress.set_percent)
         install_mod_archives_thread.activity_update.connect(progress.set_activity)
 
-        wait_for_thread(install_mod_archives_thread)
+        mods_installed = wait_for_thread(install_mod_archives_thread)
 
         progress.close()
+
+        success.mods_installed(self, mods_installed)
+
         self.refresh()
 
     def install_folder(self):

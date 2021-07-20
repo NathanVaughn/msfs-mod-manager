@@ -157,9 +157,7 @@ def mv_path(src: Path, dest: Path, activity_func: Callable = lambda x: None) -> 
 
 
 def rm_path(
-    path: Path,
-    first: bool = True,
-    activity_func: Callable = lambda x: None,
+    path: Path, first: bool = True, activity_func: Callable = lambda x: None,
 ) -> None:
     """
     Delete a path and fix permissions issues.
@@ -204,8 +202,9 @@ def extract_archive(
     assert archive.is_file()
 
     if path is None:
-        # create a temp directory
-        path = Path(tempfile.mkdtemp())
+        # create a temp directory, with the last part of the path
+        # being the original archive name
+        path = Path(tempfile.mkdtemp(), archive.stem)
 
     msg = f"Extracting archive {str(archive)} ({human_readable_size(path_size(archive))}) to {str(path)}"
     activity_func(msg)
@@ -218,7 +217,7 @@ def extract_archive(
         # run the extraction program
         patoolib.extract_archive(
             str(archive),
-            outdir=patoolib,
+            outdir=path,
             # verbosity=-1,
             interactive=False,
         )
