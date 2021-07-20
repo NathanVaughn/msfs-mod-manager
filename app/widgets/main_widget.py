@@ -11,7 +11,7 @@ from ..dialogs.about import AboutDialog
 from ..dialogs.progress import ProgressDialog
 from ..dialogs.versions_info import VersionsInfoDialog
 from ..lib.config import config
-from ..lib.flightsim import disable_mods, enable_mods, flightsim, uninstall_mods
+from ..lib.flightsim import flightsim
 from ..lib.thread import Thread, wait_for_thread
 from .mod_info_widget import ModInfoWidget
 from .mod_table import ModTable
@@ -210,12 +210,16 @@ class MainWidget(QtWidgets.QWidget):
             filter=ARCHIVE_FILTER,
         )[0]
 
+        # cancel if nothing is selected
+        if len(mod_archives) == 0:
+            return
+
         # convert strings to Paths
         mod_archives = [Path(a) for a in mod_archives]
 
         # set the last opened folder, based off the parent directory
         # of the first item in the list
-        config.last_opened_path = Path(os.path.dirname(mod_archives[0]))
+        config.last_opened_path = mod_archives[0].parent
 
         progress = ProgressDialog(self, self.qapp)
         progress.set_mode(progress.PERCENT)
@@ -234,8 +238,40 @@ class MainWidget(QtWidgets.QWidget):
 
         self.refresh()
 
+    @try_except()
     def install_folder(self):
-        raise NotImplementedError
+        mod_folder = QtWidgets.QFileDialog.getExistingDirectory(
+            parent=self,
+            caption="Select mod folder",
+            dir=str(config.last_opened_path),
+        )
+
+        # cancel if nothing is selected
+        if mod_folder == "":
+            return
+
+        # convert string to Path
+        mod_folder = Path(mod_folder)
+
+        # set the last opened folder, based off the parent directory
+        config.last_opened_path = mod_folder.parent
+
+        progress = ProgressDialog(self, self.qapp)
+        progress.set_mode(progress.PERCENT)
+
+        install_mod_folder_thread = Thread(
+            functools.partial(flightsim.install_directory, mod_folder)
+        )
+        install_mod_folder_thread.percent_update.connect(progress.set_percent)
+        install_mod_folder_thread.activity_update.connect(progress.set_activity)
+
+        mods_installed = wait_for_thread(install_mod_folder_thread)
+
+        progress.close()
+
+        success.mods_installed(self, mods_installed)
+
+        self.refresh()
 
     @disable_button("uninstall_button")
     @try_except()
@@ -252,7 +288,9 @@ class MainWidget(QtWidgets.QWidget):
         progress = ProgressDialog(self, self.qapp)
         progress.set_mode(progress.PERCENT)
 
-        uninstall_mods_thread = Thread(functools.partial(uninstall_mods, mods))
+        uninstall_mods_thread = Thread(
+            functools.partial(flightsim.uninstall_mods, mods)
+        )
         uninstall_mods_thread.percent_update.connect(progress.set_percent)
         uninstall_mods_thread.activity_update.connect(progress.set_activity)
 
@@ -284,7 +322,7 @@ class MainWidget(QtWidgets.QWidget):
         progress = ProgressDialog(self, self.qapp)
         progress.set_mode(progress.PERCENT)
 
-        enable_mods_thread = Thread(functools.partial(enable_mods, mods))
+        enable_mods_thread = Thread(functools.partial(flightsim.enable_mods, mods))
         enable_mods_thread.percent_update.connect(progress.set_percent)
         enable_mods_thread.activity_update.connect(progress.set_activity)
 
@@ -312,7 +350,7 @@ class MainWidget(QtWidgets.QWidget):
         progress = ProgressDialog(self, self.qapp)
         progress.set_mode(progress.PERCENT)
 
-        disable_mods_thread = Thread(functools.partial(disable_mods, mods))
+        disable_mods_thread = Thread(functools.partial(flightsim.disable_mods, mods))
         disable_mods_thread.percent_update.connect(progress.set_percent)
         disable_mods_thread.activity_update.connect(progress.set_activity)
 
@@ -397,10 +435,13 @@ class MainWidget(QtWidgets.QWidget):
         """
         Filter rows to match search term.
         """
-        logger.debug("Search button clicked")
+        if override is not None:
+            # don't print to log if override is set
+            logger.debug("Search button clicked")
 
         # strip
         term = self.search_field.text().strip()
+
         # override
         if override is not None:
             term = override

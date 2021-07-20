@@ -156,7 +156,10 @@ class Mod:
         with open(self.manifest_path, "w", encoding="utf8") as fp:
             json.dump(self.manifest_data, fp, indent=4)
 
-    def enable(self, activity_func: Callable = lambda x: None,) -> None:
+    def enable(
+        self,
+        activity_func: Callable = lambda x: None,
+    ) -> None:
         """
         Enable the mod object. Does nothing if already enabled.
         """
@@ -175,7 +178,10 @@ class Mod:
         self.enabled = True
         self.abs_path = enabled_path
 
-    def disable(self, activity_func: Callable = lambda x: None,) -> None:
+    def disable(
+        self,
+        activity_func: Callable = lambda x: None,
+    ) -> None:
         """
         Disable the mod object. Does nothing if already disabled.
         """
@@ -216,7 +222,10 @@ class Mod:
         self.enabled = False
         self.abs_path = disabled_path
 
-    def uninstall(self, activity_func: Callable = lambda x: None,) -> None:
+    def uninstall(
+        self,
+        activity_func: Callable = lambda x: None,
+    ) -> None:
         """
         Uninstalls the mod mod object.
         """
@@ -502,19 +511,27 @@ class _FlightSim:
         dir: Path,
         activity_func: Callable = lambda x: None,
         percent_func: Callable = lambda x: None,
-    ) -> Mod:
+    ) -> List[Mod]:
         """
         Installs a mod (directory)
         """
-        # create a new mod object
-        mod = Mod(dir.absolute())
-        # disable it (this moves it to the disabled folder
-        # regardles of where it is originally)
-        mod.disable(activity_func=activity_func)
-        # enable it
-        mod.enable(activity_func=activity_func)
+        installed_mods = []
 
-        return mod
+        # find mods in the directory
+        found_mods = self.find_mods(dir)
+
+        for found_mod in found_mods:
+            # create a new mod object
+            mod = Mod(found_mod)
+            # disable it (this moves it to the disabled folder
+            # regardles of where it is originally)
+            mod.disable(activity_func=activity_func)
+            # enable it
+            mod.enable(activity_func=activity_func)
+
+            installed_mods.append(mod)
+
+        return installed_mods
 
     def install_archives(
         self,
@@ -535,94 +552,93 @@ class _FlightSim:
             # first, extract the archive
             extracted = files.extract_archive(archive, activity_func=activity_func)
 
-            # find mods
-            found_mods = find_mods(extracted)
+            # find mods in archive
+            found_mods = self.find_mods(extracted)
 
             installed_mods.extend(
-                [
-                    self.install_directory(mod, activity_func=activity_func)
-                    for mod in found_mods
-                ]
+                self.install_directory(mod, activity_func=activity_func)
+                for mod in found_mods
             )
 
+            # update percent
             percent_func(i)
 
         return installed_mods
 
+    @staticmethod
+    def enable_mods(
+        mods: List[Mod],
+        activity_func: Callable = lambda x: None,
+        percent_func: Callable = lambda x: None,
+    ) -> None:
+        """
+        Enable a list of Mod objects.
+        """
+        logger.debug("Enabling mods")
+        percent_func((0, len(mods) - 1))
 
-def enable_mods(
-    mods: List[Mod],
-    activity_func: Callable = lambda x: None,
-    percent_func: Callable = lambda x: None,
-) -> None:
-    """
-    Enable a list of Mod objects.
-    """
-    logger.debug("Enabling mods")
-    percent_func((0, len(mods) - 1))
+        for i, mod in enumerate(mods):
+            activity_func(f"Enabling {mod.name}")
+            mod.enable(activity_func=activity_func)
+            percent_func(i)
 
-    for i, mod in enumerate(mods):
-        activity_func(f"Enabling {mod.name}")
-        mod.enable(activity_func=activity_func)
-        percent_func(i)
+    @staticmethod
+    def disable_mods(
+        mods: List[Mod],
+        activity_func: Callable = lambda x: None,
+        percent_func: Callable = lambda x: None,
+    ) -> None:
+        """
+        Disable a list of Mod objects.
+        """
+        logger.debug("Disabling mods")
+        percent_func((0, len(mods) - 1))
 
+        for i, mod in enumerate(mods):
+            activity_func(f"Disabling {mod.name}")
+            mod.disable(activity_func=activity_func)
+            percent_func(i)
 
-def disable_mods(
-    mods: List[Mod],
-    activity_func: Callable = lambda x: None,
-    percent_func: Callable = lambda x: None,
-) -> None:
-    """
-    Disable a list of Mod objects.
-    """
-    logger.debug("Disabling mods")
-    percent_func((0, len(mods) - 1))
+    @staticmethod
+    def uninstall_mods(
+        mods: List[Mod],
+        activity_func: Callable = lambda x: None,
+        percent_func: Callable = lambda x: None,
+    ) -> None:
+        """
+        Uninstall a list of Mod objects.
+        """
+        logger.debug("Uninstalling mods")
+        percent_func((0, len(mods) - 1))
 
-    for i, mod in enumerate(mods):
-        activity_func(f"Disabling {mod.name}")
-        mod.disable(activity_func=activity_func)
-        percent_func(i)
+        for i, mod in enumerate(mods):
+            activity_func(f"Uninstalling {mod.name}")
+            mod.uninstall(activity_func=activity_func)
+            percent_func(i)
 
+    @staticmethod
+    def find_mods(path: Path) -> List[Path]:
+        """
+        Discovers mods nested inside of a directory and returns a list of directories
+        which are mods
+        """
+        assert path.is_dir()
 
-def uninstall_mods(
-    mods: List[Mod],
-    activity_func: Callable = lambda x: None,
-    percent_func: Callable = lambda x: None,
-) -> None:
-    """
-    Uninstall a list of Mod objects.
-    """
-    logger.debug("Uninstalling mods")
-    percent_func((0, len(mods) - 1))
+        found_mods = []
 
-    for i, mod in enumerate(mods):
-        activity_func(f"Uninstalling {mod.name}")
-        mod.uninstall(activity_func=activity_func)
-        percent_func(i)
+        # walk the path
+        for root, dirs, _ in os.walk(path):
+            # check top level directory
+            if Path(root, "manifest.json").is_file():
+                found_mods.append(Path(root))
 
+            # check subdirectories
+            for dir_ in dirs:
+                # if directory contains a manifest.json, add it to found list
+                if Path(root, dir_, "manifest.json").is_file():
+                    found_mods.append(Path(root, dir_))
 
-def find_mods(path: Path) -> List[Path]:
-    """
-    Discovers mods nested inside of a directory and returns a list of directories
-    which are mods
-    """
-    assert path.is_dir()
-
-    found_mods = []
-
-    # walk the path
-    for root, dirs, _ in os.walk(path):
-        # check top level directory
-        if Path(root, "manifest.json").is_file():
-            found_mods.append(Path(root))
-
-        # check subdirectories
-        for dir_ in dirs:
-            # if directory contains a manifest.json, add it to found list
-            if Path(root, dir_, "manifest.json").is_file():
-                found_mods.append(Path(root, dir_))
-
-    return found_mods
+        return found_mods
 
 
 flightsim = _FlightSim()

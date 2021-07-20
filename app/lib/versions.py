@@ -136,7 +136,10 @@ class GithubVersionChecker(BaseVersionChecker):
 class FlightsimToVersionChecker(BaseVersionChecker):
     base_domain = "flightsim.to"
 
-    def check_version(self, current_version: str,) -> Union[List[str], bool]:
+    def check_version(
+        self,
+        current_version: str,
+    ) -> Union[List[str], bool]:
         """
         Returns a download URL if the latest version found on flightsim.to
         is newer than the current version. Otherwise returns False.

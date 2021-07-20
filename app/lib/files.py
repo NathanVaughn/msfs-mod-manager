@@ -157,7 +157,9 @@ def mv_path(src: Path, dest: Path, activity_func: Callable = lambda x: None) -> 
 
 
 def rm_path(
-    path: Path, first: bool = True, activity_func: Callable = lambda x: None,
+    path: Path,
+    first: bool = True,
+    activity_func: Callable = lambda x: None,
 ) -> None:
     """
     Delete a path and fix permissions issues.
