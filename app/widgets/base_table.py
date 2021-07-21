@@ -13,8 +13,8 @@ class BaseTable(QtWidgets.QTableView):
     def __init__(
         self, parent: QtWidgets.QWidget, header_attributes: List[Tuple[str, str]]
     ) -> None:
-        super().__init__(parent)
-        self.parent = parent  # type: ignore
+        super().__init__(parent=parent)
+        self.parent_ = parent
         self.header_attributes = header_attributes
 
         # allow sorting

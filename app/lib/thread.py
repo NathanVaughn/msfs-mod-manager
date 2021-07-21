@@ -19,8 +19,8 @@ class Thread(QtCore.QThread):
     failed: QtCore.SignalInstance = QtCore.Signal(Exception)  # type: ignore
 
     def __init__(self, function: Callable) -> None:
+        super().__init__()
         self.function = function
-        QtCore.QThread.__init__(self)
 
     def run(self) -> None:
         """

@@ -18,8 +18,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(
         self, parent: QtWidgets.QApplication, qapp: QtWidgets.QApplication
     ) -> None:
-        QtWidgets.QMainWindow.__init__(self)
-        self.parent = parent  # type: ignore
+        super().__init__()
+        self.parent_ = parent
         self.qapp = qapp
 
         self.setWindowTitle(f"MSFS Mod Manager - {versions.get_app_version()}")
@@ -61,7 +61,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addSeparator()
 
         menu_action = QtGui.QAction("Exit", parent=self)
-        menu_action.triggered.connect(self.parent.quit)  # type: ignore
+        menu_action.triggered.connect(self.parent_.quit)  # type: ignore
         file_menu.addAction(menu_action)
 
         edit_menu = main_menu.addMenu("Edit")

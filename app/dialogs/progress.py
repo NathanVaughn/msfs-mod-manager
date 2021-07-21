@@ -10,9 +10,8 @@ class ProgressDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, parent: QtWidgets.QWidget, qapp: QtWidgets.QApplication) -> None:
-
-        QtWidgets.QDialog.__init__(self)
-        self.parent = parent  # type: ignore
+        super().__init__()
+        self.parent_ = parent
         self.qapp = qapp
 
         # enum types

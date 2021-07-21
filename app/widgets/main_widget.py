@@ -68,8 +68,8 @@ class MainWidget(QtWidgets.QWidget):
     """
 
     def __init__(self, parent: QtWidgets.QWidget, qapp: QtWidgets.QApplication) -> None:
-        QtWidgets.QWidget.__init__(self)
-        self.parent = parent  # type: ignore
+        super().__init__(parent=parent)
+        self.parent_ = parent
         self.qapp = qapp
 
         layout = QtWidgets.QGridLayout(self)
@@ -416,6 +416,7 @@ class MainWidget(QtWidgets.QWidget):
         """
         logger.debug("Launching about dialog")
         AboutDialog(self, self.qapp).exec_()
+        
 
     def version_info(self):
         """

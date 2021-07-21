@@ -12,7 +12,7 @@ class ModTable(BaseTable):
     """
 
     def __init__(self, parent: QtWidgets.QWidget) -> None:
-        self.parent = parent  # type: ignore
+        self.parent_ = parent
 
         header_attributes = [
             ("Title", "title"),
@@ -26,7 +26,7 @@ class ModTable(BaseTable):
             ("Last Modified", "last_modified"),
         ]
 
-        super().__init__(self.parent, header_attributes)
+        super().__init__(self.parent_, header_attributes)
 
     def set_data(self, data: List[Mod], first: bool = False) -> None:
         """
@@ -65,23 +65,23 @@ class ModTable(BaseTable):
         right_click_menu = QtWidgets.QMenu(self)
 
         info_action = QtGui.QAction("Info", self)
-        info_action.triggered.connect(self.parent.info)  # type: ignore
+        info_action.triggered.connect(self.parent_.info)  # type: ignore
         right_click_menu.addAction(info_action)
 
         right_click_menu.addSeparator()
 
         enable_action = QtGui.QAction("Enable", self)
-        enable_action.triggered.connect(self.parent.enable)  # type: ignore
+        enable_action.triggered.connect(self.parent_.enable)  # type: ignore
         right_click_menu.addAction(enable_action)
 
         disable_action = QtGui.QAction("Disable", self)
-        disable_action.triggered.connect(self.parent.disable)  # type: ignore
+        disable_action.triggered.connect(self.parent_.disable)  # type: ignore
         right_click_menu.addAction(disable_action)
 
         right_click_menu.addSeparator()
 
         uninstall_action = QtGui.QAction("Uninstall", self)
-        uninstall_action.triggered.connect(self.parent.uninstall)  # type: ignore
+        uninstall_action.triggered.connect(self.parent_.uninstall)  # type: ignore
         right_click_menu.addAction(uninstall_action)
 
         # popup at cursor position

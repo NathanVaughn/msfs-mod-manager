@@ -12,11 +12,11 @@ class FilesTable(BaseTable):
     """
 
     def __init__(self, parent: QtWidgets.QWidget) -> None:
-        self.parent = parent  # type: ignore
+        self.parent_ = parent
 
         header_attributes = [("Path", "rel_path"), ("Size (Bytes)", "size")]
 
-        super().__init__(self.parent, header_attributes)
+        super().__init__(self.parent_, header_attributes)
 
     def set_data(self, data: List[ModFile], first: bool = False) -> None:
         """
@@ -32,12 +32,12 @@ class FilesTable(BaseTable):
 
         open_file_action = QtGui.QAction("Open File", self)
         # slot that isn't typed correctly
-        open_file_action.triggered.connect(self.parent.open_file_file)  # type: ignore
+        open_file_action.triggered.connect(self.parent_.open_file_file)  # type: ignore
         right_click_menu.addAction(open_file_action)
 
         open_folder_action = QtGui.QAction("Open In Folder", self)
         # slot that isn't typed correctly
-        open_folder_action.triggered.connect(self.parent.open_file_folder)  # type: ignore
+        open_folder_action.triggered.connect(self.parent_.open_file_folder)  # type: ignore
         right_click_menu.addAction(open_folder_action)
 
         # popup at cursor position

@@ -1,7 +1,9 @@
+import abc
 import json
 import re
 import urllib.parse
 import urllib.request
+from abc import ABC
 from pathlib import Path
 from typing import List, Union
 
@@ -22,7 +24,7 @@ def get_app_version() -> str:
         return "v??"
 
 
-class BaseVersionChecker:
+class BaseVersionChecker(ABC):
     """
     Base class to check/download new versions.
     """
@@ -48,12 +50,13 @@ class BaseVersionChecker:
                 f"Given mod URL does not match the base version checker domain: {self.base_domain}"
             )
 
+    @abc.abstractmethod
     def check_version(self, current_version: str, **kwargs) -> Union[List[str], bool]:
         """
         Returns a list of asset URLs if the latest version
         is newer than the current version. Otherwise returns False.
         """
-        return False
+        raise NotImplementedError
 
 
 class GithubVersionChecker(BaseVersionChecker):

@@ -17,8 +17,8 @@ class ModInfoWidget(QtWidgets.QWidget):
     def __init__(
         self, parent: QtWidgets.QWidget, qapp: QtWidgets.QApplication, mod: Mod
     ) -> None:
-        QtWidgets.QWidget.__init__(self)
-        self.parent = parent  # type: ignore
+        super().__init__()
+        self.parent_ = parent
         self.qapp = qapp
 
         self.mod = mod

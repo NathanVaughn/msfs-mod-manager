@@ -9,7 +9,7 @@ class VersionCheckDialog:
     """
 
     def __init__(self, parent: QtWidgets.QWidget, installed: bool = False) -> None:
-        self.parent = parent
+        self.parent_ = parent
 
         self.chkbox = QtWidgets.QCheckBox("Don't ask me again")
 
