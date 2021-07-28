@@ -22,7 +22,13 @@ class FilesTable(BaseTable):
         """
         Proxy function for the sake of type-hinting
         """
-        super().set_data(data, first=first)  # type: ignore
+        return super().set_data(data, first=first)  # type: ignore
+
+    def get_selected_row_objects(self) -> List[ModFile]:
+        """
+        Proxy function for the sake of type-hinting
+        """
+        return super().get_selected_row_objects()
 
     def contextMenuEvent(self, _: Any) -> None:
         """

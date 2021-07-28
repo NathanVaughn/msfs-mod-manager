@@ -2,6 +2,8 @@ from typing import List
 
 from PySide6.QtWidgets import QMessageBox, QWidget
 
+from ..lib.flightsim import Mod
+
 TITLE = "Warning"
 
 
@@ -69,3 +71,18 @@ def mod_install_folder_in_sim_path(parent: QWidget) -> None:
         "The mod install folder you've selected contains the same path"
         + " as the simulator. You, more than likely, do not want this.",
     )
+
+
+def mod_uninstalls(parent: QWidget, mods: List[Mod]) -> bool:
+    """
+    Dialog for warning the user that they're about to uninstall mods.
+    """
+    result = QMessageBox().warning(
+        parent,
+        TITLE,
+        f"You're about to permamently delete {len(mods)} mod(s). "
+        + "Are you sure you want to continue?",
+        QMessageBox.Yes | QMessageBox.No,
+        QMessageBox.No,
+    )
+    return result == QMessageBox.Yes

@@ -50,7 +50,7 @@ class BaseTable(QtWidgets.QTableView):
         self.setModel(self.proxy_model)
 
         # prepare secondary object storage
-        self.storage = []
+        self.storage: List[object] = []
 
     def insert_row(self, data: object) -> None:
         """
@@ -142,7 +142,7 @@ class BaseTable(QtWidgets.QTableView):
         # this HAS to come second for some reason
         self.resizeRowsToContents()
 
-    def get_selected_rows(self) -> list:
+    def get_selected_rows(self) -> List[int]:
         """
         Returns a list of selected row indexes.
         """

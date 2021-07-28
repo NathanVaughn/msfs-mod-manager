@@ -7,7 +7,7 @@
             "name": "Python: Application",
             "type": "python",
             "request": "launch",
-            "program": "app/main.py",
+            "program": "main.py",
             "console": "integratedTerminal"
         }
     ]

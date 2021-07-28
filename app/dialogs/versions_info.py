@@ -1,7 +1,10 @@
+from pathlib import Path
+
 import PySide6.QtCore as QtCore
+import PySide6.QtGui as QtGui
 import PySide6.QtWidgets as QtWidgets
 
-from ..lib import versions
+from ..lib import helpers, versions
 from ..lib.flightsim import flightsim
 
 
@@ -16,6 +19,7 @@ class VersionsInfoDialog(QtWidgets.QDialog):
         self.qapp = qapp
 
         self.setWindowTitle("Versions")
+        self.setWindowIcon(QtGui.QIcon(str(helpers.resource_path(Path("icon.png")))))
         self.setWindowFlags(
             QtCore.Qt.WindowSystemMenuHint
             | QtCore.Qt.WindowTitleHint

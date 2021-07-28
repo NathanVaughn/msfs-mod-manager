@@ -1,3 +1,4 @@
+import functools
 import sys
 from pathlib import Path
 
@@ -7,6 +8,7 @@ from PySide6.QtWidgets import QWidget
 QWIDGETSIZE_MAX = (1 << 24) - 1
 
 
+@functools.lru_cache(maxsize=None)
 def resource_path(path: Path) -> Path:
     """
     Returns path to resource that works for PyInstaller and not.

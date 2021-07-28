@@ -1,7 +1,11 @@
+from pathlib import Path
 from typing import Any, Tuple, Union
 
 import PySide6.QtCore as QtCore
+import PySide6.QtGui as QtGui
 import PySide6.QtWidgets as QtWidgets
+
+from ..lib import helpers
 
 
 class ProgressDialog(QtWidgets.QDialog):
@@ -21,6 +25,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.mode = self.INFINITE
 
         self.setWindowTitle("Progress")
+        self.setWindowIcon(QtGui.QIcon(str(helpers.resource_path(Path("icon.png")))))
         self.setWindowFlags(
             QtCore.Qt.WindowSystemMenuHint
             | QtCore.Qt.WindowTitleHint
@@ -46,7 +51,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.show()
         self.raise_()
 
-        self.setFixedSize(550, 100)
+        self.setFixedSize(550, 150)
 
     def set_mode(self, mode: Any) -> None:
         """

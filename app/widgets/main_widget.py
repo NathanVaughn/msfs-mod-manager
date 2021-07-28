@@ -8,12 +8,12 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from ..dialogs import error, success, warning
 from ..dialogs.about import AboutDialog
+from ..dialogs.mod_info import ModInfoDialog
 from ..dialogs.progress import ProgressDialog
 from ..dialogs.versions_info import VersionsInfoDialog
 from ..lib.config import config
 from ..lib.flightsim import flightsim
 from ..lib.thread import Thread, wait_for_thread
-from .mod_info_widget import ModInfoWidget
 from .mod_table import ModTable
 
 ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
@@ -30,6 +30,7 @@ def disable_button(button_name: str):
     """
 
     def decorator(func):
+        @functools.wraps(func)
         def wrapper(self, *args, **kwargs):
             button: QtWidgets.QPushButton = getattr(self, button_name)
 
@@ -50,6 +51,7 @@ def try_except():
     """
 
     def decorator(func):
+        @functools.wraps(func)
         def wrapper(self, *args, **kwargs):
             try:
                 return func(self, *args, **kwargs)
@@ -285,6 +287,9 @@ class MainWidget(QtWidgets.QWidget):
         if not mods:
             return
 
+        if not warning.mod_uninstalls(self, mods):
+            return
+
         progress = ProgressDialog(self, self.qapp)
         progress.set_mode(progress.PERCENT)
 
@@ -365,7 +370,7 @@ class MainWidget(QtWidgets.QWidget):
 
     @disable_button("refresh_button")
     @try_except()
-    def refresh(self, first: bool = False):
+    def refresh(self, first: bool = False) -> None:
         """
         Refresh main table data.
         """
@@ -395,7 +400,7 @@ class MainWidget(QtWidgets.QWidget):
         if parsing_errors:
             warning.mod_parsing(self, parsing_errors)
 
-    def info(self):
+    def info(self) -> None:
         """
         Launch the info widget for the selected Mod.
         """
@@ -408,24 +413,23 @@ class MainWidget(QtWidgets.QWidget):
         mod = mods[0]
         mod.load_files()
 
-        ModInfoWidget(self, self.qapp, mod).show()
+        ModInfoDialog(self, self.qapp, mod).exec()
 
-    def about(self):
+    def about(self) -> None:
         """
         Launch the about dialog.
         """
         logger.debug("Launching about dialog")
-        AboutDialog(self, self.qapp).exec_()
-        
+        AboutDialog(self, self.qapp).exec()
 
-    def version_info(self):
+    def version_info(self) -> None:
         """
         Launch the version info dialog.
         """
         logger.debug("Launching versions info dialog")
-        VersionsInfoDialog(self, self.qapp).exec_()
+        VersionsInfoDialog(self, self.qapp).exec()
 
-    def check_version(self):
+    def check_version(self) -> None:
         raise NotImplementedError
 
     # ======================

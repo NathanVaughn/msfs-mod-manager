@@ -31,12 +31,12 @@ class VersionCheckDialog:
         self.msgbox.addButton(QtWidgets.QMessageBox.No)
         self.msgbox.setDefaultButton(QtWidgets.QMessageBox.Yes)
 
-    def exec_(self) -> Tuple[bool, bool]:
+    def exec(self) -> Tuple[bool, bool]:
         """
         Executes the widget.
         Returns selected button and if the remember option was selected.
         """
         return (
-            self.msgbox.exec_() == QtWidgets.QMessageBox.Yes,
+            self.msgbox.exec() == QtWidgets.QMessageBox.Yes,
             bool(self.chkbox.checkState()),
         )

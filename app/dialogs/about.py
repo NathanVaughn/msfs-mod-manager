@@ -12,10 +12,12 @@ class AboutDialog(QtWidgets.QDialog):
 
     def __init__(self, parent: QtWidgets.QWidget, qapp: QtWidgets.QApplication) -> None:
         super().__init__()
+
         self.parent_ = parent
         self.qapp = qapp
 
         self.setWindowTitle("About MSFS Mod Manager")
+        self.setWindowIcon(QtGui.QIcon(str(helpers.resource_path(Path("icon.png")))))
         self.setWindowFlags(
             QtCore.Qt.WindowSystemMenuHint
             | QtCore.Qt.WindowTitleHint

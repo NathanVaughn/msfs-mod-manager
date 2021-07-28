@@ -40,6 +40,12 @@ class ModTable(BaseTable):
         """
         return super().get_row(id_=id_)  # type: ignore
 
+    def get_selected_row_objects(self) -> List[Mod]:
+        """
+        Proxy function for the sake of type-hinting
+        """
+        return super().get_selected_row_objects()
+
     def set_colors(self, dark: bool) -> None:
         """
         Set the colors for the rows, based on being a dark theme or not.

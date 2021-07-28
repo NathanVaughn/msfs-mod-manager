@@ -180,6 +180,7 @@ class Mod:
 
     def disable(
         self,
+        force: bool = False,
         activity_func: Callable = lambda x: None,
     ) -> None:
         """
@@ -187,7 +188,7 @@ class Mod:
         """
         logger.debug(f"Disabling {self.name}")
 
-        if not self.enabled:
+        if not self.enabled and not force:
             logger.debug("Mod already disabled, returning.")
             return
 
@@ -525,7 +526,7 @@ class _FlightSim:
             mod = Mod(found_mod)
             # disable it (this moves it to the disabled folder
             # regardles of where it is originally)
-            mod.disable(activity_func=activity_func)
+            mod.disable(force=True, activity_func=activity_func)
             # enable it
             mod.enable(activity_func=activity_func)
 
@@ -552,13 +553,13 @@ class _FlightSim:
             # first, extract the archive
             extracted = files.extract_archive(archive, activity_func=activity_func)
 
-            # find mods in archive
-            found_mods = self.find_mods(extracted)
-
+            # install the mods in the extracted directory
             installed_mods.extend(
-                self.install_directory(mod, activity_func=activity_func)
-                for mod in found_mods
+                self.install_directory(extracted, activity_func=activity_func)
             )
+        
+            # delete the extracted archive
+            files.rm_path(extracted)
 
             # update percent
             percent_func(i)
@@ -628,11 +629,7 @@ class _FlightSim:
 
         # walk the path
         for root, dirs, _ in os.walk(path):
-            # check top level directory
-            if Path(root, "manifest.json").is_file():
-                found_mods.append(Path(root))
-
-            # check subdirectories
+            # check subdirectories (this includes top level directory)
             for dir_ in dirs:
                 # if directory contains a manifest.json, add it to found list
                 if Path(root, dir_, "manifest.json").is_file():

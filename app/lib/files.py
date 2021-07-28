@@ -85,7 +85,8 @@ def is_junction(path: Path) -> bool:
         return True
 
     # see if the resolved path is the same as what we started with
-    return path.resolve() != path
+    # add the magic to both to be consistent
+    return magic(path.resolve()) != magic(path)
 
 
 def mk_junction(
@@ -205,8 +206,10 @@ def extract_archive(
 
     if path is None:
         # create a temp directory, with the last part of the path
-        # being the original archive name
-        path = Path(tempfile.mkdtemp(), archive.stem)
+        # being the original archive name. Annoyingly, tempfile uses the weird Windows
+        # username format that has a tilde in the name like NATHAN~1. .resolve()
+        # fixes this.
+        path = Path(tempfile.mkdtemp(), archive.stem).resolve()
 
     msg = f"Extracting archive {str(archive)} ({human_readable_size(path_size(archive))}) to {str(path)}"
     activity_func(msg)
