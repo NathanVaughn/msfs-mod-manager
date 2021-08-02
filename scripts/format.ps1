@@ -1,3 +1,3 @@
-isort --profile=black app
-autoflake -r -i --remove-all-unused-imports .
-black .
+poetry run isort --profile=black app
+poetry run autoflake -r -i --remove-all-unused-imports .
+poetry run black .

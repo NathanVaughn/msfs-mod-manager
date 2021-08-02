@@ -7,7 +7,7 @@ Remove-Item build -Recurse -Force -ErrorAction Ignore
 Remove-Item dist -Recurse -Force -ErrorAction Ignore
 
 $pyside6_location = python -c "import os, PySide6; print(os.path.dirname(PySide6.__file__))"
-$base_command = ("pyinstaller main.py " +
+$base_command = ("poetry run pyinstaller main.py " +
                 "--clean " +
                 "--noconfirm " +
                 "--onedir " +

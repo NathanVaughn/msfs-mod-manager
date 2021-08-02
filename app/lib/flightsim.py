@@ -557,7 +557,7 @@ class _FlightSim:
             installed_mods.extend(
                 self.install_directory(extracted, activity_func=activity_func)
             )
-        
+
             # delete the extracted archive
             files.rm_path(extracted)
 
