@@ -14,6 +14,8 @@ and manage 3rd party addons.
 
 ![Main Screen](screenshots/main.png)
 
+## ***I do not guarantee that this program will not accidentally delete all of your mods. Please keep good backups.***
+
 ## Features
 
 ### Automatic Installation Detection
