@@ -6,7 +6,7 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/nathanvaughn/msfs-mod-manager)](https://github.com/NathanVaughn/msfs-mod-manager/releases/latest)
 ![GitHub All Releases](https://img.shields.io/github/downloads/nathanvaughn/msfs-mod-manager/total)
 [![GitHub stars](https://img.shields.io/github/stars/NathanVaughn/msfs-mod-manager)](https://github.com/NathanVaughn/msfs-mod-manager/stargazers)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/01bf5870c736422fa4dab46200b56ed1)](https://www.codacy.com/manual/NathanVaughn/msfs-mod-manager?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=NathanVaughn/msfs-mod-manager&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/01bf5870c736422fa4dab46200b56ed1)](https://www.codacy.com/manual/NathanVaughn/msfs-mod-manager?utm_source=github.com&utm_medium=referral&utm_content=NathanVaughn/msfs-mod-manager&utm_campaign=Badge_Grade)
 [![GitHub license](https://img.shields.io/github/license/NathanVaughn/msfs-mod-manager)](https://github.com/NathanVaughn/msfs-mod-manager/blob/master/LICENSE)
 
 This is an external mod manager for the new Microsoft Flight Simulator to help you install
@@ -111,11 +111,13 @@ poetry install
 ### Running
 
 To actually run the program, use
+
 ```bash
 poetry run python app/main.py
 ```
 
 or
+
 ```bash
 poetry shell
 python app/main.py
@@ -126,6 +128,7 @@ python app/main.py
 Building is done with the `build.ps1` script.
 
 To build a portable version of the program, run
+
 ```bash
 ./scripts/build.ps1
 ```
@@ -135,6 +138,7 @@ If you want a debug version of an `.exe`, add the `-debug` flag.
 To build an installer version of the program, you first need to install
 [NSIS](https://nsis.sourceforge.io/Main_Page).
 Now, run the same build script with the `-installer` flag:
+
 ```bash
 ./scripts/build.ps1 -installer
 ```
