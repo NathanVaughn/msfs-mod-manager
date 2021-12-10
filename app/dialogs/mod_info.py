@@ -30,7 +30,7 @@ class ModInfoDialog(QtWidgets.QDialog):
         self.setWindowIcon(QtGui.QIcon(str(helpers.resource_path(Path("icon.png")))))
         self.setWindowFlags(
             QtCore.Qt.WindowSystemMenuHint
-            | QtCore.Qt.WindowTitleHint
+            | QtCore.Qt.WindowTitleHint  # type: ignore
             | QtCore.Qt.WindowMinimizeButtonHint
             | QtCore.Qt.WindowMaximizeButtonHint
             | QtCore.Qt.WindowCloseButtonHint

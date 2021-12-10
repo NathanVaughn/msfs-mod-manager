@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import functools
 import os
 import sys
 from pathlib import Path
+from typing import Any, Callable
 
 from loguru import logger
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -23,15 +26,15 @@ ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
 # ======================
 
 
-def disable_button(button_name: str):
+def disable_button(button_name: str) -> Callable:
     """
     Decorator to disable a given button name before function execution
     and re-enable it after the function is done.
     """
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self: MainWidget, *args, **kwargs) -> Any:
             button: QtWidgets.QPushButton = getattr(self, button_name)
 
             button.setEnabled(False)
@@ -45,14 +48,14 @@ def disable_button(button_name: str):
     return decorator
 
 
-def try_except():
+def try_except() -> Callable:
     """
     Decorator to display a dialog box if an uncaught exception occurs.
     """
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self: MainWidget, *args, **kwargs) -> Any:
             try:
                 return func(self, *args, **kwargs)
             except Exception as e:
@@ -190,7 +193,7 @@ class MainWidget(QtWidgets.QWidget):
         self.select_sim_path()
         return True
 
-    def select_mod_path(self):
+    def select_mod_path(self) -> None:
         raise NotImplementedError
 
     # ======================
@@ -199,7 +202,7 @@ class MainWidget(QtWidgets.QWidget):
 
     @disable_button("install_button")
     @try_except()
-    def install_archive(self):
+    def install_archive(self) -> None:
         """
         Install the selected archives
         """
@@ -241,7 +244,7 @@ class MainWidget(QtWidgets.QWidget):
         self.refresh()
 
     @try_except()
-    def install_folder(self):
+    def install_folder(self) -> None:
         mod_folder = QtWidgets.QFileDialog.getExistingDirectory(
             parent=self,
             caption="Select mod folder",
@@ -277,7 +280,7 @@ class MainWidget(QtWidgets.QWidget):
 
     @disable_button("uninstall_button")
     @try_except()
-    def uninstall(self):
+    def uninstall(self) -> None:
         """
         Uninstall the selected Mod objects.
         """
@@ -310,7 +313,7 @@ class MainWidget(QtWidgets.QWidget):
 
     @disable_button("enable_button")
     @try_except()
-    def enable(self):
+    def enable(self) -> None:
         """
         Enable the selected Mod objects.
         """
@@ -338,7 +341,7 @@ class MainWidget(QtWidgets.QWidget):
 
     @disable_button("disable_button")
     @try_except()
-    def disable(self):
+    def disable(self) -> None:
         """
         Disable the selected Mod objects.
         """
@@ -465,5 +468,5 @@ class MainWidget(QtWidgets.QWidget):
     # Other
     # ======================
 
-    def create_backup(self):
+    def create_backup(self) -> None:
         raise NotImplementedError

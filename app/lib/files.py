@@ -95,20 +95,20 @@ def mk_junction(
     """
     Creates a directory junction between two directories.
     """
-    logger.debug(f"Creating directory junction from {str(src)} to {str(dest)}")
-    activity_func(("", f"Creating directory junction from {str(src)} to {str(dest)}"))
+    logger.debug(f"Creating directory junction from {src} to {dest}")
+    activity_func(("", f"Creating directory junction from {src} to {dest}"))
 
     if dest.exists():
         if not is_junction(dest):
             raise FileExistsError(dest)
 
-        logger.debug(f"Removing existing directory junction at {str(dest)}")
+        logger.debug(f"Removing existing directory junction at {dest}")
         rm_junction(dest, activity_func=activity_func)
 
     # TODO win32
     # create the link
     command = ["cmd", "/c", "mklink", "/J", str(magic(dest)), str(magic(src))]
-    logger.debug(f"Executing: {str(command)}")
+    logger.debug(f"Executing: {command}")
     subprocess.run(
         command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
@@ -122,7 +122,7 @@ def rm_junction(path: Path, activity_func: Callable = lambda x: None) -> None:
         return
 
     # this will delete only the junction and not the linked directory
-    activity_func(("", f"Deleting directory junction at {str(path)}"))
+    activity_func(("", f"Deleting directory junction at {path}"))
     path.rmdir()
 
 
@@ -150,7 +150,7 @@ def mv_path(src: Path, dest: Path, activity_func: Callable = lambda x: None) -> 
         rm_path(dest, activity_func=activity_func)
 
     # copy to the new path
-    activity_func(("", f"Copying {str(src)} to {str(dest)}"))
+    activity_func(("", f"Copying {src} to {dest}"))
     shutil.copytree(src, dest)
     # delete the old path
     logger.debug(f"Deleting source {src}")
@@ -211,7 +211,8 @@ def extract_archive(
         # fixes this.
         path = Path(tempfile.mkdtemp(), archive.stem).resolve()
 
-    msg = f"Extracting archive {str(archive)} ({human_readable_size(path_size(archive))}) to {str(path)}"
+    msg = f"Extracting archive {archive} ({human_readable_size(path_size(archive))}) to {path}"
+
     activity_func(msg)
     logger.debug(msg)
 
@@ -245,15 +246,17 @@ def create_archive(
     uncomp_size = human_readable_size(path_size(path))
 
     activity_func(
-        f"Creating archive {str(archive)} of {path} ({uncomp_size} uncompressed)."
-        + "\n This will almost certainly take a while."
+        (
+            f"Creating archive {archive} of {path} ({uncomp_size} uncompressed)."
+            + "\n This will almost certainly take a while."
+        )
     )
 
     # delete the archive if it already exists,
     # as patoolib will refuse to overwrite an existing archive
     rm_path(archive, activity_func=activity_func)
 
-    logger.debug(f"Creating archive {str(archive)}")
+    logger.debug(f"Creating archive {archive}")
     # create the archive
     try:
         # this expects files/folders in a tuple

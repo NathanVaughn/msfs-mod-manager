@@ -103,7 +103,7 @@ class Mod:
             with open(self.manifest_path, "r", encoding="utf8") as fp:
                 self.manifest_data = json.load(fp)
         except Exception as e:
-            raise ManifestError(f"{self.manifest_path} parsing error: {str(e.args)}")
+            raise ManifestError(f"{self.manifest_path} parsing error: {e.args}")
 
         # game content
         self.content_type = self.manifest_data.get("content_type", "")
@@ -317,7 +317,7 @@ class _FlightSim:
         version = "???"
         # build path to fs-base manifest
         fs_base = files.magic_resolve(self.official_packages_path.joinpath("fs-base"))
-        logger.debug(f"fs-base path: {str(fs_base)}")
+        logger.debug(f"fs-base path: {fs_base}")
 
         # parse it if we guessed correct
         if fs_base.exists():

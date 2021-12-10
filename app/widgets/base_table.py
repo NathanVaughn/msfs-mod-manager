@@ -24,7 +24,7 @@ class BaseTable(QtWidgets.QTableView):
         # disable word wrap
         self.setWordWrap(False)
         # disable editing
-        self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)  # type: ignore
 
         # set the correct size adjust policy to get the proper size hint
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
@@ -151,7 +151,7 @@ class BaseTable(QtWidgets.QTableView):
         return [
             y.row()
             for y in [
-                self.proxy_model.mapToSource(x)
+                self.proxy_model.mapToSource(x)  # type: ignore
                 for x in self.selectionModel().selectedRows()
             ]
         ]

@@ -20,7 +20,7 @@ class AboutDialog(QtWidgets.QDialog):
         self.setWindowIcon(QtGui.QIcon(str(helpers.resource_path(Path("icon.png")))))
         self.setWindowFlags(
             QtCore.Qt.WindowSystemMenuHint
-            | QtCore.Qt.WindowTitleHint
+            | QtCore.Qt.WindowTitleHint  # type: ignore
             | QtCore.Qt.WindowCloseButtonHint
         )
         self.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -39,7 +39,7 @@ class AboutDialog(QtWidgets.QDialog):
 
         name = QtWidgets.QLabel("Microsoft Flight Simulator Mod Manager", parent=self)
         name.setFont(big_font)
-        name.setAlignment(QtCore.Qt.AlignCenter)
+        name.setAlignment(QtCore.Qt.AlignCenter)  # type: ignore
         layout.addWidget(name)
 
         author = QtWidgets.QLabel(
@@ -48,21 +48,21 @@ class AboutDialog(QtWidgets.QDialog):
         )
         author.setFont(big_font)
         author.setOpenExternalLinks(True)
-        author.setAlignment(QtCore.Qt.AlignCenter)
+        author.setAlignment(QtCore.Qt.AlignCenter)  # type: ignore
         layout.addWidget(author)
 
         license_ = QtWidgets.QLabel(
             "Copyright 2021 - Licensed under the GPLv3 License", self
         )
         license_.setFont(small_font)
-        license_.setAlignment(QtCore.Qt.AlignCenter)
+        license_.setAlignment(QtCore.Qt.AlignCenter)  # type: ignore
         layout.addWidget(license_)
 
         no_redistrib = QtWidgets.QLabel(
             "Please do not redistribute without permission", self
         )
         no_redistrib.setFont(small_font)
-        no_redistrib.setAlignment(QtCore.Qt.AlignCenter)
+        no_redistrib.setAlignment(QtCore.Qt.AlignCenter)  # type: ignore
         layout.addWidget(no_redistrib)
 
         self.setLayout(layout)

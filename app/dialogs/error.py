@@ -10,7 +10,7 @@ def general(parent: QWidget, exception: Exception) -> None:
     QMessageBox().critical(
         parent,
         TITLE,
-        f"Something went terribly wrong.\n{type(exception).__name__}: {str(exception)}",
+        f"Something went terribly wrong.\n{type(exception).__name__}: {exception}",
     )
 
 

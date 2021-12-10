@@ -53,7 +53,7 @@ def wait_for_thread(thread: Thread) -> Any:
     failed_output: Union[None, Exception] = None
 
     # callback function for finished signal
-    def finished_func(thread_output):
+    def finished_func(thread_output: Any) -> None:
         logger.debug("Thread has emitted finished event")
 
         nonlocal finished_output
@@ -63,7 +63,7 @@ def wait_for_thread(thread: Thread) -> Any:
         loop.exit(0)
 
     # callback function for failed signal
-    def failed_func(thread_output):
+    def failed_func(thread_output: Any) -> None:
         logger.warning("Thread has emitted failed event")
 
         nonlocal failed_output
