@@ -6,7 +6,6 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/nathanvaughn/msfs-mod-manager)](https://github.com/NathanVaughn/msfs-mod-manager/releases/latest)
 ![GitHub All Releases](https://img.shields.io/github/downloads/nathanvaughn/msfs-mod-manager/total)
 [![GitHub stars](https://img.shields.io/github/stars/NathanVaughn/msfs-mod-manager)](https://github.com/NathanVaughn/msfs-mod-manager/stargazers)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/01bf5870c736422fa4dab46200b56ed1)](https://www.codacy.com/manual/NathanVaughn/msfs-mod-manager?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=NathanVaughn/msfs-mod-manager&amp;utm_campaign=Badge_Grade)
 [![GitHub license](https://img.shields.io/github/license/NathanVaughn/msfs-mod-manager)](https://github.com/NathanVaughn/msfs-mod-manager/blob/master/LICENSE)
 
 This is an external mod manager for the new Microsoft Flight Simulator to help you install
