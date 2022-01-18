@@ -82,7 +82,7 @@ def mod_uninstalls(parent: QWidget, mods: List[Mod]) -> bool:
         TITLE,
         f"You're about to permamently delete {len(mods)} mod(s). "
         + "Are you sure you want to continue?",
-        QMessageBox.Yes | QMessageBox.No,
+        QMessageBox.Yes | QMessageBox.No,  # type: ignore
         QMessageBox.No,
     )
     return result == QMessageBox.Yes
