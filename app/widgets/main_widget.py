@@ -30,6 +30,8 @@ def disable_button(button_name: str) -> Callable:
     """
     Decorator to disable a given button name before function execution
     and re-enable it after the function is done.
+    I don't like how this is done, but couldn't find a better way
+    to modify class variables.
     """
 
     def decorator(func: Callable) -> Callable:
@@ -48,7 +50,7 @@ def disable_button(button_name: str) -> Callable:
     return decorator
 
 
-def try_except() -> Callable:
+def error_catch() -> Callable:
     """
     Decorator to display a dialog box if an uncaught exception occurs.
     """
@@ -146,9 +148,7 @@ class MainWidget(QtWidgets.QWidget):
         """
 
         # try to automatically find the sim
-        success = flightsim.find_installation()
-
-        if success:
+        if flightsim.find_installation():
             return
 
         # show error
@@ -170,7 +170,7 @@ class MainWidget(QtWidgets.QWidget):
         result = QtWidgets.QFileDialog.getExistingDirectory(
             parent=self,
             caption="Select the root Microsoft Flight Simulator directory",
-            dir=os.getenv("APPDATA"),  # type: ignore
+            dir=os.environ["APPDATA"],
         )
 
         # if nothing is selected, cancel
@@ -201,7 +201,7 @@ class MainWidget(QtWidgets.QWidget):
     # ======================
 
     @disable_button("install_button")
-    @try_except()
+    @error_catch()
     def install_archive(self) -> None:
         """
         Install the selected archives
@@ -243,7 +243,7 @@ class MainWidget(QtWidgets.QWidget):
 
         self.refresh()
 
-    @try_except()
+    @error_catch()
     def install_folder(self) -> None:
         mod_folder = QtWidgets.QFileDialog.getExistingDirectory(
             parent=self,
@@ -279,7 +279,7 @@ class MainWidget(QtWidgets.QWidget):
         self.refresh()
 
     @disable_button("uninstall_button")
-    @try_except()
+    @error_catch()
     def uninstall(self) -> None:
         """
         Uninstall the selected Mod objects.
@@ -312,7 +312,7 @@ class MainWidget(QtWidgets.QWidget):
     # ======================
 
     @disable_button("enable_button")
-    @try_except()
+    @error_catch()
     def enable(self) -> None:
         """
         Enable the selected Mod objects.
@@ -340,7 +340,7 @@ class MainWidget(QtWidgets.QWidget):
         self.refresh()
 
     @disable_button("disable_button")
-    @try_except()
+    @error_catch()
     def disable(self) -> None:
         """
         Disable the selected Mod objects.
@@ -372,7 +372,7 @@ class MainWidget(QtWidgets.QWidget):
     # ======================
 
     @disable_button("refresh_button")
-    @try_except()
+    @error_catch()
     def refresh(self, first: bool = False) -> None:
         """
         Refresh main table data.
@@ -387,8 +387,8 @@ class MainWidget(QtWidgets.QWidget):
         progress.set_mode(progress.PERCENT)
 
         all_mods_thread = Thread(flightsim.get_all_mods)
-        all_mods_thread.percent_update.connect(progress.set_percent)  # type: ignore
-        all_mods_thread.activity_update.connect(progress.set_activity)  # type: ignore
+        all_mods_thread.percent_update.connect(progress.set_percent)
+        all_mods_thread.activity_update.connect(progress.set_activity)
 
         all_mods, parsing_errors = wait_for_thread(all_mods_thread)
 

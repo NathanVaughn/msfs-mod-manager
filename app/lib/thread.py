@@ -1,4 +1,4 @@
-from typing import Any, Callable, Union
+from typing import Any, Callable, Optional
 
 import PySide6.QtCore as QtCore
 from loguru import logger
@@ -50,7 +50,7 @@ def wait_for_thread(thread: Thread) -> Any:
     # outputs can only be obtained via connected signals
     # so create some variables for the callback functions to modify
     finished_output: Any = None
-    failed_output: Union[None, Exception] = None
+    failed_output: Optional[Exception] = None
 
     # callback function for finished signal
     def finished_func(thread_output: Any) -> None:
