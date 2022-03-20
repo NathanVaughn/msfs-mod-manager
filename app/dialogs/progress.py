@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Tuple, Union
+from typing import Any, Optional, Tuple, Union
 
 import PySide6.QtCore as QtCore
 import PySide6.QtGui as QtGui
@@ -94,7 +94,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.qapp.processEvents()
 
     def set_percent(
-        self, percent: Union[Tuple[int, int], int], total: int = None
+        self, percent: Union[Tuple[int, int], int], total: Optional[int] = None
     ) -> None:
         """
         Update the progress percent.

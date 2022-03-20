@@ -4,7 +4,7 @@ import stat
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Callable, Union
+from typing import Callable, Optional, Union
 
 import patoolib
 from loguru import logger
@@ -197,7 +197,7 @@ def rm_path(
 
 
 def extract_archive(
-    archive: Path, path: Path = None, activity_func: Callable = lambda x: None
+    archive: Path, path: Optional[Path] = None, activity_func: Callable = lambda x: None
 ) -> Path:
     """
     Extracts an archive file and returns the output path.

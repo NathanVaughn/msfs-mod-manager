@@ -4,7 +4,7 @@ import functools
 import os
 import sys
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from loguru import logger
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -439,7 +439,7 @@ class MainWidget(QtWidgets.QWidget):
     # Search
     # ======================
 
-    def search(self, override: str = None) -> None:
+    def search(self, override: Optional[str] = None) -> None:
         """
         Filter rows to match search term.
         """
