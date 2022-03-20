@@ -103,7 +103,7 @@ class Mod:
             with open(self.manifest_path, "r", encoding="utf8") as fp:
                 self.manifest_data = json.load(fp)
         except Exception as e:
-            raise ManifestError(f"{self.manifest_path} parsing error: {e.args}")
+            raise ManifestError(f"{self.manifest_path} parsing error: {e.args}") from e
 
         # game content
         self.content_type = self.manifest_data.get("content_type", "")
@@ -172,6 +172,12 @@ class Mod:
         enabled_path = Path(
             files.magic_resolve(flightsim.community_packages_path), self.name
         )
+
+        # if the target path already exists and is not a junction, remove it
+        if enabled_path.exists() and not files.is_junction(enabled_path):
+            logger.warning(f"{enabled_path} is not a junction and already exists")
+            files.rm_path(enabled_path)
+
         files.mk_junction(self.abs_path, enabled_path, activity_func=activity_func)
 
         # now mark as enabled

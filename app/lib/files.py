@@ -230,7 +230,7 @@ def extract_archive(
 
     except patoolib.util.PatoolError as e:
         logger.exception("Unable to extract archive")
-        raise ExtractionError(str(e))
+        raise ExtractionError(str(e)) from e
 
     return path
 
@@ -268,7 +268,7 @@ def create_archive(
         )
     except patoolib.util.PatoolError as e:
         logger.exception("Unable to create archive")
-        raise ExtractionError(str(e))
+        raise ExtractionError(str(e)) from e
 
     return archive
 
