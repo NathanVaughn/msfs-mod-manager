@@ -37,13 +37,13 @@ jobs:
         run: Compress-Archive -Path "./target/MSFS Mod Manager" -DestinationPath "./target/MSFSModManagerPortable"
 
       - name: Upload Portable
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Portable Executable
           path: ./target/MSFSModManagerPortable.zip
 
       - name: Upload Installer
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Installer
           path: ./target/MSFS Mod ManagerSetup.exe
