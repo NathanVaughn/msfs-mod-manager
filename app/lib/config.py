@@ -1,4 +1,5 @@
 import configparser
+import contextlib
 import os
 from datetime import datetime
 from pathlib import Path
@@ -73,13 +74,10 @@ class _Config:
         self._mods_path = Path(section.get(self._mods_path_key, str(self._mods_path)))
 
         # try load datetime from config
-        try:
+        with contextlib.suppress(Exception):
             self._last_version_check = datetime.strptime(
                 section.get(self._last_version_check_key), self.TIME_FORMAT
             )
-        except Exception:
-            pass
-
         # load booleans
         self._never_version_check = section.getboolean(
             self._never_version_check_key, fallback=False

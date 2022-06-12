@@ -1,10 +1,11 @@
-import os
-import subprocess
 import argparse
-import shutil
-import PySide6
+import os
 import pkgutil
+import shutil
+import subprocess
+
 import patoolib.programs
+import PySide6
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 os.chdir(ROOT_DIR)
