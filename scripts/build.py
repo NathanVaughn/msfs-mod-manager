@@ -8,7 +8,6 @@ import patoolib.programs
 import PySide6
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-os.chdir(ROOT_DIR)
 
 
 def main(console: bool) -> None:
@@ -54,7 +53,7 @@ def main(console: bool) -> None:
         cmd.append("--noconsole")
 
     print(f"Executing: {' '.join(cmd)}")
-    subprocess.check_call(cmd)
+    subprocess.check_call(cmd, cwd=ROOT_DIR)
 
 
 if __name__ == "__main__":
