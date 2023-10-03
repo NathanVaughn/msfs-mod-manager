@@ -5,10 +5,10 @@ import PySide6.QtCore as QtCore
 import PySide6.QtGui as QtGui
 import PySide6.QtWidgets as QtWidgets
 
-from ..lib import files, helpers
-from ..lib.flightsim import Mod
-from ..widgets.files_table import FilesTable
-from . import success
+from app.dialogs import success
+from app.lib import files, helpers
+from app.lib.flightsim import Mod
+from app.widgets.files_table import FilesTable
 
 
 class ModInfoDialog(QtWidgets.QDialog):
@@ -29,11 +29,11 @@ class ModInfoDialog(QtWidgets.QDialog):
         self.setWindowTitle(f"{mod.name} - Info")
         self.setWindowIcon(QtGui.QIcon(str(helpers.resource_path(Path("icon.png")))))
         self.setWindowFlags(
-            QtCore.Qt.WindowSystemMenuHint
-            | QtCore.Qt.WindowTitleHint  # type: ignore
-            | QtCore.Qt.WindowMinimizeButtonHint
-            | QtCore.Qt.WindowMaximizeButtonHint
-            | QtCore.Qt.WindowCloseButtonHint
+            QtCore.Qt.WindowType.WindowSystemMenuHint
+            | QtCore.Qt.WindowType.WindowTitleHint
+            | QtCore.Qt.WindowType.WindowMinimizeButtonHint
+            | QtCore.Qt.WindowType.WindowMaximizeButtonHint
+            | QtCore.Qt.WindowType.WindowCloseButtonHint
         )
         # self.setWindowModality(QtCore.Qt.ApplicationModal)
 

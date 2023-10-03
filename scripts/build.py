@@ -5,7 +5,6 @@ import shutil
 import subprocess
 
 import patoolib.programs
-import PySide6
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -22,15 +21,12 @@ def main(console: bool) -> None:
         shutil.rmtree(dist_dir)
 
     # build directories
-    pyside6_dir = os.path.abspath(os.path.dirname(PySide6.__file__))
     patool_programs = [
         m.name for m in list(pkgutil.iter_modules(patoolib.programs.__path__))
     ]
 
     # build command
     cmd = [
-        "poetry",
-        "run",
         "pyinstaller",
         "app.py",
         "--clean",
@@ -38,9 +34,6 @@ def main(console: bool) -> None:
         "--onedir",
         "--name=MSFSModManager",
         f"--add-data={os.path.join(ROOT_DIR, 'app','assets')};assets",
-        f"--add-data={os.path.join(pyside6_dir, 'plugins')};plugins",
-        f"--add-data={os.path.join(pyside6_dir, 'translations')};translations",
-        f"--add-data={os.path.join(pyside6_dir, 'qt.conf')};.",
         f"--icon={os.path.join(ROOT_DIR, 'app','assets','icon.ico')}",
     ] + [
         f"--hiddenimport=patoolib.programs.{patool_program}"

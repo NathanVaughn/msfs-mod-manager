@@ -4,8 +4,8 @@ import PySide6.QtCore as QtCore
 import PySide6.QtGui as QtGui
 import PySide6.QtWidgets as QtWidgets
 
-from ..lib import helpers, versions
-from ..lib.flightsim import flightsim
+from app.lib import helpers, versions
+from app.lib.flightsim import flightsim
 
 
 class VersionsInfoDialog(QtWidgets.QDialog):
@@ -21,11 +21,11 @@ class VersionsInfoDialog(QtWidgets.QDialog):
         self.setWindowTitle("Versions")
         self.setWindowIcon(QtGui.QIcon(str(helpers.resource_path(Path("icon.png")))))
         self.setWindowFlags(
-            QtCore.Qt.WindowSystemMenuHint
-            | QtCore.Qt.WindowTitleHint  # type: ignore
-            | QtCore.Qt.WindowCloseButtonHint
+            QtCore.Qt.WindowType.WindowSystemMenuHint
+            | QtCore.Qt.WindowType.WindowTitleHint
+            | QtCore.Qt.WindowType.WindowCloseButtonHint
         )
-        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
 
         layout = QtWidgets.QFormLayout()
 

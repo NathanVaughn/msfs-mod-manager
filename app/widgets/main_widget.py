@@ -9,15 +9,15 @@ from typing import Any, Callable, Optional
 from loguru import logger
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..dialogs import error, success, warning
-from ..dialogs.about import AboutDialog
-from ..dialogs.mod_info import ModInfoDialog
-from ..dialogs.progress import ProgressDialog
-from ..dialogs.versions_info import VersionsInfoDialog
-from ..lib.config import config
-from ..lib.flightsim import flightsim
-from ..lib.thread import Thread, wait_for_thread
-from .mod_table import ModTable
+from app.dialogs import error, success, warning
+from app.dialogs.about import AboutDialog
+from app.dialogs.mod_info import ModInfoDialog
+from app.dialogs.progress import ProgressDialog
+from app.dialogs.versions_info import VersionsInfoDialog
+from app.lib.config import config
+from app.lib.flightsim import flightsim
+from app.lib.thread import Thread, wait_for_thread
+from app.widgets.mod_table import ModTable
 
 ARCHIVE_FILTER = "Archives (*.zip *.rar *.tar *.bz2 *.7z)"
 
@@ -134,7 +134,7 @@ class MainWidget(QtWidgets.QWidget):
 
         # shortcuts
         shortcut_delete = QtGui.QShortcut(
-            QtGui.QKeySequence(QtCore.Qt.Key_Delete), self
+            QtGui.QKeySequence(QtCore.Qt.Key.Key_Delete), self
         )
         shortcut_delete.activated.connect(self.uninstall)  # type: ignore
 

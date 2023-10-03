@@ -14,7 +14,7 @@ class VersionCheckDialog:
         self.chkbox = QtWidgets.QCheckBox("Don't ask me again")
 
         self.msgbox = QtWidgets.QMessageBox(parent)
-        self.msgbox.setIcon(QtWidgets.QMessageBox.Information)
+        self.msgbox.setIcon(QtWidgets.QMessageBox.Icon.Information)
         if installed:
             self.msgbox.setText(
                 "A new version is available. "
@@ -27,9 +27,9 @@ class VersionCheckDialog:
             )
         self.msgbox.setCheckBox(self.chkbox)
 
-        self.msgbox.addButton(QtWidgets.QMessageBox.Yes)
-        self.msgbox.addButton(QtWidgets.QMessageBox.No)
-        self.msgbox.setDefaultButton(QtWidgets.QMessageBox.Yes)
+        self.msgbox.addButton(QtWidgets.QMessageBox.StandardButton.Yes)
+        self.msgbox.addButton(QtWidgets.QMessageBox.StandardButton.No)
+        self.msgbox.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Yes)
 
     def exec(self) -> Tuple[bool, bool]:
         """
@@ -37,6 +37,6 @@ class VersionCheckDialog:
         Returns selected button and if the remember option was selected.
         """
         return (
-            self.msgbox.exec() == QtWidgets.QMessageBox.Yes,
+            self.msgbox.exec() == QtWidgets.QMessageBox.StandardButton.Yes,
             bool(self.chkbox.checkState()),
         )

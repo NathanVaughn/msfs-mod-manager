@@ -2,8 +2,8 @@ from typing import Any, List
 
 from PySide6 import QtGui, QtWidgets
 
-from ..lib.flightsim import Mod
-from .base_table import BaseTable
+from app.lib.flightsim import Mod
+from app.widgets.base_table import BaseTable
 
 
 class ModTable(BaseTable):

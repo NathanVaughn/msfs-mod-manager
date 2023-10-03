@@ -2,7 +2,7 @@ from typing import List
 
 from PySide6.QtWidgets import QMessageBox, QWidget
 
-from ..lib.flightsim import Mod
+from app.lib.flightsim import Mod
 
 TITLE = "Warning"
 
@@ -82,7 +82,7 @@ def mod_uninstalls(parent: QWidget, mods: List[Mod]) -> bool:
         TITLE,
         f"You're about to permamently delete {len(mods)} mod(s). "
         + "Are you sure you want to continue?",
-        QMessageBox.Yes | QMessageBox.No,  # type: ignore
-        QMessageBox.No,
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        QMessageBox.StandardButton.No,
     )
-    return result == QMessageBox.Yes
+    return result == QMessageBox.StandardButton.Yes

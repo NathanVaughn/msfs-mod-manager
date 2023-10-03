@@ -9,25 +9,24 @@
     repository  = "https://github.com/NathanVaughn/msfs-mod-manager"
 
 [tool.poetry.dependencies]
-    python  = ">=3.9,<3.10"
+    python  = ">=3.11,<3.12"
     loguru  = "^0.6.0"
     patool  = "^1.12"
-    PySide6 = "<=6.2.1" # 6.2.2 introduces bug that makes our threads stop working
+    PySide6-Essentials = "^6.5.2" # 6.2.2 has a bug that makes our threads stop working
 
 [tool.poetry.dev-dependencies]
-    autoflake   = "^1.4"
-    black       = "^21.6b0"
-    isort       = "^5.9.1"
-    pyinstaller = "^4.8"
+    pre-commit  = "^3.2.0"
+    pyinstaller = "^6.0"
 
-[[tool.poetry.source]]
-    name    = "mypypi"
-    url     = "https://pypi.nthnv.me/simple"
-    default = true
+[tool.pyright]
+    typeCheckingMode           = "basic"
+    venvPath                   = "."
+    venv                       = ".venv"
+
+[tool.ruff]
+    target-version = "py311"
+    ignore         = ["E501"]
 
 [build-system]
     requires      = ["poetry-core>=1.0.0"]
     build-backend = "poetry.core.masonry.api"
-
-[tool.isort]
-    profile = "black"

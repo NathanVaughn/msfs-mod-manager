@@ -6,8 +6,8 @@ from typing import Callable, List, Tuple
 
 from loguru import logger
 
-from . import files
-from .config import config
+from app.lib import files
+from app.lib.config import config
 
 
 class LayoutError(Exception):

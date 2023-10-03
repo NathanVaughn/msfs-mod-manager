@@ -24,18 +24,24 @@ class BaseTable(QtWidgets.QTableView):
         # disable word wrap
         self.setWordWrap(False)
         # disable editing
-        self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)  # type: ignore
+        self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
 
         # set the correct size adjust policy to get the proper size hint
-        self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.setSizeAdjustPolicy(
+            QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents
+        )
+        self.setSelectionBehavior(
+            QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows
+        )
         self.horizontalHeader().setStretchLastSection(True)
 
         # create data model
         self.base_model = QtGui.QStandardItemModel(0, len(self.header_attributes))
         # set model headers
         for i, header in enumerate(self.header_attributes):
-            self.base_model.setHeaderData(i, QtCore.Qt.Horizontal, header[0])
+            self.base_model.setHeaderData(
+                i, QtCore.Qt.Orientation.Horizontal, header[0]
+            )
 
         # proxy model
         self.proxy_model = QtCore.QSortFilterProxyModel()
@@ -43,8 +49,12 @@ class BaseTable(QtWidgets.QTableView):
         self.proxy_model.setDynamicSortFilter(True)
         self.proxy_model.setFilterKeyColumn(-1)  # all columns
         # proxy model sort settings
-        self.proxy_model.setSortCaseSensitivity(QtCore.Qt.CaseInsensitive)
-        self.proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseInsensitive)
+        self.proxy_model.setSortCaseSensitivity(
+            QtCore.Qt.CaseSensitivity.CaseInsensitive
+        )
+        self.proxy_model.setFilterCaseSensitivity(
+            QtCore.Qt.CaseSensitivity.CaseInsensitive
+        )
 
         # set table model
         self.setModel(self.proxy_model)
@@ -89,7 +99,7 @@ class BaseTable(QtWidgets.QTableView):
 
         # finish
         if first:
-            self.sortByColumn(0, QtCore.Qt.AscendingOrder)
+            self.sortByColumn(0, QtCore.Qt.SortOrder.AscendingOrder)
 
         self.resize()
 

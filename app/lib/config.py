@@ -6,7 +6,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from . import files
+from app.lib import files
 
 
 class _Config:

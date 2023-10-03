@@ -9,7 +9,7 @@ from typing import List, Union
 
 from loguru import logger
 
-from . import helpers
+from app.lib import helpers
 
 
 def get_app_version() -> str:

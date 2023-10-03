@@ -2,7 +2,7 @@ from typing import List
 
 from PySide6.QtWidgets import QMessageBox, QWidget
 
-from ..lib.flightsim import Mod
+from app.lib.flightsim import Mod
 
 TITLE = "Success"
 

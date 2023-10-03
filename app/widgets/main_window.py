@@ -4,10 +4,10 @@ from pathlib import Path
 
 from PySide6 import QtGui, QtWidgets
 
-from ..lib import helpers, versions
-from ..lib.config import config
-from ..lib.flightsim import flightsim
-from .main_widget import MainWidget
+from app.lib import helpers, versions
+from app.lib.config import config
+from app.lib.flightsim import flightsim
+from app.widgets.main_widget import MainWidget
 
 
 class MainWindow(QtWidgets.QMainWindow):

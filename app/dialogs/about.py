@@ -2,7 +2,7 @@ from pathlib import Path
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from ..lib import helpers
+from app.lib import helpers
 
 
 class AboutDialog(QtWidgets.QDialog):
@@ -19,11 +19,11 @@ class AboutDialog(QtWidgets.QDialog):
         self.setWindowTitle("About MSFS Mod Manager")
         self.setWindowIcon(QtGui.QIcon(str(helpers.resource_path(Path("icon.png")))))
         self.setWindowFlags(
-            QtCore.Qt.WindowSystemMenuHint
-            | QtCore.Qt.WindowTitleHint  # type: ignore
-            | QtCore.Qt.WindowCloseButtonHint
+            QtCore.Qt.WindowType.WindowSystemMenuHint
+            | QtCore.Qt.WindowType.WindowTitleHint
+            | QtCore.Qt.WindowType.WindowCloseButtonHint
         )
-        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
 
         layout = QtWidgets.QVBoxLayout()
         big_font = QtGui.QFont("Arial", 16)

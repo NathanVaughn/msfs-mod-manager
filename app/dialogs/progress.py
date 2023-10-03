@@ -5,7 +5,7 @@ import PySide6.QtCore as QtCore
 import PySide6.QtGui as QtGui
 import PySide6.QtWidgets as QtWidgets
 
-from ..lib import helpers
+from app.lib import helpers
 
 
 class ProgressDialog(QtWidgets.QDialog):
@@ -27,11 +27,11 @@ class ProgressDialog(QtWidgets.QDialog):
         self.setWindowTitle("Progress")
         self.setWindowIcon(QtGui.QIcon(str(helpers.resource_path(Path("icon.png")))))
         self.setWindowFlags(
-            QtCore.Qt.WindowSystemMenuHint
-            | QtCore.Qt.WindowTitleHint  # type: ignore
+            QtCore.Qt.WindowType.WindowSystemMenuHint
+            | QtCore.Qt.WindowType.WindowTitleHint
             #    | QtCore.Qt.WindowCloseButtonHint
         )
-        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
 
         layout = QtWidgets.QVBoxLayout()
 
